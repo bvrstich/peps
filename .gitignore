@@ -1,0 +1,12 @@
+*~
+*.swp
+*.o
+*.txt
+*.pdf
+*.out
+*.png
+*.gif
+callgrind.out.*
+peps
+tags
+docs/
