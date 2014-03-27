@@ -9,6 +9,8 @@
 # -----------------------------------------------------------------------------
 BINNAME = peps
 CPPSRC	= main.cpp\
+           Random.cpp\
+           Lattice.cpp\
            PEPS.cpp
 
 OBJ	= $(CPPSRC:.cpp=.o)

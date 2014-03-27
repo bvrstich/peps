@@ -6,9 +6,8 @@
 
 #include <btas/common/TVector.h>
 
-#include <btas/DENSE/DArray.h>
-#include <btas/QSPARSE/QSDArray.h>
+#include <btas/DENSE/TArray.h>
 
-#include "SpinQuantum.h"
-
+#include "Random.h"
+#include "Lattice.h"
 #include "PEPS.h"

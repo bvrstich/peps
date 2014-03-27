@@ -19,10 +19,25 @@ using std::ofstream;
 
 #include "include.h"
 
-int main(void){
+//!Random object, using boost mersenne random number generator
+Random RN;
+
+//!lattice object
+Lattice lat;
+
+int main(int argc,char *argv[]){
 
    cout.precision(15);
 
-   PEPS<double,SpinQuantum> peps(1,1,1,1);
+   int L = atoi(argv[1]);//dimension of the lattice: LxL
+   int d = atoi(argv[2]);//physical dimension
+   int D = atoi(argv[3]);//virtual dimension
+
+   //initialize the dimensions
+   PEPS<double>::lat.set(L,L,d);
+
+   PEPS<double> peps(D);
+
+   cout << peps << endl;
 
 }
