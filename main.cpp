@@ -39,8 +39,6 @@ int main(int argc,char *argv[]){
    PEPS<double> peps1(D);
    PEPS<double> peps2(D);
 
-   MPS<double> mps(peps1,peps2);
-
-   cout << mps << endl;
+   MPO<double> mpo(1,peps1,peps2);
 
 }
