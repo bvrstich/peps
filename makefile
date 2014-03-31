@@ -12,6 +12,7 @@ CPPSRC	= main.cpp\
            Random.cpp\
            Lattice.cpp\
            PEPS.cpp\
+           MPS.cpp\
            DLPEPS.cpp
 
 OBJ	= $(CPPSRC:.cpp=.o)

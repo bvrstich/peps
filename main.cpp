@@ -39,8 +39,8 @@ int main(int argc,char *argv[]){
    PEPS<double> peps1(D);
    PEPS<double> peps2(D);
 
-   DLPEPS<double> dlay(peps1,peps2);
+   MPS<double> mps(peps1,peps2);
 
-   //cout << dlay << endl;
+   cout << mps << endl;
 
 }
