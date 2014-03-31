@@ -80,7 +80,11 @@ PEPS<T>::PEPS(int D_in) : vector< TArray<T,5> >(lat.gLx() * lat.gLy()) {
  * copy constructor
  */
 template<typename T>
-PEPS<T>::PEPS(const PEPS<T> &peps_copy) : vector< TArray<T,5> >(peps_copy) { }
+PEPS<T>::PEPS(const PEPS<T> &peps_copy) : vector< TArray<T,5> >(peps_copy) {
+
+   D = peps_copy.gD();
+
+}
 
 /**
  * empty destructor
@@ -130,6 +134,28 @@ TArray<T,5> &PEPS<T>::operator()(int r,int c) {
 
 }
 
+/**
+ * @return the cutoff virutal dimension
+ */
+template<typename T>
+int PEPS<T>::gD() const {
+
+   return D;
+
+}
+
+/**
+ * @param peps_i peps to take the overlap with
+ * @param D_aux auxiliary dimension of the contraction (determines the accuracy of the contraction)
+ * @return the inner product of two PEPS <psi1|psi2> 
+ */
+template<typename T>
+T PEPS<T>::dot(const PEPS<T> &peps_i,int D_aux) const {
+
+   return 0.0;
+
+}
+
 //forward declarations for types to be used!
 template PEPS<double>::PEPS(int);
 template PEPS< complex<double> >::PEPS(int);
@@ -145,3 +171,8 @@ template TArray<complex<double>,5> &PEPS< complex<double> >::operator()(int r,in
 
 template const TArray<double,5> &PEPS<double>::operator()(int r,int c) const;
 template const TArray<complex<double>,5> &PEPS< complex<double> >::operator()(int r,int c) const;
+
+template double PEPS<double>::dot(const PEPS<double> &peps_i,int D_aux) const;
+
+template int PEPS<double>::gD() const;
+template int PEPS< complex<double> >::gD() const;

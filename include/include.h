@@ -11,3 +11,4 @@
 #include "Random.h"
 #include "Lattice.h"
 #include "PEPS.h"
+#include "DLPEPS.h"

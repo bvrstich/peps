@@ -1,5 +1,5 @@
-#ifndef PEPS_H
-#define PEPS_H
+#ifndef DLPEPS_H
+#define DLPEPS_H
 
 #include <iostream>
 #include <fstream>
@@ -13,36 +13,27 @@ using namespace btas;
 /**
  * @author Brecht Verstichel
  * @date 26-03-2014\n\n
- * This class PEPS is a class written for the construction of projected entangled pair states on a rectangular lattice
+ * This class DLPEPS is a helper class, written for the contraction of two PEPS. DL stands for double layer
  */
 template<typename T>
-class PEPS : public vector< TArray<T,5> > {
+class DLPEPS : public vector< TArray<T,4> > {
 
    public:
 
       //constructor
-      PEPS(int);
+      DLPEPS(const PEPS<T> &,const PEPS<T> &);
 
       //copy constructor
-      PEPS(const PEPS &);
+      DLPEPS(const DLPEPS &);
 
       //destructor
-      virtual ~PEPS();
+      virtual ~DLPEPS();
 
       int gD() const;
 
-      static T rgen();
+      const TArray<T,4> &operator()(int,int) const;
 
-      //!static Lattice object containing the info about the lattice
-      static Lattice lat;
-
-      static Random RN;
-
-      const TArray<T,5> &operator()(int,int) const;
-
-      TArray<T,5> &operator()(int,int);
-
-      T dot(const PEPS &,int D_aux) const;
+      TArray<T,4> &operator()(int,int);
 
    private:
 
@@ -53,10 +44,10 @@ class PEPS : public vector< TArray<T,5> > {
 };
 
 /**
- * output stream operator overloaded for PEPS<T> 
+ * output stream operator overloaded for DLPEPS<T> 
  */
 template<typename T>
-ostream &operator<<(ostream &output,const PEPS<T> &peps_p){
+ostream &operator<<(ostream &output,const DLPEPS<T> &dlpeps_p){
 
    for(int r = 0;r < PEPS<T>::lat.gLy();++r)
       for(int c = 0;c < PEPS<T>::lat.gLx();++c){
@@ -64,7 +55,7 @@ ostream &operator<<(ostream &output,const PEPS<T> &peps_p){
          output << std::endl;
          output << "Tensor on site (" << r << "," << c << ")\t" << std::endl;
          output << std::endl;
-         output << peps_p(r,c) << std::endl;
+         output << dlpeps_p(r,c) << std::endl;
 
       }
 

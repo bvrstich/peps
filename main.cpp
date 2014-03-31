@@ -36,8 +36,11 @@ int main(int argc,char *argv[]){
    //initialize the dimensions
    PEPS<double>::lat.set(L,L,d);
 
-   PEPS<double> peps(D);
+   PEPS<double> peps1(D);
+   PEPS<double> peps2(D);
 
-   cout << peps << endl;
+   DLPEPS<double> dlay(peps1,peps2);
+
+   //cout << dlay << endl;
 
 }
