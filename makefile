@@ -31,7 +31,8 @@ MPSXXINC=-I/home/bright/bestanden/programmas/mpsxx
 
 INCLUDE = ./include $(BTASINC) $(MPSXXINC)
 
-LIBS= -lpthread -lmkl_intel_lp64 -lmkl_sequential -lmkl_core $(BOOSTLIB) $(BTASLIB)/libbtas.a 
+#LIBS= -lpthread -lmkl_intel_lp64 -lmkl_sequential -lmkl_core $(BOOSTLIB) $(BTASLIB)/libbtas.a 
+LIBS= -lblas -llapack $(BOOSTLIB) $(BTASLIB)/libbtas.a 
 
 CC	= gcc
 CXX	= g++
@@ -39,7 +40,7 @@ CXX	= g++
 # -----------------------------------------------------------------------------
 #   Compiler & Linker flags
 # -----------------------------------------------------------------------------
-CFLAGS	= -I$(INCLUDE) -std=c++11 -D_HAS_CBLAS -D_HAS_INTEL_MKL -g
+CFLAGS	= -I$(INCLUDE) -std=c++11 -D_HAS_LAPACKE -D_HAS_CBLAS -g
 LDFLAGS	= -g
 
 # =============================================================================

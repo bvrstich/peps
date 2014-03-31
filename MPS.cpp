@@ -70,6 +70,93 @@ int MPS<T>::gD() const {
 
 }
 
+/**
+ * act with an MPO on this MPS, resulting MPS is returned as *this object
+ * @param uplo if == 'U' contract with the upper physical index of the MPO, if == 'L', contract with the lower
+ * @param mpo the MPO
+ */
+template<typename T>
+void MPS<T>::gemv(char uplo,const MPO<T> &mpo){
+
+   int L = this->size();
+
+   if(uplo == 'U'){
+
+      //first site
+      TArray<T,5> tmp;
+
+      enum {i,j,k,l,m,n,o,p,q};
+
+      Contract((T)1.0,mpo[0],shape(i,j,k,l),(*this)[0],shape(m,j,n),(T)0.0,tmp,shape(m,i,k,n,l));
+
+      (*this)[0].resize(1,D,D*D);
+
+      CopyR(tmp,(*this)[0]);
+
+      //middle sites
+      for(int c = 1;c < L - 1;++c){
+
+         tmp.clear();
+
+         Contract((T)1.0,mpo[c],shape(i,j,k,l),(*this)[c],shape(m,j,n),(T)0.0,tmp,shape(m,i,k,n,l));
+
+         (*this)[c].resize(D*D,D,D*D);
+
+         CopyR(tmp,(*this)[c]);
+
+      }
+
+      //last site
+      tmp.clear();
+
+      Contract((T)1.0,mpo[L - 1],shape(i,j,k,l),(*this)[L - 1],shape(m,j,n),(T)0.0,tmp,shape(m,i,k,n,l));
+
+      (*this)[L - 1].resize(D*D,D,1);
+
+      CopyR(tmp,(*this)[L - 1]);
+
+   }
+   else{//L
+
+      //first site
+      TArray<T,5> tmp;
+
+      enum {i,j,k,l,m,n,o,p,q};
+
+      Contract((T)1.0,mpo[0],shape(i,j,k,l),(*this)[0],shape(m,k,n),(T)0.0,tmp,shape(m,i,j,n,l));
+
+      (*this)[0].resize(1,D,D*D);
+
+      CopyR(tmp,(*this)[0]);
+
+      //middle sites
+      for(int c = 1;c < L - 1;++c){
+
+         tmp.clear();
+
+         Contract((T)1.0,mpo[c],shape(i,j,k,l),(*this)[c],shape(m,k,n),(T)0.0,tmp,shape(m,i,j,n,l));
+
+         (*this)[c].resize(D*D,D,D*D);
+
+         CopyR(tmp,(*this)[c]);
+
+      }
+
+      //last site
+      tmp.clear();
+
+      Contract((T)1.0,mpo[L - 1],shape(i,j,k,l),(*this)[L - 1],shape(m,k,n),(T)0.0,tmp,shape(m,i,j,n,l));
+
+      (*this)[L - 1].resize(D*D,D,1);
+
+      CopyR(tmp,(*this)[L - 1]);
+
+   }
+
+   D *= mpo.gD();
+
+}
+
 template MPS<double>::MPS(const PEPS<double> &,const PEPS<double> &);
 template MPS< complex<double> >::MPS(const PEPS< complex<double> > &,const PEPS< complex<double> > &);
 
@@ -81,3 +168,6 @@ template MPS< complex<double> >::~MPS();
 
 template int MPS<double>::gD() const;
 template int MPS< complex<double> >::gD() const;
+
+template void MPS<double>::gemv(char uplo,const MPO<double> &mpo);
+template void MPS< complex<double> >::gemv(char uplo,const MPO< complex<double> > &mpo);

@@ -10,6 +10,8 @@ using std::vector;
 
 using namespace btas;
 
+#include "MPO.h"
+
 /**
  * @author Brecht Verstichel
  * @date 26-03-2014\n\n
@@ -31,6 +33,8 @@ class MPS : public vector< TArray<T,3> > {
       virtual ~MPS();
 
       int gD() const;
+
+      void gemv(char , const MPO<T> &);
 
    private:
 
