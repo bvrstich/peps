@@ -34,6 +34,19 @@ int main(int argc,char *argv[]){
 
    MPS<double> mps(L,D);
 
-   mps.canonicalize(Left);
+   mps.canonicalize(Right);
+
+   for(int i = 0;i < D;++i)
+      for(int k = 0;k < D;++k){
+
+         double tmp = 0.0;
+
+         for(int j = 0;j < D;++j)
+            for(int s = 0;s < d;++s)
+               tmp += mps[4](i,s,j)*mps[4](k,s,j);
+
+         cout << i << "\t" << k << "\t" << tmp << endl;
+
+      }
 
 }
