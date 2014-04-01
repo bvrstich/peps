@@ -19,12 +19,6 @@ using std::ofstream;
 
 #include "include.h"
 
-//!Random object, using boost mersenne random number generator
-Random RN;
-
-//!lattice object
-Lattice lat;
-
 int main(int argc,char *argv[]){
 
    cout.precision(15);
@@ -32,7 +26,7 @@ int main(int argc,char *argv[]){
    int L = atoi(argv[1]);//dimension of the lattice: LxL
    int d = atoi(argv[2]);//physical dimension
    int D = atoi(argv[3]);//virtual dimension
-
+/*
    //initialize the dimensions
    PEPS<double>::lat.set(L,L,d);
 
@@ -43,7 +37,25 @@ int main(int argc,char *argv[]){
    MPO<double> mpo(1,peps1,peps2);
 
    mps.gemv('L',mpo);
+*/
+   
+   TArray<double,3> A(10,2,10);
+   A.generate(PEPS<double>::rgen);
 
-   cout << mps << endl;
+   ofstream out("orig.out");
+   out.precision(15);
+   out << A << endl;
+
+   TArray<double,2> R;
+
+   Geqrf(A,R);
+
+   TArray<double,3> tmp(10,2,10);
+
+   enum {j,k,l,m};
+
+   Contract(1.0,A,shape(j,k,l),R,shape(l,m),0.0,tmp,shape(j,k,m));
+
+   cout << tmp << endl;
 
 }

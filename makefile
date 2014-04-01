@@ -32,7 +32,7 @@ MPSXXINC=-I/home/bright/bestanden/programmas/mpsxx
 INCLUDE = ./include $(BTASINC) $(MPSXXINC)
 
 #LIBS= -lpthread -lmkl_intel_lp64 -lmkl_sequential -lmkl_core $(BOOSTLIB) $(BTASLIB)/libbtas.a 
-LIBS= -lblas -llapack $(BOOSTLIB) $(BTASLIB)/libbtas.a 
+LIBS= -lblas -llapacke $(BOOSTLIB) $(BTASLIB)/libbtas.a 
 
 CC	= gcc
 CXX	= g++
