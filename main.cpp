@@ -39,22 +39,22 @@ int main(int argc,char *argv[]){
    mps.gemv('L',mpo);
 */
    
-   TArray< complex<double> ,3> A(4,2,4);
+   TArray< complex<double> ,3> A(D,d,D);
    A.generate(PEPS< complex<double> >::rgen);
 
    ofstream out("orig.out");
    out.precision(15);
    out << A << endl;
 
-   TArray< complex<double> ,2> R;
+   TArray< complex<double> ,2> Lm;
 
-   Geqrf(A,R);
+   Gelqf(Lm,A);
 
-   TArray< complex<double> ,3> tmp(4,2,4);
+   TArray< complex<double> ,3> tmp(D,d,D);
 
    enum {j,k,l,m};
 
-   Contract(complex<double>(1.0,0.0),A,shape(j,k,l),R,shape(l,m),complex<double>(0.0,0.0),tmp,shape(j,k,m));
+   Contract(complex<double>(1.0,0.0),Lm,shape(j,k),A,shape(k,l,m),complex<double>(0.0,0.0),tmp,shape(j,l,m));
 
    cout << tmp << endl;
 
