@@ -12,6 +12,54 @@ using std::ofstream;
 
 #include "include.h"
 
+/** 
+ * standard constructor: just takes in
+ * @param L_in length of the chain
+ * @param D_in virtual max bond dimension
+ * allocates the tensors and fills them randomly
+ */
+template<typename T>
+MPS<T>::MPS(int L_in,int D_in) : vector< TArray<T,3> >(L_in) {
+
+   D = D_in;
+
+   int d = PEPS<T>::lat.gd();
+
+   vector<int> vdim(L_in + 1);
+
+   vdim[0] = 1;
+
+   for(int i = 1;i < L_in;++i){
+
+      int tmp = vdim[i - 1] * d;
+
+      if(tmp < D)
+         vdim[i] = tmp;
+      else 
+         vdim[i] = D;
+
+   }
+
+   vdim[L_in] = 1;
+
+   for(int i = L_in - 1;i > 0;--i){
+
+      int tmp = vdim[i + 1] * d;
+
+      if(tmp < vdim[i])
+         vdim[i] = tmp;
+
+   }
+
+   for(int i = 0;i < this->size();++i){
+
+      (*this)[i].resize(vdim[i],d,vdim[i+1]);
+      (*this)[i].generate(PEPS<T>::rgen);
+
+   }
+
+}
+
 /**
  * construct constructs a standard MPS object, by creating a double layer peps object from the top row
  */
@@ -159,6 +207,9 @@ void MPS<T>::gemv(char uplo,const MPO<T> &mpo){
 
 template MPS<double>::MPS(const PEPS<double> &,const PEPS<double> &);
 template MPS< complex<double> >::MPS(const PEPS< complex<double> > &,const PEPS< complex<double> > &);
+
+template MPS<double>::MPS(int,int);
+template MPS< complex<double> >::MPS(int,int);
 
 template MPS<double>::MPS(const MPS<double> &);
 template MPS< complex<double> >::MPS(const MPS< complex<double> > &);

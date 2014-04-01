@@ -23,6 +23,8 @@ class MPS : public vector< TArray<T,3> > {
 
    public:
 
+      MPS(int L,int D);
+
       //constructor
       MPS(const PEPS<T> &,const PEPS<T> &);
 

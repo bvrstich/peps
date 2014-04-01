@@ -26,36 +26,12 @@ int main(int argc,char *argv[]){
    int L = atoi(argv[1]);//dimension of the lattice: LxL
    int d = atoi(argv[2]);//physical dimension
    int D = atoi(argv[3]);//virtual dimension
-/*
+
    //initialize the dimensions
    PEPS<double>::lat.set(L,L,d);
 
-   PEPS<double> peps1(D);
-   PEPS<double> peps2(D);
+   MPS<double> mps(L,D);
 
-   MPS<double> mps(peps1,peps2);
-   MPO<double> mpo(1,peps1,peps2);
-
-   mps.gemv('L',mpo);
-*/
-   
-   TArray< complex<double> ,3> A(D,d,D);
-   A.generate(PEPS< complex<double> >::rgen);
-
-   ofstream out("orig.out");
-   out.precision(15);
-   out << A << endl;
-
-   TArray< complex<double> ,2> Lm;
-
-   Gelqf(Lm,A);
-
-   TArray< complex<double> ,3> tmp(D,d,D);
-
-   enum {j,k,l,m};
-
-   Contract(complex<double>(1.0,0.0),Lm,shape(j,k),A,shape(k,l,m),complex<double>(0.0,0.0),tmp,shape(j,l,m));
-
-   cout << tmp << endl;
+   cout << mps << endl;
 
 }
