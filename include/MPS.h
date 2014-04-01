@@ -38,6 +38,8 @@ class MPS : public vector< TArray<T,3> > {
 
       void gemv(char , const MPO<T> &);
 
+      void canonicalize(const BTAS_SIDE &);
+
    private:
 
       //!dimension of the bonds

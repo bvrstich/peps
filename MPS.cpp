@@ -205,6 +205,60 @@ void MPS<T>::gemv(char uplo,const MPO<T> &mpo){
 
 }
 
+/**
+ * canonicalize the mps
+ * @param dir Left or Right canonicalization
+ */
+template<typename T>
+void MPS<T>::canonicalize(const BTAS_SIDE &dir){
+
+   if(dir == Left){//QR
+
+      TArray<T,2> R;
+      TArray<T,3> tmp;
+
+      for(int i = 0;i < this->size() - 1;++i){
+
+         R.clear();
+
+         //do QR
+         Geqrf((*this)[i],R);
+
+         //paste to next matrix
+         tmp.clear();
+
+         Contract((T)1.0,R,shape(1),(*this)[i + 1],shape(0),(T)0.0,tmp);
+
+         (*this)[i + 1] = std::move(tmp);
+
+      }
+
+   }
+   else{//LQ
+
+      TArray<T,2> L;
+      TArray<T,3> tmp;
+
+      for(int i = this->size() - 1;i > 0;--i){
+
+         L.clear();
+
+         //do QR
+         Gelqf(L,(*this)[i]);
+
+         //paste to previous matrix
+         tmp.clear();
+
+         Contract((T)1.0,(*this)[i - 1],shape(2),L,shape(0),(T)0.0,tmp);
+
+         (*this)[i - 1] = std::move(tmp);
+
+      }
+
+   }
+
+}
+
 template MPS<double>::MPS(const PEPS<double> &,const PEPS<double> &);
 template MPS< complex<double> >::MPS(const PEPS< complex<double> > &,const PEPS< complex<double> > &);
 
@@ -222,3 +276,6 @@ template int MPS< complex<double> >::gD() const;
 
 template void MPS<double>::gemv(char uplo,const MPO<double> &mpo);
 template void MPS< complex<double> >::gemv(char uplo,const MPO< complex<double> > &mpo);
+
+template void MPS<double>::canonicalize(const BTAS_SIDE &dir);
+template void MPS< complex<double> >::canonicalize(const BTAS_SIDE &dir);

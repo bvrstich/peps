@@ -19,6 +19,8 @@ using std::ofstream;
 
 #include "include.h"
 
+using namespace btas;
+
 int main(int argc,char *argv[]){
 
    cout.precision(15);
@@ -32,6 +34,6 @@ int main(int argc,char *argv[]){
 
    MPS<double> mps(L,D);
 
-   cout << mps << endl;
+   mps.canonicalize(Left);
 
 }
