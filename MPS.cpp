@@ -69,12 +69,12 @@ MPS<T>::MPS(const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< TArray<T,3> >
    D = peps_1.gD() * peps_2.gD();
 
    //c == 0
-   (*this)[0].resize(1,D,D);
+   (*this)[0].reshape(shape(1,D,D));
 
    for(int c = 1;c < this->size() - 1;++c)
-      (*this)[c].resize(D,D,D);
+      (*this)[c].reshape(shape(D,D,D));
 
-   (*this)[this->size() - 1].resize(D,D,1);
+   (*this)[this->size() - 1].reshape(shape(D,D,1));
 
    enum {i,j,k,l,m,n,o,p,q};
 
@@ -86,7 +86,7 @@ MPS<T>::MPS(const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< TArray<T,3> >
 
       Contract((T)1.0,peps_1(0,c),shape(i,j,k,l,m),peps_2(0,c),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
 
-      CopyR(tmp,(*this)[c]);
+      tmp.move((*this)[c]);
 
    }
 
@@ -137,9 +137,9 @@ void MPS<T>::gemv(char uplo,const MPO<T> &mpo){
 
       Contract((T)1.0,mpo[0],shape(i,j,k,l),(*this)[0],shape(m,j,n),(T)0.0,tmp,shape(m,i,k,n,l));
 
-      (*this)[0].resize(1,D,D*D);
+      (*this)[0].reshape(shape(1,D,D*D));
 
-      CopyR(tmp,(*this)[0]);
+      tmp.move((*this)[0]);
 
       //middle sites
       for(int c = 1;c < L - 1;++c){
@@ -148,9 +148,9 @@ void MPS<T>::gemv(char uplo,const MPO<T> &mpo){
 
          Contract((T)1.0,mpo[c],shape(i,j,k,l),(*this)[c],shape(m,j,n),(T)0.0,tmp,shape(m,i,k,n,l));
 
-         (*this)[c].resize(D*D,D,D*D);
+         (*this)[c].reshape(shape(D*D,D,D*D));
 
-         CopyR(tmp,(*this)[c]);
+         tmp.move((*this)[c]);
 
       }
 
@@ -159,9 +159,9 @@ void MPS<T>::gemv(char uplo,const MPO<T> &mpo){
 
       Contract((T)1.0,mpo[L - 1],shape(i,j,k,l),(*this)[L - 1],shape(m,j,n),(T)0.0,tmp,shape(m,i,k,n,l));
 
-      (*this)[L - 1].resize(D*D,D,1);
+      (*this)[L - 1].reshape(shape(D*D,D,1));
 
-      CopyR(tmp,(*this)[L - 1]);
+      tmp.move((*this)[L - 1]);
 
    }
    else{//L
@@ -173,9 +173,9 @@ void MPS<T>::gemv(char uplo,const MPO<T> &mpo){
 
       Contract((T)1.0,mpo[0],shape(i,j,k,l),(*this)[0],shape(m,k,n),(T)0.0,tmp,shape(m,i,j,n,l));
 
-      (*this)[0].resize(1,D,D*D);
+      (*this)[0].reshape(shape(1,D,D*D));
 
-      CopyR(tmp,(*this)[0]);
+      tmp.move((*this)[0]);
 
       //middle sites
       for(int c = 1;c < L - 1;++c){
@@ -184,9 +184,9 @@ void MPS<T>::gemv(char uplo,const MPO<T> &mpo){
 
          Contract((T)1.0,mpo[c],shape(i,j,k,l),(*this)[c],shape(m,k,n),(T)0.0,tmp,shape(m,i,j,n,l));
 
-         (*this)[c].resize(D*D,D,D*D);
+         (*this)[c].reshape(shape(D*D,D,D*D));
 
-         CopyR(tmp,(*this)[c]);
+         tmp.move((*this)[c]);
 
       }
 
@@ -195,9 +195,9 @@ void MPS<T>::gemv(char uplo,const MPO<T> &mpo){
 
       Contract((T)1.0,mpo[L - 1],shape(i,j,k,l),(*this)[L - 1],shape(m,k,n),(T)0.0,tmp,shape(m,i,j,n,l));
 
-      (*this)[L - 1].resize(D*D,D,1);
+      (*this)[L - 1].reshape(shape(D*D,D,1));
 
-      CopyR(tmp,(*this)[L - 1]);
+      tmp.move((*this)[L - 1]);
 
    }
 

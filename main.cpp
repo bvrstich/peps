@@ -32,21 +32,12 @@ int main(int argc,char *argv[]){
    //initialize the dimensions
    PEPS<double>::lat.set(L,L,d);
 
-   MPS<double> mps(L,D);
+   PEPS<double> peps1(D);
+   PEPS<double> peps2(D);
 
-   mps.canonicalize(Right);
+   MPS<double> mps(peps1,peps2);
+   MPO<double> mpo(1,peps1,peps2);
 
-   for(int i = 0;i < D;++i)
-      for(int k = 0;k < D;++k){
-
-         double tmp = 0.0;
-
-         for(int j = 0;j < D;++j)
-            for(int s = 0;s < d;++s)
-               tmp += mps[4](i,s,j)*mps[4](k,s,j);
-
-         cout << i << "\t" << k << "\t" << tmp << endl;
-
-      }
-
+   mps.gemv('L',mpo);
+   
 }
