@@ -36,8 +36,6 @@ int main(int argc,char *argv[]){
 
    MPS<double> mps_c(L);
 
-   mps_c.guess(Right,D/2,mps);
-
-   cout << mps_c << endl;
+   mps_c.compress(D/2,mps);
 
 }

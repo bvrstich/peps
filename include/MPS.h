@@ -42,9 +42,11 @@ class MPS : public vector< TArray<T,3> > {
 
       void canonicalize(const BTAS_SIDE &);
 
-      void guess(const BTAS_SIDE &,int D,const MPS<T> &mps);
+      void guess(const BTAS_SIDE &,int ,const MPS<T> &mps);
 
       void scal(T );
+
+      void compress(int ,const MPS<T> &mps);
 
    private:
 

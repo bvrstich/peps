@@ -268,6 +268,7 @@ void MPS<T>::canonicalize(const BTAS_SIDE &dir){
 
 /**
  * find an approximate form of the state 'mps' compressed to a bond dimension 'Dc' by performing an SVD on an non-canonical state.
+ * @param dir Left or Right - going compression
  * @param Dc the compressed dimension
  * @param mps state to be compressed
  */
@@ -400,6 +401,19 @@ void MPS< complex<double> >::scal(complex<double> alpha){
 
 }
 
+/**
+ * find the best compression of the state 'mps' a bond dimension 'Dc' by optimizing the tensor in a sweeping fashion
+ * @param Dc the compressed dimension
+ * @param mps state to be compressed
+ */
+template<typename T>
+void MPS<T>::compress(int Dc,const MPS<T> &mps){
+
+   //initial guess by performing svd compression of uncanonicalized state
+   this->guess(Right,Dc,mps);
+
+}
+
 template MPS<double>::MPS(const PEPS<double> &,const PEPS<double> &);
 template MPS< complex<double> >::MPS(const PEPS< complex<double> > &,const PEPS< complex<double> > &);
 
@@ -426,3 +440,6 @@ template void MPS< complex<double> >::canonicalize(const BTAS_SIDE &dir);
 
 template void MPS<double>::guess(const BTAS_SIDE &dir,int Dc,const MPS<double> &mps);
 template void MPS< complex<double> >::guess(const BTAS_SIDE &dir,int Dc,const MPS< complex<double> > &mps);
+
+template void MPS<double>::compress(int Dc,const MPS<double> &mps);
+template void MPS< complex<double> >::compress(int Dc,const MPS< complex<double> > &mps);
