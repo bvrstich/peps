@@ -32,12 +32,12 @@ int main(int argc,char *argv[]){
    //initialize the dimensions
    PEPS<double>::lat.set(L,L,d);
 
-   PEPS<double> peps1(D);
-   PEPS<double> peps2(D);
+   MPS<double> mps(L,D);
 
-   MPS<double> mps(peps1,peps2);
-   MPO<double> mpo(1,peps1,peps2);
+   MPS<double> mps_c(L);
 
-   mps.gemv('L',mpo);
-   
+   mps_c.guess(Right,D/2,mps);
+
+   cout << mps_c << endl;
+
 }

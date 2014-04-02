@@ -13,6 +13,13 @@ using std::ofstream;
 #include "include.h"
 
 /** 
+ * constructor: just sets the length of the vector, nothing is allocates or initialized
+ * @param L_in length of the chain
+ */
+template<typename T>
+MPS<T>::MPS(int L_in) : vector< TArray<T,3> >(L_in) { }
+
+/** 
  * standard constructor: just takes in
  * @param L_in length of the chain
  * @param D_in virtual max bond dimension
@@ -259,11 +266,148 @@ void MPS<T>::canonicalize(const BTAS_SIDE &dir){
 
 }
 
+/**
+ * find an approximate form of the state 'mps' compressed to a bond dimension 'Dc' by performing an SVD on an non-canonical state.
+ * @param Dc the compressed dimension
+ * @param mps state to be compressed
+ */
+template<typename T>
+void MPS<T>::guess(const BTAS_SIDE &dir,int Dc,const MPS<T> &mps){
+
+   int L = mps.size();
+
+   if(dir == Left){
+
+      TArray<T,3> U;
+      TArray<T,2> V;
+      TArray<typename remove_complex<T>::type,1> S;
+
+      Gesvd('S','S',mps[0],S,U,V,Dc);
+
+      (*this)[0] = std::move(U);
+
+      //multiply S to V
+      Dimm(S,V);
+
+      //and contract V with mps on next site
+      Contract((T)1.0,V,shape(1),mps[1],shape(0),(T)0.0,(*this)[1]);
+
+      for(int i = 1;i < L - 1;++i){
+
+         T nrm = sqrt(Dotc((*this)[i],(*this)[i]));
+         Scal(1.0/nrm,(*this)[i]);
+
+         this->scal(nrm);
+
+         Gesvd('S','S',(*this)[i],S,U,V,Dc);
+
+         (*this)[i] = std::move(U);
+
+         //multiply S to V
+         Dimm(S,V);
+
+         //and contract V with mps on next site
+         Contract((T)1.0,V,shape(1),mps[i + 1],shape(0),(T)0.0,(*this)[i + 1]);
+
+      }
+
+      T nrm = sqrt(Dotc((*this)[L - 1],(*this)[L - 1]));
+      Scal(1.0/nrm,(*this)[L - 1]);
+
+      this->scal(nrm);
+
+   }
+   else{
+
+      TArray<T,2> U;
+      TArray<T,3> V;
+      TArray<typename remove_complex<T>::type,1> S;
+
+      Gesvd('S','S',mps[L - 1],S,U,V,Dc);
+
+      (*this)[L - 1] = std::move(V);
+
+      //multiply U and S
+      Dimm(U,S);
+
+      //and contract U with mps on previous site
+      Contract((T)1.0,mps[L - 2],shape(2),U,shape(0),(T)0.0,(*this)[L - 2]);
+
+      for(int i = L - 2;i > 0;--i){
+
+         T nrm = sqrt(Dotc((*this)[i],(*this)[i]));
+         Scal(1.0/nrm,(*this)[i]);
+
+         this->scal(nrm);
+
+         Gesvd('S','S',(*this)[i],S,U,V,Dc);
+
+         (*this)[i] = std::move(V);
+
+         //multiply S to V
+         Dimm(U,S);
+
+         //and contract V with mps on next site
+         Contract((T)1.0,mps[i - 1],shape(2),U,shape(0),(T)0.0,(*this)[i - 1]);
+
+      }
+
+      T nrm = sqrt(Dotc((*this)[0],(*this)[0]));
+      Scal(1.0/nrm,(*this)[0]);
+
+      this->scal(nrm);
+
+   }
+
+}
+
+/**
+ * scale the MPS with a constant factor
+ * @param alpha scalingfactor
+ */
+template<>
+void MPS<double>::scal(double alpha){
+
+   int sign;
+
+   if(alpha > 0)
+      sign = 1;
+   else
+      sign = -1;
+
+   alpha = pow(fabs(alpha),1.0/(double)this->size());
+
+   Scal(sign * alpha,(*this)[0]);
+
+   for(int i = 1;i < this->size();++i)
+      Scal(alpha,(*this)[i]);
+
+}
+
+/**
+ * scale the MPS with a constant factor
+ * @param alpha scalingfactor
+ */
+template<>
+void MPS< complex<double> >::scal(complex<double> alpha){
+
+   alpha = pow(fabs(alpha),1.0/(complex<double>)this->size());
+
+   Scal(alpha,(*this)[0]);
+
+   for(int i = 1;i < this->size();++i)
+      Scal(alpha,(*this)[i]);
+
+}
+
 template MPS<double>::MPS(const PEPS<double> &,const PEPS<double> &);
 template MPS< complex<double> >::MPS(const PEPS< complex<double> > &,const PEPS< complex<double> > &);
 
 template MPS<double>::MPS(int,int);
 template MPS< complex<double> >::MPS(int,int);
+
+template MPS<double>::MPS(int);
+template MPS< complex<double> >::MPS(int);
 
 template MPS<double>::MPS(const MPS<double> &);
 template MPS< complex<double> >::MPS(const MPS< complex<double> > &);
@@ -279,3 +423,6 @@ template void MPS< complex<double> >::gemv(char uplo,const MPO< complex<double> 
 
 template void MPS<double>::canonicalize(const BTAS_SIDE &dir);
 template void MPS< complex<double> >::canonicalize(const BTAS_SIDE &dir);
+
+template void MPS<double>::guess(const BTAS_SIDE &dir,int Dc,const MPS<double> &mps);
+template void MPS< complex<double> >::guess(const BTAS_SIDE &dir,int Dc,const MPS< complex<double> > &mps);

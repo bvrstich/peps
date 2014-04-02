@@ -23,6 +23,8 @@ class MPS : public vector< TArray<T,3> > {
 
    public:
 
+      MPS(int L);
+
       MPS(int L,int D);
 
       //constructor
@@ -39,6 +41,10 @@ class MPS : public vector< TArray<T,3> > {
       void gemv(char , const MPO<T> &);
 
       void canonicalize(const BTAS_SIDE &);
+
+      void guess(const BTAS_SIDE &,int D,const MPS<T> &mps);
+
+      void scal(T );
 
    private:
 
