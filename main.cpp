@@ -32,10 +32,7 @@ int main(int argc,char *argv[]){
    //initialize the dimensions
    PEPS<double>::lat.set(L,L,d);
 
-   MPS<double> mps(L,D);
-
-   MPS<double> mps_c(L);
-
-   mps_c.compress(D/2,mps);
+   TArray<double,4> A(D,D,D,D);
+   A.generate(PEPS<double>::rgen);
 
 }

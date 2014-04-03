@@ -20,27 +20,29 @@ MPO<T>::MPO(int row,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< TArra
 
    D = peps_1.gD() * peps_2.gD();
 
-   //c == 0
-   (*this)[0].reshape(shape(1,D,D,D));
-
-   for(int c = 1;c < this->size() - 1;++c)
-      (*this)[c].reshape(shape(D,D,D,D));
-
-   (*this)[this->size() - 1].reshape(shape(D,D,D,1));
+   int L = this->size();
 
    enum {i,j,k,l,m,n,o,p,q};
 
    TArray<T,8> tmp;
 
-   for(int c = 0;c < this->size();++c){
+   //c == 0
+   Contract((T)1.0,peps_1(row,0),shape(i,j,k,l,m),peps_2(row,0),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
 
-      tmp.clear();
+   (*this)[0] = tmp.reshape_clear(shape(1,D,D,D));
+
+   //c == 1 -> L - 2
+   for(int c = 1;c < L - 1;++c){
 
       Contract((T)1.0,peps_1(row,c),shape(i,j,k,l,m),peps_2(row,c),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
 
-      tmp.move((*this)[c]);
+      (*this)[c] = tmp.reshape_clear(shape(D,D,D,D));
 
    }
+
+   Contract((T)1.0,peps_1(row,L-1),shape(i,j,k,l,m),peps_2(row,L-1),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+
+   (*this)[L-1] = tmp.reshape_clear(shape(D,D,D,1));
 
 }
 
