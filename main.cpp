@@ -40,4 +40,10 @@ int main(int argc,char *argv[]){
 
    mps_c.compress(D/2,mps);
 
+   mps.canonicalize(Left,false);
+
+   MPS<double> mps_c_bis(L);
+   mps_c_bis.guess(Right,D/2,mps);
+
+   cout << mps_c_bis.dot(mps) << endl;
 }

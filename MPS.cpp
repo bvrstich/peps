@@ -400,55 +400,112 @@ void MPS<T>::compress(int Dc,const MPS<T> &mps){
    //initial guess by performing svd compression of uncanonicalized state: output is right-canonicalized state
    guess(Right,Dc,mps);
 
-   cout << 0 << "\t" << this->dot(mps) << endl;
-
    //construct renormalized operators
    std::vector< TArray<T,2> > RO(L - 1);
    std::vector< TArray<T,2> > LO(L - 1);
 
    compress::init_ro(Right,RO,mps,*this);
 
-   //first site
-   (*this)[0].clear();
+   int iter = 0;
 
-   Contract((T)1.0,mps[0],shape(2),RO[0],shape(1),(T)0.0,(*this)[0]);
+   while(iter < 100){
 
-   //QR
-   Geqrf((*this)[0],RO[0]);
+      cout << endl;
+      cout << endl;
+      cout << iter << endl;
+      cout << endl;
+      cout << endl;
 
-   //paste to next matrix
-   TArray<T,3> tmp;
+      //first site
+      (*this)[0].clear();
 
-   Contract((T)1.0,RO[0],shape(1),(*this)[1],shape(0),(T)0.0,tmp);
+      Contract((T)1.0,mps[0],shape(2),RO[0],shape(1),(T)0.0,(*this)[0]);
 
-   (*this)[1] = std::move(tmp);
+      //QR
+      Geqrf((*this)[0],RO[0]);
 
-   compress::update_L(0,LO,mps,*this);
+      //paste to next matrix
+      TArray<T,3> tmp;
 
-   for(int i = 1;i < L - 1;++i){
+      Contract((T)1.0,RO[0],shape(1),(*this)[1],shape(0),(T)0.0,tmp);
 
-      TArray<T,3> I;
+      (*this)[1] = std::move(tmp);
 
-      Contract((T)1.0,mps[i],shape(2),RO[i],shape(1),(T)0.0,I);
+      compress::update_L(0,LO,mps,*this);
 
-      (*this)[i].clear();
+      cout << 0 << "\t" << this->dot(mps) << endl;
 
-      Contract((T)1.0,LO[i - 1],shape(1),I,shape(0),(T)0.0,(*this)[i]);
+      for(int i = 1;i < L - 1;++i){
 
-      Geqrf((*this)[i],RO[i]);
+         TArray<T,3> I;
+
+         Contract((T)1.0,mps[i],shape(2),RO[i],shape(1),(T)0.0,I);
+
+         (*this)[i].clear();
+
+         Contract((T)1.0,LO[i - 1],shape(1),I,shape(0),(T)0.0,(*this)[i]);
+
+         Geqrf((*this)[i],RO[i]);
+
+         //paste to next matrix
+         tmp.clear();
+
+         Contract((T)1.0,RO[i],shape(1),(*this)[i + 1],shape(0),(T)0.0,tmp);
+
+         (*this)[i + 1] = std::move(tmp);
+
+         compress::update_L(i,LO,mps,*this);
+
+         cout << i << "\t" << this->dot(mps) << endl;
+
+      }
+
+      //and backward!
+      (*this)[L - 1].clear();
+
+      Contract((T)1.0,LO[L - 2],shape(1),mps[L - 1],shape(0),(T)0.0,(*this)[L - 1]);
+
+      //LQ
+      Gelqf(LO[L - 2],(*this)[L - 1]);
 
       //paste to next matrix
       tmp.clear();
 
-      Contract((T)1.0,RO[i],shape(1),(*this)[i + 1],shape(0),(T)0.0,tmp);
+      Contract((T)1.0,(*this)[L - 2],shape(2),LO[L -  2],shape(0),(T)0.0,tmp);
 
-      (*this)[i + 1] = std::move(tmp);
+      (*this)[L - 2] = std::move(tmp);
 
-      compress::update_L(i,LO,mps,*this);
+      compress::update_R(L-1,RO,mps,*this);
 
+      cout << L - 1 << "\t" << this->dot(mps) << endl;
+
+      for(int i = L - 2;i > 0;--i){
+
+         TArray<T,3> I;
+
+         Contract((T)1.0,mps[i],shape(2),RO[i],shape(1),(T)0.0,I);
+
+         (*this)[i].clear();
+
+         Contract((T)1.0,LO[i - 1],shape(1),I,shape(0),(T)0.0,(*this)[i]);
+
+         Gelqf(LO[i],(*this)[i]);
+
+         //paste to previous matrix
+         tmp.clear();
+
+         Contract((T)1.0,(*this)[i - 1],shape(2),LO[i],shape(0),(T)0.0,tmp);
+
+         (*this)[i - 1] = std::move(tmp);
+
+         compress::update_R(i,RO,mps,*this);
+
+         cout << i << "\t" << this->dot(mps) << endl;
+
+      }
+
+      ++iter;
    }
-
-   //and backward!
 
 }
 

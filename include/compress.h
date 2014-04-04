@@ -14,6 +14,9 @@ namespace compress {
    template<typename T>
       void update_L(int,std::vector< TArray<T,2> > &,const MPS<T> &,const MPS<T> &);
 
+   template<typename T>
+      void update_R(int,std::vector< TArray<T,2> > &,const MPS<T> &,const MPS<T> &);
+
 }
 
 #endif
