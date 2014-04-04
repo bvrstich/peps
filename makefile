@@ -13,7 +13,8 @@ CPPSRC	= main.cpp\
            Lattice.cpp\
            PEPS.cpp\
            MPS.cpp\
-           MPO.cpp
+           MPO.cpp\
+           compress.cpp
 
 OBJ	= $(CPPSRC:.cpp=.o)
 

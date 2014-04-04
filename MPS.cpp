@@ -196,16 +196,19 @@ void MPS<T>::gemv(char uplo,const MPO<T> &mpo){
 /**
  * canonicalize the mps
  * @param dir Left or Right canonicalization
+ * @param norm if true: normalize, else not
  */
 template<typename T>
-void MPS<T>::canonicalize(const BTAS_SIDE &dir){
+void MPS<T>::canonicalize(const BTAS_SIDE &dir,bool norm){
+
+   int length = this->size();
 
    if(dir == Left){//QR
 
       TArray<T,2> R;
       TArray<T,3> tmp;
 
-      for(int i = 0;i < this->size() - 1;++i){
+      for(int i = 0;i < length - 1;++i){
 
          R.clear();
 
@@ -221,13 +224,20 @@ void MPS<T>::canonicalize(const BTAS_SIDE &dir){
 
       }
 
+      if(norm){
+
+         T nrm = sqrt(Dotc((*this)[length-1],(*this)[length-1]));
+         Scal(1.0/nrm,(*this)[length-1]);
+
+      }
+
    }
    else{//LQ
 
       TArray<T,2> L;
       TArray<T,3> tmp;
 
-      for(int i = this->size() - 1;i > 0;--i){
+      for(int i = length - 1;i > 0;--i){
 
          L.clear();
 
@@ -240,6 +250,13 @@ void MPS<T>::canonicalize(const BTAS_SIDE &dir){
          Contract((T)1.0,(*this)[i - 1],shape(2),L,shape(0),(T)0.0,tmp);
 
          (*this)[i - 1] = std::move(tmp);
+
+      }
+
+      if(norm){
+
+         T nrm = sqrt(Dotc((*this)[0],(*this)[0]));
+         Scal(1.0/nrm,(*this)[0]);
 
       }
 
@@ -272,14 +289,11 @@ void MPS<T>::guess(const BTAS_SIDE &dir,int Dc,const MPS<T> &mps){
       Dimm(S,V);
 
       //and contract V with mps on next site
+      (*this)[1].clear();
+
       Contract((T)1.0,V,shape(1),mps[1],shape(0),(T)0.0,(*this)[1]);
 
       for(int i = 1;i < L - 1;++i){
-
-         T nrm = sqrt(Dotc((*this)[i],(*this)[i]));
-         Scal(1.0/nrm,(*this)[i]);
-
-         this->scal(nrm);
 
          Gesvd('S','S',(*this)[i],S,U,V,Dc);
 
@@ -289,14 +303,11 @@ void MPS<T>::guess(const BTAS_SIDE &dir,int Dc,const MPS<T> &mps){
          Dimm(S,V);
 
          //and contract V with mps on next site
+         (*this)[i + 1].clear();
+
          Contract((T)1.0,V,shape(1),mps[i + 1],shape(0),(T)0.0,(*this)[i + 1]);
 
       }
-
-      T nrm = sqrt(Dotc((*this)[L - 1],(*this)[L - 1]));
-      Scal(1.0/nrm,(*this)[L - 1]);
-
-      this->scal(nrm);
 
    }
    else{
@@ -313,14 +324,11 @@ void MPS<T>::guess(const BTAS_SIDE &dir,int Dc,const MPS<T> &mps){
       Dimm(U,S);
 
       //and contract U with mps on previous site
+      (*this)[L - 2].clear();
+
       Contract((T)1.0,mps[L - 2],shape(2),U,shape(0),(T)0.0,(*this)[L - 2]);
 
       for(int i = L - 2;i > 0;--i){
-
-         T nrm = sqrt(Dotc((*this)[i],(*this)[i]));
-         Scal(1.0/nrm,(*this)[i]);
-
-         this->scal(nrm);
 
          Gesvd('S','S',(*this)[i],S,U,V,Dc);
 
@@ -330,14 +338,11 @@ void MPS<T>::guess(const BTAS_SIDE &dir,int Dc,const MPS<T> &mps){
          Dimm(U,S);
 
          //and contract V with mps on next site
+         (*this)[i - 1].clear();
+
          Contract((T)1.0,mps[i - 1],shape(2),U,shape(0),(T)0.0,(*this)[i - 1]);
 
       }
-
-      T nrm = sqrt(Dotc((*this)[0],(*this)[0]));
-      Scal(1.0/nrm,(*this)[0]);
-
-      this->scal(nrm);
 
    }
 
@@ -390,10 +395,107 @@ void MPS< complex<double> >::scal(complex<double> alpha){
 template<typename T>
 void MPS<T>::compress(int Dc,const MPS<T> &mps){
 
-   //initial guess by performing svd compression of uncanonicalized state
-   this->guess(Right,Dc,mps);
+   int L = mps.size();
+
+   //initial guess by performing svd compression of uncanonicalized state: output is right-canonicalized state
+   guess(Right,Dc,mps);
+
+   cout << 0 << "\t" << this->dot(mps) << endl;
+
+   //construct renormalized operators
+   std::vector< TArray<T,2> > RO(L - 1);
+   std::vector< TArray<T,2> > LO(L - 1);
+
+   compress::init_ro(Right,RO,mps,*this);
+
+   //first site
+   (*this)[0].clear();
+
+   Contract((T)1.0,mps[0],shape(2),RO[0],shape(1),(T)0.0,(*this)[0]);
+
+   //QR
+   Geqrf((*this)[0],RO[0]);
+
+   //paste to next matrix
+   TArray<T,3> tmp;
+
+   Contract((T)1.0,RO[0],shape(1),(*this)[1],shape(0),(T)0.0,tmp);
+
+   (*this)[1] = std::move(tmp);
+
+   compress::update_L(0,LO,mps,*this);
+
+   for(int i = 1;i < L - 1;++i){
+
+      TArray<T,3> I;
+
+      Contract((T)1.0,mps[i],shape(2),RO[i],shape(1),(T)0.0,I);
+
+      (*this)[i].clear();
+
+      Contract((T)1.0,LO[i - 1],shape(1),I,shape(0),(T)0.0,(*this)[i]);
+
+      Geqrf((*this)[i],RO[i]);
+
+      //paste to next matrix
+      tmp.clear();
+
+      Contract((T)1.0,RO[i],shape(1),(*this)[i + 1],shape(0),(T)0.0,tmp);
+
+      (*this)[i + 1] = std::move(tmp);
+
+      compress::update_L(i,LO,mps,*this);
+
+   }
+
+   //and backward!
 
 }
+
+/**
+ * @param bra the bra of the inner product
+ * @return the inner product of two MPS's, with *this being the ket
+ */
+template<typename T>
+T MPS<T>::dot(const MPS<T> &bra) const {
+
+   TArray<T,2> E;
+
+   Contract((T)1.0,bra[0],shape(0,1),(*this)[0],shape(0,1),(T)0.0,E);
+
+   TArray<T,3> I;
+
+   for(int i = 1;i < this->size();++i){
+
+      I.clear();
+
+      Contract((T)1.0,bra[i],shape(0),E,shape(0),(T)0.0,I);
+
+      E.clear();
+
+      Contract((T)1.0,I,shape(2,0),(*this)[i],shape(0,1),(T)0.0,E);
+
+   }
+
+   return E(0,0);
+
+}
+
+/**
+ * normalize the mps
+ * @return the norm before
+ */
+template<typename T>
+T MPS<T>::normalize(){
+
+   T nrm = std::sqrt(this->dot(*this));
+
+   this->scal(1.0/nrm);
+
+   return nrm;
+
+}
+
 
 template MPS<double>::MPS(const PEPS<double> &,const PEPS<double> &);
 template MPS< complex<double> >::MPS(const PEPS< complex<double> > &,const PEPS< complex<double> > &);
@@ -416,11 +518,17 @@ template int MPS< complex<double> >::gD() const;
 template void MPS<double>::gemv(char uplo,const MPO<double> &mpo);
 template void MPS< complex<double> >::gemv(char uplo,const MPO< complex<double> > &mpo);
 
-template void MPS<double>::canonicalize(const BTAS_SIDE &dir);
-template void MPS< complex<double> >::canonicalize(const BTAS_SIDE &dir);
+template void MPS<double>::canonicalize(const BTAS_SIDE &dir,bool);
+template void MPS< complex<double> >::canonicalize(const BTAS_SIDE &dir,bool);
 
 template void MPS<double>::guess(const BTAS_SIDE &dir,int Dc,const MPS<double> &mps);
 template void MPS< complex<double> >::guess(const BTAS_SIDE &dir,int Dc,const MPS< complex<double> > &mps);
 
 template void MPS<double>::compress(int Dc,const MPS<double> &mps);
 template void MPS< complex<double> >::compress(int Dc,const MPS< complex<double> > &mps);
+
+template double MPS<double>::dot(const MPS<double> &bra) const;
+template  complex<double>  MPS< complex<double> >::dot(const MPS< complex<double> > &bra) const;
+
+template double MPS<double>::normalize();
+template complex<double> MPS< complex<double> >::normalize();
