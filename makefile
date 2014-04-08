@@ -24,7 +24,7 @@ OBJ	= $(CPPSRC:.cpp=.o)
 
 BRIGHT_ROOT= .
 
-BOOSTLIB= -lboost_serialization
+BOOSTLIB= -L/usr/local/lib/lboost_serialization.a
 
 BTASINC=-I/home/bright/btas/include
 BTASLIB= /home/bright/btas/lib
@@ -41,8 +41,8 @@ CXX	= g++
 # -----------------------------------------------------------------------------
 #   Compiler & Linker flags
 # -----------------------------------------------------------------------------
-CFLAGS	= -I$(INCLUDE) -std=c++11 -D_HAS_LAPACKE -D_HAS_CBLAS -g
-LDFLAGS	= -g
+CFLAGS	= -I$(INCLUDE) -I/usr/local/include/boost -std=c++11 -D_HAS_LAPACKE -D_HAS_CBLAS -g 
+LDFLAGS	= -g -I/usr/local/include/boost
 
 # =============================================================================
 #   Targets & Rules

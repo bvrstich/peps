@@ -32,18 +32,7 @@ int main(int argc,char *argv[]){
    //initialize the dimensions
    PEPS<double>::lat.set(L,L,d);
 
-   MPS<double> mps(L,D);
+   PEPS<double> peps1(D);
+   PEPS<double> peps2(D);
 
-   mps.normalize();
-
-   MPS<double> mps_c(L);
-
-   mps_c.compress(D/2,mps);
-
-   mps.canonicalize(Left,false);
-
-   MPS<double> mps_c_bis(L);
-   mps_c_bis.guess(Right,D/2,mps);
-
-   cout << mps_c_bis.dot(mps) << endl;
 }

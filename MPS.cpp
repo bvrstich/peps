@@ -68,37 +68,73 @@ MPS<T>::MPS(int L_in,int D_in) : vector< TArray<T,3> >(L_in) {
 }
 
 /**
- * construct constructs a standard MPS object, by creating a double layer peps object from the top row
+ * construct constructs a standard MPS object, by creating a double layer peps object
+ * @param option construct mps from bottom layer (r == 0) if option == 'b', from top layer (r = Ly-1) if option == 't'
  */
 template<typename T>
-MPS<T>::MPS(const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< TArray<T,3> >(PEPS<T>::lat.gLx()) {
+MPS<T>::MPS(char option,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< TArray<T,3> >(PEPS<T>::lat.gLx()) {
 
-   int L = this->size();
+   if(option == 'b'){
 
-   D = peps_1.gD() * peps_2.gD();
+      int L = this->size();
 
-   enum {i,j,k,l,m,n,o,p,q};
+      D = peps_1.gD() * peps_2.gD();
 
-   TArray<T,8> tmp;
+      enum {i,j,k,l,m,n,o,p,q};
 
-   //c == 0
-   Contract((T)1.0,peps_1(0,0),shape(i,j,k,l,m),peps_2(0,0),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+      TArray<T,8> tmp;
 
-   (*this)[0] = tmp.reshape_clear(shape(1,D,D));
+      //c == 0
+      Contract((T)1.0,peps_1(0,0),shape(i,j,k,l,m),peps_2(0,0),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
 
-   //c == 1 -> L - 2
-   for(int c = 1;c < L - 1;++c){
+      (*this)[0] = tmp.reshape_clear(shape(1,D,D));
 
-      Contract((T)1.0,peps_1(0,c),shape(i,j,k,l,m),peps_2(0,c),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+      //c == 1 -> L - 2
+      for(int c = 1;c < L - 1;++c){
 
-      (*this)[c] = tmp.reshape_clear(shape(D,D,D));
+         Contract((T)1.0,peps_1(0,c),shape(i,j,k,l,m),peps_2(0,c),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+
+         (*this)[c] = tmp.reshape_clear(shape(D,D,D));
+
+      }
+
+      //c == L - 1
+      Contract((T)1.0,peps_1(0,L - 1),shape(i,j,k,l,m),peps_2(0,L - 1),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+
+      (*this)[L - 1] = tmp.reshape_clear(shape(D,D,1));
 
    }
+   else{//top
 
-   //c == L - 1
-   Contract((T)1.0,peps_1(0,L - 1),shape(i,j,k,l,m),peps_2(0,L - 1),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+      int L = this->size();
+      int Ly = PEPS<T>::lat.gLy();
 
-   (*this)[L - 1] = tmp.reshape_clear(shape(D,D,1));
+      D = peps_1.gD() * peps_2.gD();
+
+      enum {i,j,k,l,m,n,o,p,q};
+
+      TArray<T,8> tmp;
+
+      //c == 0
+      Contract((T)1.0,peps_1(Ly-1,0),shape(i,j,k,l,m),peps_2(Ly-1,0),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+
+      (*this)[0] = tmp.reshape_clear(shape(1,D,D));
+
+      //c == 1 -> L - 2
+      for(int c = 1;c < L - 1;++c){
+
+         Contract((T)1.0,peps_1(Ly-1,c),shape(i,j,k,l,m),peps_2(Ly-1,c),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+
+         (*this)[c] = tmp.reshape_clear(shape(D,D,D));
+
+      }
+
+      //c == L - 1
+      Contract((T)1.0,peps_1(Ly-1,L - 1),shape(i,j,k,l,m),peps_2(Ly-1,L - 1),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+
+      (*this)[L - 1] = tmp.reshape_clear(shape(D,D,1));
+
+   }
 
 }
 
@@ -346,6 +382,8 @@ void MPS<T>::guess(const BTAS_SIDE &dir,int Dc,const MPS<T> &mps){
 
    }
 
+   this->D = Dc;
+
 }
 
 /**
@@ -393,7 +431,7 @@ void MPS< complex<double> >::scal(complex<double> alpha){
  * @param mps state to be compressed
  */
 template<typename T>
-void MPS<T>::compress(int Dc,const MPS<T> &mps){
+void MPS<T>::compress(int Dc,const MPS<T> &mps,int n_iter){
 
    int L = mps.size();
 
@@ -408,13 +446,7 @@ void MPS<T>::compress(int Dc,const MPS<T> &mps){
 
    int iter = 0;
 
-   while(iter < 100){
-
-      cout << endl;
-      cout << endl;
-      cout << iter << endl;
-      cout << endl;
-      cout << endl;
+   while(iter < n_iter){
 
       //first site
       (*this)[0].clear();
@@ -432,8 +464,6 @@ void MPS<T>::compress(int Dc,const MPS<T> &mps){
       (*this)[1] = std::move(tmp);
 
       compress::update_L(0,LO,mps,*this);
-
-      cout << 0 << "\t" << this->dot(mps) << endl;
 
       for(int i = 1;i < L - 1;++i){
 
@@ -456,8 +486,6 @@ void MPS<T>::compress(int Dc,const MPS<T> &mps){
 
          compress::update_L(i,LO,mps,*this);
 
-         cout << i << "\t" << this->dot(mps) << endl;
-
       }
 
       //and backward!
@@ -476,8 +504,6 @@ void MPS<T>::compress(int Dc,const MPS<T> &mps){
       (*this)[L - 2] = std::move(tmp);
 
       compress::update_R(L-1,RO,mps,*this);
-
-      cout << L - 1 << "\t" << this->dot(mps) << endl;
 
       for(int i = L - 2;i > 0;--i){
 
@@ -500,12 +526,12 @@ void MPS<T>::compress(int Dc,const MPS<T> &mps){
 
          compress::update_R(i,RO,mps,*this);
 
-         cout << i << "\t" << this->dot(mps) << endl;
-
       }
 
       ++iter;
    }
+
+   this->D = Dc;
 
 }
 
@@ -554,8 +580,55 @@ T MPS<T>::normalize(){
 }
 
 
-template MPS<double>::MPS(const PEPS<double> &,const PEPS<double> &);
-template MPS< complex<double> >::MPS(const PEPS< complex<double> > &,const PEPS< complex<double> > &);
+/**
+ * reduce the dimension of the edge states after MPO action using thin svd.
+ */
+template<typename T>
+void MPS<T>::cut_edges() {
+
+   int L = this->size();
+
+   //Left
+   TArray<T,3> U;
+   TArray<T,2> V;
+   TArray<typename remove_complex<T>::type,1> S;
+
+   Gesvd('S','S',(*this)[0],S,U,V,D*D);
+
+   (*this)[0] = std::move(U);
+
+   //multiply S to V
+   Dimm(S,V);
+
+   U.clear();
+
+   //and contract V with mps on next site
+   Contract((T)1.0,V,shape(1),(*this)[1],shape(0),(T)0.0,U);
+
+   (*this)[1] = std::move(U);
+
+   //Right
+   U.clear();
+   V.clear();
+   S.clear();
+
+   Gesvd('S','S',(*this)[L - 1],S,V,U,D*D);
+
+   (*this)[L - 1] = std::move(U);
+
+   //multiply U and S
+   Dimm(V,S);
+
+   //and contract U with mps on previous site
+   U.clear();
+
+   Contract((T)1.0,(*this)[L - 2],shape(2),V,shape(0),(T)0.0,U);
+   (*this)[L - 2] = std::move(U);
+
+}
+
+template MPS<double>::MPS(char,const PEPS<double> &,const PEPS<double> &);
+template MPS< complex<double> >::MPS(char,const PEPS< complex<double> > &,const PEPS< complex<double> > &);
 
 template MPS<double>::MPS(int,int);
 template MPS< complex<double> >::MPS(int,int);
@@ -581,11 +654,14 @@ template void MPS< complex<double> >::canonicalize(const BTAS_SIDE &dir,bool);
 template void MPS<double>::guess(const BTAS_SIDE &dir,int Dc,const MPS<double> &mps);
 template void MPS< complex<double> >::guess(const BTAS_SIDE &dir,int Dc,const MPS< complex<double> > &mps);
 
-template void MPS<double>::compress(int Dc,const MPS<double> &mps);
-template void MPS< complex<double> >::compress(int Dc,const MPS< complex<double> > &mps);
+template void MPS<double>::compress(int Dc,const MPS<double> &mps,int);
+template void MPS< complex<double> >::compress(int Dc,const MPS< complex<double> > &mps,int);
 
 template double MPS<double>::dot(const MPS<double> &bra) const;
 template  complex<double>  MPS< complex<double> >::dot(const MPS< complex<double> > &bra) const;
 
 template double MPS<double>::normalize();
 template complex<double> MPS< complex<double> >::normalize();
+
+template void MPS<double>::cut_edges();
+template void MPS< complex<double> >::cut_edges();

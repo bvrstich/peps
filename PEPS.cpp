@@ -152,7 +152,56 @@ int PEPS<T>::gD() const {
 template<typename T>
 T PEPS<T>::dot(const PEPS<T> &peps_i,int D_aux) const {
 
-   return 0.0;
+   //start from bottom
+   MPS<T> mps_b('b',*this,peps_i);
+
+   //make it left canonicalized
+   mps_b.canonicalize(Left,false);
+
+   for(int i = 1;i < PEPS<T>::lat.gLy()/2;++i){
+
+      //i'th row as MPO
+      MPO<T> mpo(i,*this,peps_i);
+
+      //apply to form MPS with bond dimension D^4
+      mps_b.gemv('L',mpo);
+
+      //reduce the dimensions of the edge states using thin svd
+      mps_b.cut_edges();
+
+      MPS<T> mps_c(mps_b.size());
+
+      //compress using svd only
+      mps_c.compress(D_aux,mps_b,5);
+
+      mps_b = std::move(mps_c);
+
+   }
+
+   //then from top 
+   MPS<T> mps_t('t',*this,peps_i);
+
+   for(int i = PEPS<T>::lat.gLy() - 2;i >= PEPS<T>::lat.gLy()/2;--i){
+
+      //i'th row as MPO
+      MPO<T> mpo(i,*this,peps_i);
+
+      //apply to form MPS with bond dimension D^4
+      mps_t.gemv('U',mpo);
+
+      //reduce the dimensions of the edge states using thin svd
+      mps_t.cut_edges();
+
+      MPS<T> mps_c(mps_t.size());
+
+      //compress using svd only
+      mps_c.compress(D_aux,mps_t,5);
+
+      mps_t = std::move(mps_c);
+
+   }
+
+   return mps_b.dot(mps_t);
 
 }
 

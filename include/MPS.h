@@ -28,7 +28,7 @@ class MPS : public vector< TArray<T,3> > {
       MPS(int L,int D);
 
       //constructor
-      MPS(const PEPS<T> &,const PEPS<T> &);
+      MPS(char,const PEPS<T> &,const PEPS<T> &);
 
       //copy constructor
       MPS(const MPS &);
@@ -42,11 +42,13 @@ class MPS : public vector< TArray<T,3> > {
 
       void canonicalize(const BTAS_SIDE &,bool);
 
+      void cut_edges();
+
       void guess(const BTAS_SIDE &,int ,const MPS<T> &mps);
 
       void scal(T );
 
-      void compress(int ,const MPS<T> &mps);
+      void compress(int ,const MPS<T> &mps,int);
 
       T dot(const MPS<T> &bra) const;
 

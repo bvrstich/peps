@@ -13,7 +13,7 @@ using std::ofstream;
 #include "include.h"
 
 /**
- * construct constructs a standard MPO object, by creating a double layer peps object from the top row
+ * construct constructs a standard MPO object, by creating a double layer peps object
  */
 template<typename T>
 MPO<T>::MPO(int row,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< TArray<T,4> >(PEPS<T>::lat.gLx()) {
