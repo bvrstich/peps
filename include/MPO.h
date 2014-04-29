@@ -10,6 +10,8 @@ using std::vector;
 
 using namespace btas;
 
+#include "PEPS.h"
+
 /**
  * @author Brecht Verstichel
  * @date 26-03-2014\n\n

@@ -31,13 +31,6 @@ class PEPS : public vector< TArray<T,5> > {
 
       int gD() const;
 
-      static T rgen();
-
-      //!static Lattice object containing the info about the lattice
-      static Lattice lat;
-
-      static Random RN;
-
       const TArray<T,5> &operator()(int,int) const;
 
       TArray<T,5> &operator()(int,int);
@@ -48,7 +41,6 @@ class PEPS : public vector< TArray<T,5> > {
 
       //!cutoff virtual dimension
       int D;
-
 
 };
 

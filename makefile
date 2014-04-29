@@ -14,7 +14,8 @@ CPPSRC	= main.cpp\
            PEPS.cpp\
            MPS.cpp\
            MPO.cpp\
-           compress.cpp
+           compress.cpp\
+           Global.cpp
 
 OBJ	= $(CPPSRC:.cpp=.o)
 
@@ -24,7 +25,7 @@ OBJ	= $(CPPSRC:.cpp=.o)
 
 BRIGHT_ROOT= .
 
-BOOSTLIB= -L/usr/local/lib/lboost_serialization.a
+BOOSTLIB= -lboost_serialization
 
 BTASINC=-I/home/bright/btas/include
 BTASLIB= /home/bright/btas/lib
@@ -41,8 +42,8 @@ CXX	= g++
 # -----------------------------------------------------------------------------
 #   Compiler & Linker flags
 # -----------------------------------------------------------------------------
-CFLAGS	= -I$(INCLUDE) -I/usr/local/include/boost -std=c++11 -D_HAS_LAPACKE -D_HAS_CBLAS -g 
-LDFLAGS	= -g -I/usr/local/include/boost
+CFLAGS	= -I$(INCLUDE) -std=c++11 -D_HAS_LAPACKE -D_HAS_CBLAS -g 
+LDFLAGS	= -g 
 
 # =============================================================================
 #   Targets & Rules

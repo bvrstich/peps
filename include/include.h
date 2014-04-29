@@ -10,6 +10,7 @@
 
 #include "Random.h"
 #include "Lattice.h"
+#include "Global.h"
 #include "PEPS.h"
 #include "MPS.h"
 #include "MPO.h"

@@ -30,9 +30,11 @@ int main(int argc,char *argv[]){
    int D = atoi(argv[3]);//virtual dimension
 
    //initialize the dimensions
-   PEPS<double>::lat.set(L,L,d);
+   Global::lat.set(L,L,d);
 
    PEPS<double> peps1(D);
    PEPS<double> peps2(D);
+
+   cout << peps1.dot(peps2,D*D) << endl;
 
 }
