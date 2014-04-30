@@ -4,7 +4,6 @@
  * @author Brecht Verstichel
  * @date 25-03-2014
  */
-
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -33,8 +32,9 @@ int main(int argc,char *argv[]){
    Global::lat.set(L,L,d);
 
    PEPS<double> peps1(D);
-   PEPS<double> peps2(D);
+   peps1.normalize(D*D);
 
-   cout << peps1.dot(peps2,D*D) << endl;
+   PEPS<double> peps2(D);
+   peps2.normalize(D*D);
 
 }

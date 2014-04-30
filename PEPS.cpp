@@ -64,8 +64,14 @@ PEPS<T>::PEPS(int D_in) : vector< TArray<T,5> >(Global::lat.gLx() * Global::lat.
 
    //now initialize with random numbers
    for(int r = 0;r < Ly;++r)
-      for(int c = 0;c < Lx;++c)
+      for(int c = 0;c < Lx;++c){
+
          (*this)[ Global::lat.grc2i(r,c) ].generate(Global::rgen<T>);
+
+         Normalize((*this)[ Global::lat.grc2i(r,c) ]);
+         Scal((T)D,(*this)[ Global::lat.grc2i(r,c) ]);
+
+      }
 
 }
 
@@ -148,7 +154,7 @@ T PEPS<T>::dot(const PEPS<T> &peps_i,int D_aux) const {
 
       MPS<T> mps_c(mps_b.size());
 
-      //compress using svd only
+      //compress in sweeping fashion
       mps_c.compress(D_aux,mps_b,5);
 
       mps_b = std::move(mps_c);
@@ -171,7 +177,7 @@ T PEPS<T>::dot(const PEPS<T> &peps_i,int D_aux) const {
 
       MPS<T> mps_c(mps_t.size());
 
-      //compress using svd only
+      //compress in sweeping fashion
       mps_c.compress(D_aux,mps_t,5);
 
       mps_t = std::move(mps_c);
@@ -179,6 +185,26 @@ T PEPS<T>::dot(const PEPS<T> &peps_i,int D_aux) const {
    }
 
    return mps_b.dot(mps_t);
+
+}
+
+/** 
+ * normalize the peps approximately, using a contraction with auxiliary dimension
+ * @param D_aux the auxiliary dimension
+ */
+template<typename T>
+void PEPS<T>::normalize(int D_aux){
+
+   int Lx = Global::lat.gLx();
+   int Ly = Global::lat.gLy();
+ 
+   T val = sqrt(this->dot(*this,D_aux));
+   val = pow(val,(T)1.0/(T)this->size());
+
+   //now initialize with random numbers
+   for(int r = 0;r < Ly;++r)
+      for(int c = 0;c < Lx;++c)
+         Scal(1.0/val,(*this)[ Global::lat.grc2i(r,c) ]);
 
 }
 
@@ -202,3 +228,6 @@ template double PEPS<double>::dot(const PEPS<double> &peps_i,int D_aux) const;
 
 template int PEPS<double>::gD() const;
 template int PEPS< complex<double> >::gD() const;
+
+template void PEPS<double>::normalize(int D_aux);
+template void PEPS< complex<double> >::normalize(int D_aux);
