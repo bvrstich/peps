@@ -13,6 +13,12 @@ using std::ofstream;
 #include "include.h"
 
 /** 
+ * empty constructor: just sets the length of the vector
+ */
+template<typename T>
+MPS<T>::MPS() : vector< TArray<T,3> >() { }
+
+/** 
  * constructor: just sets the length of the vector, nothing is allocates or initialized
  * @param L_in length of the chain
  */
@@ -70,13 +76,17 @@ MPS<T>::MPS(int L_in,int D_in) : vector< TArray<T,3> >(L_in) {
 /**
  * construct constructs a standard MPS object, by creating a double layer peps object
  * @param option construct mps from bottom layer (r == 0) if option == 'b', from top layer (r = Ly-1) if option == 't'
+ * from left 'l' c = 0, or right 'r' c = Lx-1
  */
 template<typename T>
-MPS<T>::MPS(char option,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< TArray<T,3> >(Global::lat.gLx()) {
+MPS<T>::MPS(char option,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< TArray<T,3> >() {
+
+   int Lx = Global::lat.gLx();
+   int Ly = Global::lat.gLy();
 
    if(option == 'b'){
 
-      int L = this->size();
+      this->resize(Lx);
 
       D = peps_1.gD() * peps_2.gD();
 
@@ -90,7 +100,7 @@ MPS<T>::MPS(char option,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< T
       (*this)[0] = tmp.reshape_clear(shape(1,D,D));
 
       //c == 1 -> L - 2
-      for(int c = 1;c < L - 1;++c){
+      for(int c = 1;c < Lx - 1;++c){
 
          Contract((T)1.0,peps_1(0,c),shape(i,j,k,l,m),peps_2(0,c),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
 
@@ -99,15 +109,14 @@ MPS<T>::MPS(char option,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< T
       }
 
       //c == L - 1
-      Contract((T)1.0,peps_1(0,L - 1),shape(i,j,k,l,m),peps_2(0,L - 1),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+      Contract((T)1.0,peps_1(0,Lx - 1),shape(i,j,k,l,m),peps_2(0,Lx - 1),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
 
-      (*this)[L - 1] = tmp.reshape_clear(shape(D,D,1));
+      (*this)[Lx - 1] = tmp.reshape_clear(shape(D,D,1));
 
    }
-   else{//top
+   else if(option == 't'){//top
 
-      int L = this->size();
-      int Ly = Global::lat.gLy();
+      this->resize(Lx);
 
       D = peps_1.gD() * peps_2.gD();
 
@@ -121,7 +130,7 @@ MPS<T>::MPS(char option,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< T
       (*this)[0] = tmp.reshape_clear(shape(1,D,D));
 
       //c == 1 -> L - 2
-      for(int c = 1;c < L - 1;++c){
+      for(int c = 1;c < Lx - 1;++c){
 
          Contract((T)1.0,peps_1(Ly-1,c),shape(i,j,k,l,m),peps_2(Ly-1,c),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
 
@@ -130,9 +139,69 @@ MPS<T>::MPS(char option,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< T
       }
 
       //c == L - 1
-      Contract((T)1.0,peps_1(Ly-1,L - 1),shape(i,j,k,l,m),peps_2(Ly-1,L - 1),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+      Contract((T)1.0,peps_1(Ly-1,Lx-1),shape(i,j,k,l,m),peps_2(Ly-1,Lx-1),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
 
-      (*this)[L - 1] = tmp.reshape_clear(shape(D,D,1));
+      (*this)[Lx-1] = tmp.reshape_clear(shape(D,D,1));
+
+   }
+   else if(option == 'l'){//left
+
+      this->resize(Ly);
+
+      D = peps_1.gD() * peps_2.gD();
+
+      enum {i,j,k,l,m,n,o,p,q};
+
+      TArray<T,8> tmp;
+
+      //r == 0
+      Contract((T)1.0,peps_1(0,0),shape(i,j,k,l,m),peps_2(0,0),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+
+      (*this)[0] = tmp.reshape_clear(shape(1,D,D));
+
+      //r == 1 -> L - 2
+      for(int r = 1;r < Ly - 1;++r){
+
+         Contract((T)1.0,peps_1(r,0),shape(i,j,k,l,m),peps_2(r,0),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+
+         (*this)[r] = tmp.reshape_clear(shape(D,D,D));
+
+      }
+
+      //r == L - 1
+      Contract((T)1.0,peps_1(Ly-1,0),shape(i,j,k,l,m),peps_2(Ly-1,0),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+
+      (*this)[Ly-1] = tmp.reshape_clear(shape(D,D,1));
+
+   }
+   else if(option == 'r'){//finally right
+
+      this->resize(Ly);
+
+      D = peps_1.gD() * peps_2.gD();
+
+      enum {i,j,k,l,m,n,o,p,q};
+
+      TArray<T,8> tmp;
+
+      //c == 0
+      Contract((T)1.0,peps_1(0,Lx-1),shape(i,j,k,l,m),peps_2(0,Lx-1),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+
+      (*this)[0] = tmp.reshape_clear(shape(1,D,D));
+
+      //c == 1 -> L - 2
+      for(int r = 1;r < Ly - 1;++r){
+
+         Contract((T)1.0,peps_1(r,Lx-1),shape(i,j,k,l,m),peps_2(r,Lx-1),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+
+         (*this)[r] = tmp.reshape_clear(shape(D,D,D));
+
+      }
+
+      //c == L - 1
+      Contract((T)1.0,peps_1(Lx-1,Ly-1),shape(i,j,k,l,m),peps_2(Lx-1,Ly-1),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+
+      (*this)[Ly-1] = tmp.reshape_clear(shape(D,D,1));
 
    }
 
@@ -172,6 +241,8 @@ int MPS<T>::gD() const {
 template<typename T>
 void MPS<T>::gemv(char uplo,const MPO<T> &mpo){
 
+   int DO = mpo.gD();
+
    int L = this->size();
 
    if(uplo == 'U'){
@@ -181,22 +252,33 @@ void MPS<T>::gemv(char uplo,const MPO<T> &mpo){
 
       enum {i,j,k,l,m,n,o,p,q};
 
+      //dimensions of the new MPS
+      int d_phys = (*this)[0].shape(1);
+      int DL = 1;
+      int DR = (*this)[0].shape(2) * mpo[0].shape(3);
+
       Contract((T)1.0,mpo[0],shape(i,j,k,l),(*this)[0],shape(m,j,n),(T)0.0,tmp,shape(m,i,k,n,l));
 
-      (*this)[0] = tmp.reshape_clear(shape(1,D,D*D));
+      (*this)[0] = tmp.reshape_clear(shape(DL,d_phys,DR));
 
       //middle sites
       for(int c = 1;c < L - 1;++c){
 
+         DL = DR;
+         DR = (*this)[c].shape(2) * mpo[c].shape(3);
+
          Contract((T)1.0,mpo[c],shape(i,j,k,l),(*this)[c],shape(m,j,n),(T)0.0,tmp,shape(m,i,k,n,l));
 
-         (*this)[c] = tmp.reshape_clear(shape(D*D,D,D*D));
+         (*this)[c] = tmp.reshape_clear(shape(DL,d_phys,DR));
 
       }
 
+      DL = DR;
+      DR = 1;
+
       Contract((T)1.0,mpo[L - 1],shape(i,j,k,l),(*this)[L - 1],shape(m,j,n),(T)0.0,tmp,shape(m,i,k,n,l));
 
-      (*this)[L - 1] = tmp.reshape_clear(shape(D*D,D,1));
+      (*this)[L - 1] = tmp.reshape_clear(shape(DL,d_phys,DR));
 
    }
    else{//L
@@ -206,26 +288,38 @@ void MPS<T>::gemv(char uplo,const MPO<T> &mpo){
 
       enum {i,j,k,l,m,n,o,p,q};
 
+      //dimensions of the new MPS
+      int d_phys = (*this)[0].shape(1);
+      int DL = 1;
+      int DR = (*this)[0].shape(2) * mpo[0].shape(3);
+
       Contract((T)1.0,mpo[0],shape(i,j,k,l),(*this)[0],shape(m,k,n),(T)0.0,tmp,shape(m,i,j,n,l));
 
-      (*this)[0] = tmp.reshape_clear(shape(1,D,D*D));
+      (*this)[0] = tmp.reshape_clear(shape(DL,d_phys,DR));
 
       //middle sites
       for(int c = 1;c < L - 1;++c){
 
+         DL = DR;
+         DR = (*this)[c].shape(2) * mpo[c].shape(3);
+
          Contract((T)1.0,mpo[c],shape(i,j,k,l),(*this)[c],shape(m,k,n),(T)0.0,tmp,shape(m,i,j,n,l));
 
-         (*this)[c] = tmp.reshape_clear(shape(D*D,D,D*D));
+         (*this)[c] = tmp.reshape_clear(shape(DL,d_phys,DR));
 
       }
 
+      DL = DR;
+      DR = 1;
+
       Contract((T)1.0,mpo[L - 1],shape(i,j,k,l),(*this)[L - 1],shape(m,k,n),(T)0.0,tmp,shape(m,i,j,n,l));
 
-      (*this)[L - 1] = tmp.reshape_clear(shape(D*D,D,1));
+      (*this)[L - 1] = tmp.reshape_clear(shape(DL,d_phys,DR));
 
    }
 
-   D *= mpo.gD();
+   //vdim is increased
+   D *= DO;
 
 }
 
@@ -635,6 +729,9 @@ template MPS< complex<double> >::MPS(int,int);
 
 template MPS<double>::MPS(int);
 template MPS< complex<double> >::MPS(int);
+
+template MPS<double>::MPS();
+template MPS< complex<double> >::MPS();
 
 template MPS<double>::MPS(const MPS<double> &);
 template MPS< complex<double> >::MPS(const MPS< complex<double> > &);

@@ -10,3 +10,4 @@ callgrind.out.*
 peps
 tags
 docs/
+test

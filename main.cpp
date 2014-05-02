@@ -31,10 +31,17 @@ int main(int argc,char *argv[]){
    //initialize the dimensions
    Global::lat.set(L,L,d);
 
-   PEPS<double> peps1(D);
-   peps1.normalize(D*D);
+   int D_aux = D*D;
 
-   PEPS<double> peps2(D);
-   peps2.normalize(D*D);
+   PEPS<double> peps(D);
+   peps.normalize(D_aux);
+
+   cout << peps.dot(peps,D_aux) << endl;
+   cout << endl;
+   cout << peps.dot(peps,D_aux) << endl;
+   cout << endl;
+
+   Heisenberg heisenberg;
+   heisenberg.construct_environment(peps,D_aux);
 
 }

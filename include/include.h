@@ -16,3 +16,4 @@
 #include "MPO.h"
 
 #include "compress.h"
+#include "Heisenberg.h"

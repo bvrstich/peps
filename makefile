@@ -15,7 +15,8 @@ CPPSRC	= main.cpp\
            MPS.cpp\
            MPO.cpp\
            compress.cpp\
-           Global.cpp
+           Global.cpp\
+           Heisenberg.cpp
 
 OBJ	= $(CPPSRC:.cpp=.o)
 

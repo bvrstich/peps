@@ -164,6 +164,8 @@ T PEPS<T>::dot(const PEPS<T> &peps_i,int D_aux) const {
    //then from top 
    MPS<T> mps_t('t',*this,peps_i);
 
+   mps_t.canonicalize(Left,false);
+
    for(int i = Global::lat.gLy() - 2;i >= Global::lat.gLy()/2;--i){
 
       //i'th row as MPO
