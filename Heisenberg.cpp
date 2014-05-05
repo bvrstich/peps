@@ -90,29 +90,6 @@ void Heisenberg::construct_environment(const PEPS<double> &peps,int D_aux){
 
    //then left layer
    l[0] = MPS<double>('l',peps,peps);
-/*
-   //make it left canonicalized
-   t[].canonicalize(Left,false);
-
-   for(int i = Ly - 2;i > 0;--i){
-
-      //i'th row as MPO
-      MPO<double> mpo(i,peps,peps);
-
-      //apply to form MPS with bond dimension D^4
-      MPS<double> tmp(t[i]);
-
-      tmp.gemv('U',mpo);
-
-      //reduce the dimensions of the edge states using thin svd
-      tmp.cut_edges();
-
-      //compress in sweeping fashion
-      t[i - 1].resize(Lx);
-      t[i - 1].compress(D_aux,tmp,5);
-
-   }
-*/
 
    //test
    for(int i = 0;i < Ly - 1;++i)
