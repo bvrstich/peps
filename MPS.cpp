@@ -155,26 +155,26 @@ MPS<T>::MPS(char option,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< T
       TArray<T,8> tmp;
 
       //r == 0
-      Contract((T)1.0,peps_1(0,0),shape(i,j,k,l,m),peps_2(0,0),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+      Contract((T)1.0,peps_1(0,0),shape(i,j,k,l,m),peps_2(0,0),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,i,n,m,q,j,o));
 
       (*this)[0] = tmp.reshape_clear(shape(1,D,D));
 
       //r == 1 -> L - 2
       for(int r = 1;r < Ly - 1;++r){
 
-         Contract((T)1.0,peps_1(r,0),shape(i,j,k,l,m),peps_2(r,0),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+         Contract((T)1.0,peps_1(r,0),shape(i,j,k,l,m),peps_2(r,0),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,i,n,m,q,j,o));
 
          (*this)[r] = tmp.reshape_clear(shape(D,D,D));
 
       }
 
       //r == L - 1
-      Contract((T)1.0,peps_1(Ly-1,0),shape(i,j,k,l,m),peps_2(Ly-1,0),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+      Contract((T)1.0,peps_1(Ly-1,0),shape(i,j,k,l,m),peps_2(Ly-1,0),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,i,n,m,q,j,o));
 
       (*this)[Ly-1] = tmp.reshape_clear(shape(D,D,1));
 
    }
-   else if(option == 'r'){//finally right
+   else{//finally right
 
       this->resize(Ly);
 
@@ -185,21 +185,21 @@ MPS<T>::MPS(char option,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< T
       TArray<T,8> tmp;
 
       //c == 0
-      Contract((T)1.0,peps_1(0,Lx-1),shape(i,j,k,l,m),peps_2(0,Lx-1),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+      Contract((T)1.0,peps_1(0,Lx-1),shape(i,j,k,l,m),peps_2(0,Lx-1),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,i,n,m,q,j,o));
 
       (*this)[0] = tmp.reshape_clear(shape(1,D,D));
 
       //c == 1 -> L - 2
       for(int r = 1;r < Ly - 1;++r){
 
-         Contract((T)1.0,peps_1(r,Lx-1),shape(i,j,k,l,m),peps_2(r,Lx-1),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+         Contract((T)1.0,peps_1(r,Lx-1),shape(i,j,k,l,m),peps_2(r,Lx-1),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,i,n,m,q,j,o));
 
          (*this)[r] = tmp.reshape_clear(shape(D,D,D));
 
       }
 
       //c == L - 1
-      Contract((T)1.0,peps_1(Lx-1,Ly-1),shape(i,j,k,l,m),peps_2(Lx-1,Ly-1),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+      Contract((T)1.0,peps_1(Lx-1,Ly-1),shape(i,j,k,l,m),peps_2(Lx-1,Ly-1),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,i,n,m,q,j,o));
 
       (*this)[Ly-1] = tmp.reshape_clear(shape(D,D,1));
 
@@ -623,6 +623,7 @@ void MPS<T>::compress(int Dc,const MPS<T> &mps,int n_iter){
       }
 
       ++iter;
+
    }
 
    this->D = Dc;

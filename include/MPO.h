@@ -24,7 +24,7 @@ class MPO : public vector< TArray<T,4> > {
    public:
 
       //constructor
-      MPO(int,const PEPS<T> &,const PEPS<T> &);
+      MPO(char,int,const PEPS<T> &,const PEPS<T> &);
 
       //copy constructor
       MPO(const MPO &);

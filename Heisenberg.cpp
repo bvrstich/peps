@@ -41,13 +41,10 @@ void Heisenberg::construct_environment(const PEPS<double> &peps,int D_aux){
    //construct bottom layer
    b[0] = MPS<double>('b',peps,peps);
 
-   //make it left canonicalized
-   b[0].canonicalize(Left,false);
-
    for(int i = 1;i < Ly - 1;++i){
 
       //i'th row as MPO
-      MPO<double> mpo(i,peps,peps);
+      MPO<double> mpo('H',i,peps,peps);
 
       MPS<double> tmp(b[i - 1]);
 
@@ -66,13 +63,10 @@ void Heisenberg::construct_environment(const PEPS<double> &peps,int D_aux){
    //then construct top layer
    t[Ly - 2] = MPS<double>('t',peps,peps);
 
-   //make it left canonicalized
-   t[Ly - 2].canonicalize(Left,false);
-
    for(int i = Ly - 2;i > 0;--i){
 
       //i'th row as MPO
-      MPO<double> mpo(i,peps,peps);
+      MPO<double> mpo('H',i,peps,peps);
 
       //apply to form MPS with bond dimension D^4
       MPS<double> tmp(t[i]);
@@ -91,8 +85,59 @@ void Heisenberg::construct_environment(const PEPS<double> &peps,int D_aux){
    //then left layer
    l[0] = MPS<double>('l',peps,peps);
 
+   for(int i = 1;i < Lx - 1;++i){
+
+      //i'th col as MPO
+      MPO<double> mpo('V',i,peps,peps);
+
+      MPS<double> tmp(l[i - 1]);
+
+      //apply to form MPS with bond dimension D^4
+      tmp.gemv('U',mpo);
+
+      //reduce the dimensions of the edge states using thin svd
+      tmp.cut_edges();
+
+      //compress in sweeping fashion
+      l[i].resize(Ly);
+      l[i].compress(D_aux,tmp,5);
+
+   }
+
+   //finally construct right layer
+   r[Lx - 2] = MPS<double>('r',peps,peps);
+
+   for(int i = Lx - 2;i > 0;--i){
+
+      //i'th row as MPO
+      MPO<double> mpo('V',i,peps,peps);
+
+      //apply to form MPS with bond dimension D^4
+      MPS<double> tmp(r[i]);
+
+      tmp.gemv('L',mpo);
+
+      //reduce the dimensions of the edge states using thin svd
+      tmp.cut_edges();
+
+      //compress in sweeping fashion
+      r[i - 1].resize(Ly);
+      r[i - 1].compress(D_aux,tmp,5);
+
+   }
+
+   cout << endl;
+   cout << "top to bottom" << endl;
+   cout << endl;
+
    //test
    for(int i = 0;i < Ly - 1;++i)
       cout << t[i].dot(b[i]) << endl;
+   cout << endl;
+   cout << "left to right" << endl;
+   cout << endl;
+
+   for(int i = 0;i < Lx - 1;++i)
+      cout << r[i].dot(l[i]) << endl;
 
 }

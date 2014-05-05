@@ -38,8 +38,6 @@ int main(int argc,char *argv[]){
 
    cout << peps.dot(peps,D_aux) << endl;
    cout << endl;
-   cout << peps.dot(peps,D_aux) << endl;
-   cout << endl;
 
    Heisenberg heisenberg;
    heisenberg.construct_environment(peps,D_aux);

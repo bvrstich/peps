@@ -138,13 +138,10 @@ T PEPS<T>::dot(const PEPS<T> &peps_i,int D_aux) const {
    //start from bottom
    MPS<T> mps_b('b',*this,peps_i);
 
-   //make it left canonicalized
-   mps_b.canonicalize(Left,false);
-
    for(int i = 1;i < Global::lat.gLy()/2;++i){
 
       //i'th row as MPO
-      MPO<T> mpo(i,*this,peps_i);
+      MPO<T> mpo('H',i,*this,peps_i);
 
       //apply to form MPS with bond dimension D^4
       mps_b.gemv('L',mpo);
@@ -164,12 +161,10 @@ T PEPS<T>::dot(const PEPS<T> &peps_i,int D_aux) const {
    //then from top 
    MPS<T> mps_t('t',*this,peps_i);
 
-   mps_t.canonicalize(Left,false);
-
    for(int i = Global::lat.gLy() - 2;i >= Global::lat.gLy()/2;--i){
 
       //i'th row as MPO
-      MPO<T> mpo(i,*this,peps_i);
+      MPO<T> mpo('H',i,*this,peps_i);
 
       //apply to form MPS with bond dimension D^4
       mps_t.gemv('U',mpo);
