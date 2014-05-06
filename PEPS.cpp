@@ -143,46 +143,52 @@ T PEPS<T>::dot(const PEPS<T> &peps_i,int D_aux) const {
       //i'th row as MPO
       MPO<T> mpo('H',i,*this,peps_i);
 
+      cout << i << "\t" << mps_b.gD() << endl;
+
       //apply to form MPS with bond dimension D^4
       mps_b.gemv('L',mpo);
 
       //reduce the dimensions of the edge states using thin svd
       mps_b.cut_edges();
 
-      MPS<T> mps_c(mps_b.size());
+      if(mps_b.gD() > D_aux){
 
-      //compress in sweeping fashion
-      mps_c.compress(D_aux,mps_b,5);
+         MPS<T> mps_c(mps_b.size());
 
-      mps_b = std::move(mps_c);
+         //compress in sweeping fashion
+         mps_c.compress(D_aux,mps_b,1);
+
+         mps_b = std::move(mps_c);
+
+      }
 
    }
-
+   /*
    //then from top 
    MPS<T> mps_t('t',*this,peps_i);
 
    for(int i = Global::lat.gLy() - 2;i >= Global::lat.gLy()/2;--i){
 
-      //i'th row as MPO
-      MPO<T> mpo('H',i,*this,peps_i);
+//i'th row as MPO
+MPO<T> mpo('H',i,*this,peps_i);
 
-      //apply to form MPS with bond dimension D^4
-      mps_t.gemv('U',mpo);
+//apply to form MPS with bond dimension D^4
+mps_t.gemv('U',mpo);
 
-      //reduce the dimensions of the edge states using thin svd
-      mps_t.cut_edges();
+//reduce the dimensions of the edge states using thin svd
+mps_t.cut_edges();
 
-      MPS<T> mps_c(mps_t.size());
+MPS<T> mps_c(mps_t.size());
 
-      //compress in sweeping fashion
-      mps_c.compress(D_aux,mps_t,5);
+//compress in sweeping fashion
+mps_c.compress(D_aux,mps_t,5);
 
-      mps_t = std::move(mps_c);
+mps_t = std::move(mps_c);
 
-   }
+}
 
-   return mps_b.dot(mps_t);
-
+return mps_b.dot(mps_t);
+    */
 }
 
 /** 
@@ -194,7 +200,7 @@ void PEPS<T>::normalize(int D_aux){
 
    int Lx = Global::lat.gLx();
    int Ly = Global::lat.gLy();
- 
+
    T val = sqrt(this->dot(*this,D_aux));
    val = pow(val,(T)1.0/(T)this->size());
 

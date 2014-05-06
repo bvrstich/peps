@@ -213,7 +213,8 @@ MPS<T>::MPS(char option,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< T
 template<typename T>
 MPS<T>::MPS(const MPS<T> &mps_copy) : vector< TArray<T,3> >(mps_copy) {
 
-   D = mps_copy.gD();
+   cout << mps_copy.gD() << endl;
+   this->D = mps_copy.gD();
 
 }
 
@@ -476,7 +477,10 @@ void MPS<T>::guess(const BTAS_SIDE &dir,int Dc,const MPS<T> &mps){
 
    }
 
-   this->D = Dc;
+   if(Dc < mps.gD())
+      this->D = Dc;
+   else
+      Dc = mps.gD();
 
 }
 

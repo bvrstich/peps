@@ -31,15 +31,22 @@ int main(int argc,char *argv[]){
    //initialize the dimensions
    Global::lat.set(L,L,d);
 
-   int D_aux = D*D;
+   int D_aux = 36;
 
    PEPS<double> peps(D);
-   peps.normalize(D_aux);
-
    cout << peps.dot(peps,D_aux) << endl;
-   cout << endl;
+   /*
+   peps.normalize(D_aux);
 
    Heisenberg heisenberg;
    heisenberg.construct_environment(peps,D_aux);
 
+   DArray<2> O(d,d);
+
+   for(int i = 0;i < d;++i)
+      for(int j = i;j < d;++j)
+         O(i,j) = Global::rgen<double>();
+
+   cout << heisenberg.local(peps,O) << endl;
+*/
 }

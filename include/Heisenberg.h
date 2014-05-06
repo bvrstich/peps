@@ -20,6 +20,10 @@ class Heisenberg {
       Heisenberg();
       
       void construct_environment(const PEPS<double> &,int D_aux);
+
+      double local(const PEPS<double> &,const DArray<2> &);
+
+      void construct_double_layer(const DArray<5> &peps,const DArray<2> &O,DArray<3> &dl);
    
    private:
 
