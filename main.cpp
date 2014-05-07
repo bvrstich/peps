@@ -34,13 +34,11 @@ int main(int argc,char *argv[]){
    int D_aux = 36;
 
    PEPS<double> peps(D);
-   cout << peps.dot(peps,D_aux) << endl;
-   /*
    peps.normalize(D_aux);
 
    Heisenberg heisenberg;
    heisenberg.construct_environment(peps,D_aux);
-
+/*
    DArray<2> O(d,d);
 
    for(int i = 0;i < d;++i)

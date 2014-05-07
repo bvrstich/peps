@@ -213,7 +213,6 @@ MPS<T>::MPS(char option,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< T
 template<typename T>
 MPS<T>::MPS(const MPS<T> &mps_copy) : vector< TArray<T,3> >(mps_copy) {
 
-   cout << mps_copy.gD() << endl;
    this->D = mps_copy.gD();
 
 }
@@ -692,37 +691,58 @@ void MPS<T>::cut_edges() {
    TArray<T,2> V;
    TArray<typename remove_complex<T>::type,1> S;
 
-   Gesvd('S','S',(*this)[0],S,U,V,D*D);
+   int i = 0;
 
-   (*this)[0] = std::move(U);
+   //easy compression
+   while( (*this)[i].shape(0)*(*this)[i].shape(1) < (*this)[i].shape(2) ){
 
-   //multiply S to V
-   Dimm(S,V);
+      U.clear();
+      S.clear();
+      V.clear();
 
-   U.clear();
+      Gesvd('S','S',(*this)[i],S,U,V,D*D);
 
-   //and contract V with mps on next site
-   Contract((T)1.0,V,shape(1),(*this)[1],shape(0),(T)0.0,U);
+      (*this)[i] = std::move(U);
 
-   (*this)[1] = std::move(U);
+      //multiply S to V
+      Dimm(S,V);
 
-   //Right
-   U.clear();
-   V.clear();
-   S.clear();
+      U.clear();
 
-   Gesvd('S','S',(*this)[L - 1],S,V,U,D*D);
+      //and contract V with mps on next site
+      Contract((T)1.0,V,shape(1),(*this)[i+1],shape(0),(T)0.0,U);
 
-   (*this)[L - 1] = std::move(U);
+      (*this)[i+1] = std::move(U);
 
-   //multiply U and S
-   Dimm(V,S);
+      ++i;
 
-   //and contract U with mps on previous site
-   U.clear();
+   }
 
-   Contract((T)1.0,(*this)[L - 2],shape(2),V,shape(0),(T)0.0,U);
-   (*this)[L - 2] = std::move(U);
+   i = L - 1;
+
+   while( (*this)[i].shape(0) > (*this)[L - 1].shape(1)*(*this)[i].shape(2) ){
+
+      //Right
+      U.clear();
+      V.clear();
+      S.clear();
+
+      Gesvd('S','S',(*this)[i],S,V,U,D*D);
+
+      (*this)[i] = std::move(U);
+
+      //multiply U and S
+      Dimm(V,S);
+
+      //and contract U with mps on previous site
+      U.clear();
+
+      Contract((T)1.0,(*this)[i-1],shape(2),V,shape(0),(T)0.0,U);
+      (*this)[i-1] = std::move(U);
+
+      --i;
+
+   }
 
 }
 

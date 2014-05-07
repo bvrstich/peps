@@ -126,6 +126,12 @@ void Heisenberg::construct_environment(const PEPS<double> &peps,int D_aux){
 
    }
 
+   for(int i = 0;i < Ly - 1;++i)
+      cout << i << "\t" << b[i].dot(t[i]) << endl;
+
+   for(int i = 0;i < Lx - 1;++i)
+      cout << i << "\t" << r[i].dot(l[i]) << endl;
+
 }
 
 /**
