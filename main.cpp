@@ -39,16 +39,6 @@ int main(int argc,char *argv[]){
    Heisenberg heisenberg;
    heisenberg.construct_environment(peps,D_aux);
 
-   DArray<2> O(d,d);
-
-   for(int i = 0;i < d;++i){
-
-      O(i,i) = 1.0;
-
-      for(int j = i+1;j < d;++j)
-         O(i,j) = 0.0;//Global::rgen<double>();
-   }
-
-   cout << heisenberg.local(peps,O) << endl;
+   cout << heisenberg.energy(peps) << endl;
 
 }

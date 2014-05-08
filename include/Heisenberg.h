@@ -28,6 +28,8 @@ class Heisenberg {
       void construct_double_layer(const DArray<5> &peps,DArray<4> &dlo);
 
       void construct_double_layer(const DArray<5> &peps,const DArray<2> &O,DArray<4> &dlo);
+
+      double energy(const PEPS<double> &);
    
    private:
 
@@ -36,6 +38,11 @@ class Heisenberg {
       vector< MPS<double> > r;
       vector< MPS<double> > t;
       vector< MPS<double> > b;
+
+      //!operators!
+      DArray<2> Sp;
+      DArray<2> Sm;
+      DArray<2> Sz;
    
 };
 
