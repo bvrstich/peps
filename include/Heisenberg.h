@@ -23,11 +23,11 @@ class Heisenberg {
 
       double local(const PEPS<double> &,const DArray<2> &);
 
-      void construct_double_layer(const DArray<5> &peps,const DArray<2> &O,DArray<3> &dls);
+      void construct_double_layer(char,const DArray<5> &peps,const DArray<2> &O,DArray<3> &dls);
 
-      void construct_double_layer(const DArray<5> &peps,DArray<4> &dlo);
+      void construct_double_layer(char,const DArray<5> &peps,DArray<4> &dlo);
 
-      void construct_double_layer(const DArray<5> &peps,const DArray<2> &O,DArray<4> &dlo);
+      void construct_double_layer(char,const DArray<5> &peps,const DArray<2> &O,DArray<4> &dlo);
 
       double energy(const PEPS<double> &);
    

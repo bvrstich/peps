@@ -199,7 +199,7 @@ MPS<T>::MPS(char option,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< T
       }
 
       //c == L - 1
-      Contract((T)1.0,peps_1(Lx-1,Ly-1),shape(i,j,k,l,m),peps_2(Lx-1,Ly-1),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,i,n,m,q,j,o));
+      Contract((T)1.0,peps_1(Ly-1,Lx-1),shape(i,j,k,l,m),peps_2(Ly-1,Lx-1),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,i,n,m,q,j,o));
 
       (*this)[Ly-1] = tmp.reshape_clear(shape(D,D,1));
 
