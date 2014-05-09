@@ -121,7 +121,7 @@ void Heisenberg::construct_environment(const PEPS<double> &peps,int D_aux){
       MPS<double> tmp(l[i - 1]);
 
       //apply to form MPS with bond dimension D^4
-      tmp.gemv('U',mpo);
+      tmp.gemv('L',mpo);
 
       //reduce the dimensions of the edge states using thin svd
       tmp.cut_edges();
@@ -143,7 +143,7 @@ void Heisenberg::construct_environment(const PEPS<double> &peps,int D_aux){
       //apply to form MPS with bond dimension D^4
       MPS<double> tmp(r[i]);
 
-      tmp.gemv('L',mpo);
+      tmp.gemv('U',mpo);
 
       //reduce the dimensions of the edge states using thin svd
       tmp.cut_edges();
@@ -1114,6 +1114,13 @@ double Heisenberg::energy(const PEPS<double> &peps){
    R[Lx - 3] = tmp.reshape_clear(shape(dlsz.shape(0),b[Ly-2][Lx - 1].shape(0)));
 
    val += Dot(Lz,R[Lx-3]);
+
+   // #################################################################
+   // ### ---- from left to right: contract in mps/mpo fashion ---- ### 
+   // #################################################################
+
+   // -- (1) -- || left column: similar to overlap calculation
+   cout << l[0][0] << endl;
 
    return val;
 

@@ -61,20 +61,20 @@ MPO<T>::MPO(char option,int rc,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : ve
       TArray<T,8> tmp;
 
       //r == 0
-      Contract((T)1.0,peps_1(0,rc),shape(i,j,k,l,m),peps_2(0,rc),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,i,n,m,q,j,o));
+      Contract((T)1.0,peps_1(0,rc),shape(i,j,k,l,m),peps_2(0,rc),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,m,q,i,n,j,o));
 
       (*this)[0] = tmp.reshape_clear(shape(1,D,D,D));
 
       //r == 1 -> L - 2
       for(int r = 1;r < Ly - 1;++r){
 
-         Contract((T)1.0,peps_1(r,rc),shape(i,j,k,l,m),peps_2(r,rc),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,i,n,m,q,j,o));
+         Contract((T)1.0,peps_1(r,rc),shape(i,j,k,l,m),peps_2(r,rc),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,m,q,i,n,j,o));
 
          (*this)[r] = tmp.reshape_clear(shape(D,D,D,D));
 
       }
 
-      Contract((T)1.0,peps_1(Ly-1,rc),shape(i,j,k,l,m),peps_2(Ly-1,rc),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,i,n,m,q,j,o));
+      Contract((T)1.0,peps_1(Ly-1,rc),shape(i,j,k,l,m),peps_2(Ly-1,rc),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,m,q,i,n,j,o));
 
       (*this)[Ly-1] = tmp.reshape_clear(shape(D,D,D,1));
 
