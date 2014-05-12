@@ -36,23 +36,13 @@ Heisenberg::Heisenberg(){
    Sp = 0.0;
    Sm = 0.0;
    Sz = 0.0;
-/*
+
    Sp(1,0) = 1.0;
 
    Sm(0,1) = 1.0;
 
    Sz(0,0) = -0.5;
    Sz(1,1) = 0.5;
-*/
-   //test
-   Sp(0,0) = 2.0;
-   Sp(1,1) = 2.0;
-
-   Sm(0,0) = 1.0;
-   Sm(1,1) = 1.0;
-
-   Sz(0,0) = 1.0;
-   Sz(1,1) = 1.0;
 
 }
 
@@ -1569,6 +1559,155 @@ double Heisenberg::energy(const PEPS<double> &peps){
       val += Dot(LOz,RO[Ly - 3]);
 
    }
+
+   // -- (3) -- || right column = Lx-1: again similar to overlap calculation
+
+   //first construct the right renormalized operators
+
+   //tmp comes out index (r,l)
+   tmp.clear();
+   Contract(1.0,r[Lx-2][Ly - 1],shape(1),l[Lx-2][Ly - 1],shape(1),0.0,tmp);
+
+   //reshape tmp to a 2-index array
+   R[Lx - 3] = tmp.reshape_clear(shape(r[Lx-2][Ly - 1].shape(0),l[Lx-2][Ly - 1].shape(0)));
+
+   //now construct the rest
+   for(int row = Ly - 2;row > 1;--row){
+
+      I.clear();
+      Contract(1.0,r[Lx-2][row],shape(2),R[row-1],shape(0),0.0,I);
+
+      R[row-2].clear();
+      Contract(1.0,I,shape(1,2),l[Lx-2][row],shape(1,2),0.0,R[row-2]);
+
+   }
+
+   //construct the left going operators on the first top site
+
+   //first S+
+   construct_double_layer('V',peps(0,Lx-1),Sp,dlsp);
+
+   //tmp comes out index (r,l)
+   Contract(1.0,dlsp,shape(1),l[Lx-2][0],shape(1),0.0,tmp);
+
+   Lp = tmp.reshape_clear(shape(dlsp.shape(2),l[Lx-2][0].shape(2)));
+
+   //then S-
+   construct_double_layer('V',peps(0,Lx-1),Sm,dlsm);
+
+   //tmp comes out index (r,l)
+   Contract(1.0,dlsm,shape(1),l[Lx-2][0],shape(1),0.0,tmp);
+
+   Lm = tmp.reshape_clear(shape(dlsm.shape(2),l[Lx-2][0].shape(2)));
+
+   //then Sz 
+   construct_double_layer('V',peps(0,Lx-1),Sz,dlsz);
+
+   //tmp comes out index (r,l)
+   Contract(1.0,dlsz,shape(1),l[Lx-2][0],shape(1),0.0,tmp);
+
+   Lz = tmp.reshape_clear(shape(dlsz.shape(2),l[Lx-2][0].shape(2)));
+
+   //and finally unity
+   Contract(1.0,r[Lx-2][0],shape(1),l[Lx-2][0],shape(1),0.0,tmp);
+
+   Lu = tmp.reshape_clear(shape(r[Lx-2][0].shape(2),l[Lx-2][0].shape(2)));
+
+   //middle of the chain:
+   for(int row = 1;row < Ly-1;++row){
+
+      //first close down the +,- and z terms from the previous site
+
+      //construct the right intermediate contraction (paste left to 'right')
+      I.clear();
+      Contract(1.0,l[Lx-2][row],shape(2),R[row - 1],shape(1),0.0,I);
+
+      // 1) construct Sm double layer
+      construct_double_layer('V',peps(row,Lx-1),Sm,dlsm);
+
+      R[row-1].clear();
+      Contract(1.0,dlsm,shape(1,2),I,shape(1,2),0.0,R[row - 1]);
+
+      //contract with left S+
+      val += 0.5 * Dot(Lp,R[row - 1]);
+
+      // 2) construct Sp double layer
+      construct_double_layer('V',peps(row,Lx-1),Sp,dlsp);
+
+      R[row-1].clear();
+      Contract(1.0,dlsp,shape(1,2),I,shape(1,2),0.0,R[row - 1]);
+
+      //contract with left S-
+      val += 0.5 * Dot(Lm,R[row - 1]);
+
+      // 3) construct Sz double layer
+      construct_double_layer('V',peps(row,Lx-1),Sz,dlsz);
+
+      R[row-1].clear();
+      Contract(1.0,dlsz,shape(1,2),I,shape(1,2),0.0,R[row - 1]);
+
+      //contract with left Sz
+      val += Dot(Lz,R[row - 1]);
+
+      //construct left renormalized operators for next site: first paste bottom to Left unity
+      I.clear();
+      Contract(1.0,Lu,shape(1),l[Lx-2][row],shape(0),0.0,I);
+
+      // 1) construct new Sm left operator
+      Lm.clear();
+      Contract(1.0,dlsm,shape(0,1),I,shape(0,1),0.0,Lm);
+
+      // 2) construct new Sp left operator
+      Lp.clear();
+      Contract(1.0,dlsp,shape(0,1),I,shape(0,1),0.0,Lp);
+
+      // 3) construct new Sz left operator
+      Lz.clear();
+      Contract(1.0,dlsz,shape(0,1),I,shape(0,1),0.0,Lz);
+
+      // 4) finally construct new unity on the left
+      Lu.clear();
+      Contract(1.0,r[Lx-2][row],shape(0,1),I,shape(0,1),0.0,Lu);
+
+   }
+
+   //finally close down on last 'right' site
+
+   //1) Sm to close down Lp
+   construct_double_layer('V',peps(Ly-1,Lx-1),Sm,dlsm);
+
+   //tmp comes out index (r,l)
+   tmp.clear();
+   Contract(1.0,dlsm,shape(1),l[Lx-2][Ly - 1],shape(1),0.0,tmp);
+
+   //reshape tmp to a 2-index array
+   R[Ly - 3] = tmp.reshape_clear(shape(dlsm.shape(0),l[Lx-2][Ly - 1].shape(0)));
+
+   val += 0.5 * Dot(Lp,R[Ly-3]);
+
+   //2) Sp to close down Lm
+   construct_double_layer('V',peps(Ly-1,Lx-1),Sp,dlsp);
+
+   //tmp comes out index (r,l)
+   tmp.clear();
+   Contract(1.0,dlsp,shape(1),l[Lx-2][Ly - 1],shape(1),0.0,tmp);
+
+   //reshape tmp to a 2-index array
+   R[Ly - 3] = tmp.reshape_clear(shape(dlsp.shape(0),l[Lx-2][Ly - 1].shape(0)));
+
+   val += 0.5 * Dot(Lm,R[Ly-3]);
+
+   //3) Sz to close down Lz
+   construct_double_layer('V',peps(Ly-1,Lx-1),Sz,dlsz);
+
+   //tmp comes out index (r,l)
+   tmp.clear();
+   Contract(1.0,dlsz,shape(1),l[Lx-2][Ly - 1],shape(1),0.0,tmp);
+
+   //reshape tmp to a 2-index array
+   R[Ly - 3] = tmp.reshape_clear(shape(dlsz.shape(0),l[Lx-2][Ly - 1].shape(0)));
+
+   val += Dot(Lz,R[Ly-3]);
 
    return val;
 

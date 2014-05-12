@@ -31,7 +31,7 @@ int main(int argc,char *argv[]){
    //initialize the dimensions
    Global::lat.set(L,L,d);
 
-   int D_aux = 36;
+   int D_aux = 64;
 
    PEPS<double> peps(D);
    peps.normalize(D_aux);
