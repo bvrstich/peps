@@ -296,12 +296,12 @@ double Heisenberg::local(const PEPS<double> &peps,const DArray<2> &O){
          I4.clear();
          Contract(1.0,t[r][c],shape(2),RO[c],shape(0),0.0,I4);
 
-         enum {i,j,k,l,m,n};
+         enum {i,j,k,m,n,o};
 
          Heisenberg::construct_double_layer('H',peps(r,c),dlo);
 
          I4bis.clear();
-         Contract(1.0,I4,shape(i,j,k,l),dlo,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,l));
+         Contract(1.0,I4,shape(i,j,k,o),dlo,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
 
          RO[c-1].clear();
          Contract(1.0,I4bis,shape(2,3),b[r-1][c],shape(1,2),0.0,RO[c-1]);
@@ -347,12 +347,12 @@ double Heisenberg::local(const PEPS<double> &peps,const DArray<2> &O){
          I4.clear();
          Contract(1.0,t[r][c],shape(2),RO[c],shape(0),0.0,I4);
 
-         enum {i,j,k,l,m,n};
+         enum {i,j,k,o,m,n};
 
          Heisenberg::construct_double_layer('H',peps(r,c),O,dlo);
 
          I4bis.clear();
-         Contract(1.0,I4,shape(i,j,k,l),dlo,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,l));
+         Contract(1.0,I4,shape(i,j,k,o),dlo,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
 
          Contract(1.0,I4bis,shape(2,3),b[r-1][c],shape(1,2),0.0,RO[c-1]);
 
@@ -365,7 +365,7 @@ double Heisenberg::local(const PEPS<double> &peps,const DArray<2> &O){
          Heisenberg::construct_double_layer('H',peps(r,c),dlo);
 
          I4bis.clear();
-         Contract(1.0,I4,shape(i,j,k,l),dlo,shape(k,i,m,n),0.0,I4bis,shape(j,n,l,m));
+         Contract(1.0,I4,shape(i,j,k,o),dlo,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
 
          LO.clear();
          Contract(1.0,I4bis,shape(2,3),b[r-1][c],shape(0,1),0.0,LO);
@@ -478,13 +478,13 @@ void Heisenberg::construct_double_layer(char option,const DArray<5> &peps,const 
 
    if(option == 'H'){
 
-      enum {i,j,k,l,m,n,o,p,q};
+      enum {i,j,k,m,n,o,p,q,s};
 
       DArray<5> tmp;
-      Contract(1.0,peps,shape(i,j,p,k,l),O,shape(p,q),0.0,tmp,shape(i,j,q,k,l));
+      Contract(1.0,peps,shape(i,j,p,k,s),O,shape(p,q),0.0,tmp,shape(i,j,q,k,s));
 
       DArray<8> tmp2;
-      Contract(1.0,tmp,shape(i,j,k,l,m),peps,shape(n,o,k,p,q),0.0,tmp2,shape(i,n,j,o,l,p,m,q));
+      Contract(1.0,tmp,shape(i,j,k,s,m),peps,shape(n,o,k,p,q),0.0,tmp2,shape(i,n,j,o,s,p,m,q));
 
       int DL = tmp2.shape(0) * tmp2.shape(1);
       int d_phys = tmp2.shape(2) * tmp2.shape(3) * tmp2.shape(4) * tmp2.shape(5);
@@ -495,13 +495,13 @@ void Heisenberg::construct_double_layer(char option,const DArray<5> &peps,const 
    }
    else{//V
 
-      enum {i,j,k,l,m,n,o,p,q};
+      enum {i,j,k,s,m,n,o,p,q};
 
       DArray<5> tmp;
-      Contract(1.0,peps,shape(i,j,p,k,l),O,shape(p,q),0.0,tmp,shape(i,j,q,k,l));
+      Contract(1.0,peps,shape(i,j,p,k,s),O,shape(p,q),0.0,tmp,shape(i,j,q,k,s));
 
       DArray<8> tmp2;
-      Contract(1.0,tmp,shape(i,j,k,l,m),peps,shape(n,o,k,p,q),0.0,tmp2,shape(l,p,i,n,m,q,j,o));
+      Contract(1.0,tmp,shape(i,j,k,s,m),peps,shape(n,o,k,p,q),0.0,tmp2,shape(s,p,i,n,m,q,j,o));
 
       int DL = tmp2.shape(0) * tmp2.shape(1);
       int d_phys = tmp2.shape(2) * tmp2.shape(3) * tmp2.shape(4) * tmp2.shape(5);
@@ -523,10 +523,10 @@ void Heisenberg::construct_double_layer(char option,const DArray<5> &peps,DArray
 
    if(option == 'H'){
 
-      enum {i,j,k,l,m,n,o,p,q};
+      enum {i,j,k,s,m,n,o,p,q};
 
       DArray<8> tmp;
-      Contract(1.0,peps,shape(i,j,k,l,m),peps,shape(n,o,k,p,q),0.0,tmp,shape(i,n,j,o,l,p,m,q));
+      Contract(1.0,peps,shape(i,j,k,s,m),peps,shape(n,o,k,p,q),0.0,tmp,shape(i,n,j,o,s,p,m,q));
 
       int DL = tmp.shape(0) * tmp.shape(1);
       int DU = tmp.shape(2) * tmp.shape(3);
@@ -538,10 +538,10 @@ void Heisenberg::construct_double_layer(char option,const DArray<5> &peps,DArray
    }
    else{//V
 
-      enum {i,j,k,l,m,n,o,p,q};
+      enum {i,j,k,s,m,n,o,p,q};
 
       DArray<8> tmp;
-      Contract(1.0,peps,shape(i,j,k,l,m),peps,shape(n,o,k,p,q),0.0,tmp,shape(l,p,m,q,i,n,j,o));
+      Contract(1.0,peps,shape(i,j,k,s,m),peps,shape(n,o,k,p,q),0.0,tmp,shape(s,p,m,q,i,n,j,o));
 
       int DL = tmp.shape(0) * tmp.shape(1);
       int DU = tmp.shape(2) * tmp.shape(3);
@@ -565,13 +565,13 @@ void Heisenberg::construct_double_layer(char option,const DArray<5> &peps,const 
 
    if(option == 'H'){
 
-      enum {i,j,k,l,m,n,o,p,q};
+      enum {i,j,k,s,m,n,o,p,q};
 
       DArray<5> tmp;
-      Contract(1.0,peps,shape(i,j,p,k,l),O,shape(p,q),0.0,tmp,shape(i,j,q,k,l));
+      Contract(1.0,peps,shape(i,j,p,k,s),O,shape(p,q),0.0,tmp,shape(i,j,q,k,s));
 
       DArray<8> tmp2;
-      Contract(1.0,tmp,shape(i,j,k,l,m),peps,shape(n,o,k,p,q),0.0,tmp2,shape(i,n,j,o,l,p,m,q));
+      Contract(1.0,tmp,shape(i,j,k,s,m),peps,shape(n,o,k,p,q),0.0,tmp2,shape(i,n,j,o,s,p,m,q));
 
       int DL = tmp2.shape(0) * tmp2.shape(1);
       int DU = tmp2.shape(2) * tmp2.shape(3);
@@ -583,13 +583,13 @@ void Heisenberg::construct_double_layer(char option,const DArray<5> &peps,const 
    }
    else{//V
 
-      enum {i,j,k,l,m,n,o,p,q};
+      enum {i,j,k,s,m,n,o,p,q};
 
       DArray<5> tmp;
-      Contract(1.0,peps,shape(i,j,p,k,l),O,shape(p,q),0.0,tmp,shape(i,j,q,k,l));
+      Contract(1.0,peps,shape(i,j,p,k,s),O,shape(p,q),0.0,tmp,shape(i,j,q,k,s));
 
       DArray<8> tmp2;
-      Contract(1.0,tmp,shape(i,j,k,l,m),peps,shape(n,o,k,p,q),0.0,tmp2,shape(l,p,m,q,i,n,j,o));
+      Contract(1.0,tmp,shape(i,j,k,s,m),peps,shape(n,o,k,p,q),0.0,tmp2,shape(s,p,m,q,i,n,j,o));
 
       int DL = tmp2.shape(0) * tmp2.shape(1);
       int DU = tmp2.shape(2) * tmp2.shape(3);
@@ -633,12 +633,12 @@ double Heisenberg::energy(const PEPS<double> &peps){
    R[Lx - 3] = tmp.reshape_clear(shape(t[0][Lx - 1].shape(0),b[0][Lx - 1].shape(0)));
 
    //now construct the rest
-   for(int c = Lx - 2;c > 1;--c){
+   for(int col = Lx - 2;col > 1;--col){
 
       I.clear();
-      Contract(1.0,t[0][c],shape(2),R[c-1],shape(0),0.0,I);
+      Contract(1.0,t[0][col],shape(2),R[col-1],shape(0),0.0,I);
 
-      Contract(1.0,I,shape(1,2),b[0][c],shape(1,2),0.0,R[c-2]);
+      Contract(1.0,I,shape(1,2),b[0][col],shape(1,2),0.0,R[col-2]);
 
    }
 
@@ -684,44 +684,44 @@ double Heisenberg::energy(const PEPS<double> &peps){
    double val = 0.0;
 
    //now for the middle terms
-   for(int c = 1;c < Lx - 1;++c){
+   for(int col = 1;col < Lx - 1;++col){
 
       //first close down the +,- and z terms from the previous site
 
       //construct the right intermediate contraction (paste top to right)
       I.clear();
-      Contract(1.0,t[0][c],shape(2),R[c - 1],shape(0),0.0,I);
+      Contract(1.0,t[0][col],shape(2),R[col - 1],shape(0),0.0,I);
 
       // 1) construct Sm double layer
-      construct_double_layer('H',peps(0,c),Sm,dlsm);
+      construct_double_layer('H',peps(0,col),Sm,dlsm);
 
-      R[c-1].clear();
-      Contract(1.0,I,shape(1,2),dlsm,shape(1,2),0.0,R[c - 1]);
+      R[col-1].clear();
+      Contract(1.0,I,shape(1,2),dlsm,shape(1,2),0.0,R[col - 1]);
 
       //contract with left S+
-      val += 0.5 * Dot(Lp,R[c - 1]);
+      val += 0.5 * Dot(Lp,R[col - 1]);
 
       // 2) then construct Sp double layer
-      construct_double_layer('H',peps(0,c),Sp,dlsp);
+      construct_double_layer('H',peps(0,col),Sp,dlsp);
 
-      R[c-1].clear();
-      Contract(1.0,I,shape(1,2),dlsp,shape(1,2),0.0,R[c - 1]);
+      R[col-1].clear();
+      Contract(1.0,I,shape(1,2),dlsp,shape(1,2),0.0,R[col - 1]);
 
       //contract with left S-
-      val += 0.5 * Dot(Lm,R[c - 1]);
+      val += 0.5 * Dot(Lm,R[col - 1]);
 
       // 3) then construct Sz double layer
-      construct_double_layer('H',peps(0,c),Sz,dlsz);
+      construct_double_layer('H',peps(0,col),Sz,dlsz);
 
-      R[c-1].clear();
-      Contract(1.0,I,shape(1,2),dlsz,shape(1,2),0.0,R[c - 1]);
+      R[col-1].clear();
+      Contract(1.0,I,shape(1,2),dlsz,shape(1,2),0.0,R[col - 1]);
 
       //contract with left Sz
-      val += Dot(Lz,R[c - 1]);
+      val += Dot(Lz,R[col - 1]);
 
       //construct left renormalized operators for next site: first paste top to Left unity
       I.clear();
-      Contract(1.0,Lu,shape(0),t[0][c],shape(0),0.0,I);
+      Contract(1.0,Lu,shape(0),t[0][col],shape(0),0.0,I);
 
       // 1) construct new Sm left operator
       Lm.clear();
@@ -737,7 +737,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
 
       // 4) finally construct new unity on the left
       Lu.clear();
-      Contract(1.0,I,shape(0,1),b[0][c],shape(0,1),0.0,Lu);
+      Contract(1.0,I,shape(0,1),b[0][col],shape(0,1),0.0,Lu);
 
    }
 
@@ -796,42 +796,42 @@ double Heisenberg::energy(const PEPS<double> &peps){
    DArray<4> dloz;
    DArray<4> dlou;
 
-   for(int r = 1;r < Ly - 1;++r){
+   for(int row = 1;row < Ly - 1;++row){
 
       //first create right renormalized operator
 
       //first site make double layer object from peps
-      Heisenberg::construct_double_layer('H',peps(r,Lx-1),dlou);
+      Heisenberg::construct_double_layer('H',peps(row,Lx-1),dlou);
 
       //paste top environment on
       DArray<5> tmp5;
-      Contract(1.0,t[r][Lx - 1],shape(1),dlou,shape(1),0.0,tmp5);
+      Contract(1.0,t[row][Lx - 1],shape(1),dlou,shape(1),0.0,tmp5);
 
       //then bottom enviroment
       DArray<6> tmp6;
-      Contract(1.0,tmp5,shape(3),b[r-1][Lx-1],shape(1),0.0,tmp6);
+      Contract(1.0,tmp5,shape(3),b[row-1][Lx-1],shape(1),0.0,tmp6);
 
       //move to a DArray<3> object
-      RO[Lx - 3] = tmp6.reshape_clear(shape(t[r][Lx - 1].shape(0),dlou.shape(0),b[r-1][Lx - 1].shape(0)));
+      RO[Lx - 3] = tmp6.reshape_clear(shape(t[row][Lx - 1].shape(0),dlou.shape(0),b[row-1][Lx - 1].shape(0)));
 
       DArray<4> I4;
       DArray<4> I4bis;
 
       //now construct the middle operators
-      for(int c = Lx-2;c > 1;--c){
+      for(int col = Lx-2;col > 1;--col){
 
          I4.clear();
-         Contract(1.0,t[r][c],shape(2),RO[c-1],shape(0),0.0,I4);
+         Contract(1.0,t[row][col],shape(2),RO[col-1],shape(0),0.0,I4);
 
-         enum {i,j,k,l,m,n};
+         enum {i,j,k,o,m,n};
 
-         Heisenberg::construct_double_layer('H',peps(r,c),dlou);
+         Heisenberg::construct_double_layer('H',peps(row,col),dlou);
 
          I4bis.clear();
-         Contract(1.0,I4,shape(i,j,k,l),dlou,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,l));
+         Contract(1.0,I4,shape(i,j,k,o),dlou,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
 
-         RO[c-2].clear();
-         Contract(1.0,I4bis,shape(2,3),b[r-1][c],shape(1,2),0.0,RO[c-2]);
+         RO[col-2].clear();
+         Contract(1.0,I4bis,shape(2,3),b[row-1][col],shape(1,2),0.0,RO[col-2]);
 
       }
 
@@ -839,192 +839,192 @@ double Heisenberg::energy(const PEPS<double> &peps){
       // --- First construct the left going operators for the first site -----
 
       // 1) S+ -- make double layer object from peps with Sp
-      Heisenberg::construct_double_layer('H',peps(r,0),Sp,dlop);
+      Heisenberg::construct_double_layer('H',peps(row,0),Sp,dlop);
 
       //paste top environment on
       tmp5.clear();
-      Contract(1.0,t[r][0],shape(1),dlop,shape(1),0.0,tmp5);
+      Contract(1.0,t[row][0],shape(1),dlop,shape(1),0.0,tmp5);
 
       //then bottom enviroment
       tmp6.clear();
-      Contract(1.0,tmp5,shape(3),b[r-1][0],shape(1),0.0,tmp6);
+      Contract(1.0,tmp5,shape(3),b[row-1][0],shape(1),0.0,tmp6);
 
       //move to a DArray<3> object: order (top-env,peps-row,bottom-env)
-      LOp = tmp6.reshape_clear(shape(t[r][0].shape(2),dlop.shape(3),b[r-1][0].shape(2)));
+      LOp = tmp6.reshape_clear(shape(t[row][0].shape(2),dlop.shape(3),b[row-1][0].shape(2)));
 
       // 2) S- -- make double layer object from peps with Sm
-      Heisenberg::construct_double_layer('H',peps(r,0),Sm,dlom);
+      Heisenberg::construct_double_layer('H',peps(row,0),Sm,dlom);
 
       //paste top environment on
       tmp5.clear();
-      Contract(1.0,t[r][0],shape(1),dlom,shape(1),0.0,tmp5);
+      Contract(1.0,t[row][0],shape(1),dlom,shape(1),0.0,tmp5);
 
       //then bottom enviroment
       tmp6.clear();
-      Contract(1.0,tmp5,shape(3),b[r-1][0],shape(1),0.0,tmp6);
+      Contract(1.0,tmp5,shape(3),b[row-1][0],shape(1),0.0,tmp6);
 
       //move to a DArray<3> object: order (top-env,peps-row,bottom-env)
-      LOm = tmp6.reshape_clear(shape(t[r][0].shape(2),dlom.shape(3),b[r-1][0].shape(2)));
+      LOm = tmp6.reshape_clear(shape(t[row][0].shape(2),dlom.shape(3),b[row-1][0].shape(2)));
 
       // 3) Sz -- make double layer object from peps with Sz
-      Heisenberg::construct_double_layer('H',peps(r,0),Sz,dloz);
+      Heisenberg::construct_double_layer('H',peps(row,0),Sz,dloz);
 
       //paste top environment on
       tmp5.clear();
-      Contract(1.0,t[r][0],shape(1),dloz,shape(1),0.0,tmp5);
+      Contract(1.0,t[row][0],shape(1),dloz,shape(1),0.0,tmp5);
 
       //then bottom enviroment
       tmp6.clear();
-      Contract(1.0,tmp5,shape(3),b[r-1][0],shape(1),0.0,tmp6);
+      Contract(1.0,tmp5,shape(3),b[row-1][0],shape(1),0.0,tmp6);
 
       //move to a DArray<3> object: order (top-env,peps-row,bottom-env)
-      LOz = tmp6.reshape_clear(shape(t[r][0].shape(2),dlom.shape(3),b[r-1][0].shape(2)));
+      LOz = tmp6.reshape_clear(shape(t[row][0].shape(2),dlom.shape(3),b[row-1][0].shape(2)));
 
       // 4) 1 -- finally construct left renormalized operator with unity
-      Heisenberg::construct_double_layer('H',peps(r,0),dlou);
+      Heisenberg::construct_double_layer('H',peps(row,0),dlou);
 
       //paste top environment on
       tmp5.clear();
-      Contract(1.0,t[r][0],shape(1),dlou,shape(1),0.0,tmp5);
+      Contract(1.0,t[row][0],shape(1),dlou,shape(1),0.0,tmp5);
 
       //then bottom enviroment
       tmp6.clear();
-      Contract(1.0,tmp5,shape(3),b[r-1][0],shape(1),0.0,tmp6);
+      Contract(1.0,tmp5,shape(3),b[row-1][0],shape(1),0.0,tmp6);
 
       //move to a DArray<3> object: order (top-env,peps-row,bottom-env)
-      LOu = tmp6.reshape_clear(shape(t[r][0].shape(2),dlou.shape(3),b[r-1][0].shape(2)));
+      LOu = tmp6.reshape_clear(shape(t[row][0].shape(2),dlou.shape(3),b[row-1][0].shape(2)));
 
       // --- now for the middle sites, close down the operators on the left and construct new ones --- 
-      for(int c = 1;c < Lx - 1;++c){
+      for(int col = 1;col < Lx - 1;++col){
 
          //first add top to the right side, put it in I4
          I4.clear();
-         Contract(1.0,t[r][c],shape(2),RO[c-1],shape(0),0.0,I4);
+         Contract(1.0,t[row][col],shape(2),RO[col-1],shape(0),0.0,I4);
 
-         enum {i,j,k,l,m,n};
+         enum {i,j,k,o,m,n};
 
          //1) close down LOp with Sm
-         Heisenberg::construct_double_layer('H',peps(r,c),Sm,dlom);
+         Heisenberg::construct_double_layer('H',peps(row,col),Sm,dlom);
 
          I4bis.clear();
-         Contract(1.0,I4,shape(i,j,k,l),dlom,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,l));
+         Contract(1.0,I4,shape(i,j,k,o),dlom,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
 
-         RO[c-1].clear();
-         Contract(1.0,I4bis,shape(2,3),b[r-1][c],shape(1,2),0.0,RO[c-1]);
+         RO[col-1].clear();
+         Contract(1.0,I4bis,shape(2,3),b[row-1][col],shape(1,2),0.0,RO[col-1]);
 
          //expectation value:
-         val += 0.5 * Dot(LOp,RO[c-1]);
+         val += 0.5 * Dot(LOp,RO[col-1]);
 
          //2) close down LOm with Sp
-         Heisenberg::construct_double_layer('H',peps(r,c),Sp,dlop);
+         Heisenberg::construct_double_layer('H',peps(row,col),Sp,dlop);
 
          I4bis.clear();
-         Contract(1.0,I4,shape(i,j,k,l),dlop,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,l));
+         Contract(1.0,I4,shape(i,j,k,o),dlop,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
 
-         RO[c-1].clear();
-         Contract(1.0,I4bis,shape(2,3),b[r-1][c],shape(1,2),0.0,RO[c-1]);
+         RO[col-1].clear();
+         Contract(1.0,I4bis,shape(2,3),b[row-1][col],shape(1,2),0.0,RO[col-1]);
 
          //expectation value:
-         val += 0.5 * Dot(LOm,RO[c-1]);
+         val += 0.5 * Dot(LOm,RO[col-1]);
 
          //3) finally close down LOz with Sz
-         Heisenberg::construct_double_layer('H',peps(r,c),Sz,dloz);
+         Heisenberg::construct_double_layer('H',peps(row,col),Sz,dloz);
 
          I4bis.clear();
-         Contract(1.0,I4,shape(i,j,k,l),dloz,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,l));
+         Contract(1.0,I4,shape(i,j,k,o),dloz,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
 
-         RO[c-1].clear();
-         Contract(1.0,I4bis,shape(2,3),b[r-1][c],shape(1,2),0.0,RO[c-1]);
+         RO[col-1].clear();
+         Contract(1.0,I4bis,shape(2,3),b[row-1][col],shape(1,2),0.0,RO[col-1]);
 
          //expectation value:
-         val += Dot(LOz,RO[c-1]);
+         val += Dot(LOz,RO[col-1]);
 
          // now construct the new left going renormalized operators
          //first attach top to left unity
          I4.clear();
-         Contract(1.0,t[r][c],shape(0),LOu,shape(0),0.0,I4);
+         Contract(1.0,t[row][col],shape(0),LOu,shape(0),0.0,I4);
 
          // 1) construct left Sp operator
          I4bis.clear();
-         Contract(1.0,I4,shape(i,j,k,l),dlop,shape(k,i,m,n),0.0,I4bis,shape(j,n,l,m));
+         Contract(1.0,I4,shape(i,j,k,o),dlop,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
 
          LOp.clear();
-         Contract(1.0,I4bis,shape(2,3),b[r-1][c],shape(0,1),0.0,LOp);
+         Contract(1.0,I4bis,shape(2,3),b[row-1][col],shape(0,1),0.0,LOp);
 
          // 2) construct left Sm operator
          I4bis.clear();
-         Contract(1.0,I4,shape(i,j,k,l),dlom,shape(k,i,m,n),0.0,I4bis,shape(j,n,l,m));
+         Contract(1.0,I4,shape(i,j,k,o),dlom,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
 
          LOm.clear();
-         Contract(1.0,I4bis,shape(2,3),b[r-1][c],shape(0,1),0.0,LOm);
+         Contract(1.0,I4bis,shape(2,3),b[row-1][col],shape(0,1),0.0,LOm);
 
          // 3) construct left Sz operator
          I4bis.clear();
-         Contract(1.0,I4,shape(i,j,k,l),dloz,shape(k,i,m,n),0.0,I4bis,shape(j,n,l,m));
+         Contract(1.0,I4,shape(i,j,k,o),dloz,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
 
          LOz.clear();
-         Contract(1.0,I4bis,shape(2,3),b[r-1][c],shape(0,1),0.0,LOz);
+         Contract(1.0,I4bis,shape(2,3),b[row-1][col],shape(0,1),0.0,LOz);
 
          // 4) finally construct new left unity
-         Heisenberg::construct_double_layer('H',peps(r,c),dlou);
+         Heisenberg::construct_double_layer('H',peps(row,col),dlou);
 
          I4bis.clear();
-         Contract(1.0,I4,shape(i,j,k,l),dlou,shape(k,i,m,n),0.0,I4bis,shape(j,n,l,m));
+         Contract(1.0,I4,shape(i,j,k,o),dlou,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
 
          LOu.clear();
-         Contract(1.0,I4bis,shape(2,3),b[r-1][c],shape(0,1),0.0,LOu);
+         Contract(1.0,I4bis,shape(2,3),b[row-1][col],shape(0,1),0.0,LOu);
 
       }
 
       //last site on the right: close down on the incomings
 
       //1) first Lp with Sm
-      Heisenberg::construct_double_layer('H',peps(r,Lx-1),Sm,dlom);
+      Heisenberg::construct_double_layer('H',peps(row,Lx-1),Sm,dlom);
 
       //paste top environment on
       tmp5.clear();
-      Contract(1.0,t[r][Lx - 1],shape(1),dlom,shape(1),0.0,tmp5);
+      Contract(1.0,t[row][Lx - 1],shape(1),dlom,shape(1),0.0,tmp5);
 
       //then bottom enviroment
       tmp6.clear();
-      Contract(1.0,tmp5,shape(3),b[r-1][Lx-1],shape(1),0.0,tmp6);
+      Contract(1.0,tmp5,shape(3),b[row-1][Lx-1],shape(1),0.0,tmp6);
 
       //move to a DArray<3> object
-      RO[Lx - 3] = tmp6.reshape_clear(shape(t[r][Lx - 1].shape(0),dlom.shape(0),b[r-1][Lx - 1].shape(0)));
+      RO[Lx - 3] = tmp6.reshape_clear(shape(t[row][Lx - 1].shape(0),dlom.shape(0),b[row-1][Lx - 1].shape(0)));
 
       //add to value
       val += 0.5 * Dot(LOp,RO[Lx - 3]);
 
       //2) then Lm with Sp
-      Heisenberg::construct_double_layer('H',peps(r,Lx-1),Sp,dlop);
+      Heisenberg::construct_double_layer('H',peps(row,Lx-1),Sp,dlop);
 
       //paste top environment on
       tmp5.clear();
-      Contract(1.0,t[r][Lx - 1],shape(1),dlop,shape(1),0.0,tmp5);
+      Contract(1.0,t[row][Lx - 1],shape(1),dlop,shape(1),0.0,tmp5);
 
       //then bottom enviroment
       tmp6.clear();
-      Contract(1.0,tmp5,shape(3),b[r-1][Lx-1],shape(1),0.0,tmp6);
+      Contract(1.0,tmp5,shape(3),b[row-1][Lx-1],shape(1),0.0,tmp6);
 
       //move to a DArray<3> object
-      RO[Lx - 3] = tmp6.reshape_clear(shape(t[r][Lx - 1].shape(0),dlop.shape(0),b[r-1][Lx - 1].shape(0)));
+      RO[Lx - 3] = tmp6.reshape_clear(shape(t[row][Lx - 1].shape(0),dlop.shape(0),b[row-1][Lx - 1].shape(0)));
 
       //add to value
       val += 0.5 * Dot(LOm,RO[Lx - 3]);
 
       //3) then Lz with Sz
-      Heisenberg::construct_double_layer('H',peps(r,Lx-1),Sz,dloz);
+      Heisenberg::construct_double_layer('H',peps(row,Lx-1),Sz,dloz);
 
       //paste top environment on
       tmp5.clear();
-      Contract(1.0,t[r][Lx - 1],shape(1),dloz,shape(1),0.0,tmp5);
+      Contract(1.0,t[row][Lx - 1],shape(1),dloz,shape(1),0.0,tmp5);
 
       //then bottom enviroment
       tmp6.clear();
-      Contract(1.0,tmp5,shape(3),b[r-1][Lx-1],shape(1),0.0,tmp6);
+      Contract(1.0,tmp5,shape(3),b[row-1][Lx-1],shape(1),0.0,tmp6);
 
       //move to a DArray<3> object
-      RO[Lx - 3] = tmp6.reshape_clear(shape(t[r][Lx - 1].shape(0),dloz.shape(0),b[r-1][Lx - 1].shape(0)));
+      RO[Lx - 3] = tmp6.reshape_clear(shape(t[row][Lx - 1].shape(0),dloz.shape(0),b[row-1][Lx - 1].shape(0)));
 
       //add to value
       val += Dot(LOz,RO[Lx - 3]);
@@ -1043,13 +1043,13 @@ double Heisenberg::energy(const PEPS<double> &peps){
    R[Lx - 3] = tmp.reshape_clear(shape(t[Ly-2][Lx - 1].shape(0),b[Ly-2][Lx - 1].shape(0)));
 
    //now construct the rest
-   for(int c = Lx - 2;c > 1;--c){
+   for(int col = Lx - 2;col > 1;--col){
 
       I.clear();
-      Contract(1.0,t[Ly-2][c],shape(2),R[c-1],shape(0),0.0,I);
+      Contract(1.0,t[Ly-2][col],shape(2),R[col-1],shape(0),0.0,I);
 
-      R[c-2].clear();
-      Contract(1.0,I,shape(1,2),b[Ly-2][c],shape(1,2),0.0,R[c-2]);
+      R[col-2].clear();
+      Contract(1.0,I,shape(1,2),b[Ly-2][col],shape(1,2),0.0,R[col-2]);
 
    }
 
@@ -1085,44 +1085,44 @@ double Heisenberg::energy(const PEPS<double> &peps){
    Lu = tmp.reshape_clear(shape(t[Ly-2][0].shape(2),b[Ly-2][0].shape(2)));
 
    //middle of the chain:
-   for(int c = 1;c < Lx-1;++c){
+   for(int col = 1;col < Lx-1;++col){
 
       //first close down the +,- and z terms from the previous site
 
       //construct the right intermediate contraction (paste bottom to right)
       I.clear();
-      Contract(1.0,b[Ly-2][c],shape(2),R[c - 1],shape(1),0.0,I);
+      Contract(1.0,b[Ly-2][col],shape(2),R[col - 1],shape(1),0.0,I);
 
       // 1) construct Sm double layer
-      construct_double_layer('H',peps(Ly-1,c),Sm,dlsm);
+      construct_double_layer('H',peps(Ly-1,col),Sm,dlsm);
 
-      R[c-1].clear();
-      Contract(1.0,dlsm,shape(1,2),I,shape(1,2),0.0,R[c - 1]);
+      R[col-1].clear();
+      Contract(1.0,dlsm,shape(1,2),I,shape(1,2),0.0,R[col - 1]);
 
       //contract with left S+
-      val += 0.5 * Dot(Lp,R[c - 1]);
+      val += 0.5 * Dot(Lp,R[col - 1]);
 
       // 2) construct Sp double layer
-      construct_double_layer('H',peps(Ly-1,c),Sp,dlsp);
+      construct_double_layer('H',peps(Ly-1,col),Sp,dlsp);
 
-      R[c-1].clear();
-      Contract(1.0,dlsp,shape(1,2),I,shape(1,2),0.0,R[c - 1]);
+      R[col-1].clear();
+      Contract(1.0,dlsp,shape(1,2),I,shape(1,2),0.0,R[col - 1]);
 
       //contract with left S-
-      val += 0.5 * Dot(Lm,R[c - 1]);
+      val += 0.5 * Dot(Lm,R[col - 1]);
 
       // 3) construct Sz double layer
-      construct_double_layer('H',peps(Ly-1,c),Sz,dlsz);
+      construct_double_layer('H',peps(Ly-1,col),Sz,dlsz);
 
-      R[c-1].clear();
-      Contract(1.0,dlsz,shape(1,2),I,shape(1,2),0.0,R[c - 1]);
+      R[col-1].clear();
+      Contract(1.0,dlsz,shape(1,2),I,shape(1,2),0.0,R[col - 1]);
 
       //contract with left Sz
-      val += Dot(Lz,R[c - 1]);
+      val += Dot(Lz,R[col - 1]);
 
       //construct left renormalized operators for next site: first paste bottom to Left unity
       I.clear();
-      Contract(1.0,Lu,shape(1),b[Ly-2][c],shape(0),0.0,I);
+      Contract(1.0,Lu,shape(1),b[Ly-2][col],shape(0),0.0,I);
 
       // 1) construct new Sm left operator
       Lm.clear();
@@ -1138,7 +1138,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
 
       // 4) finally construct new unity on the left
       Lu.clear();
-      Contract(1.0,t[Ly-2][c],shape(0,1),I,shape(0,1),0.0,Lu);
+      Contract(1.0,t[Ly-2][col],shape(0,1),I,shape(0,1),0.0,Lu);
 
    }
 
@@ -1220,7 +1220,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
    //then S-
    construct_double_layer('V',peps(0,0),Sm,dlsm);
 
-   //tmp comes out index (t,b)
+   //tmp comes out index (r,l)
    Contract(1.0,r[0][0],shape(1),dlsm,shape(1),0.0,tmp);
 
    Lm = tmp.reshape_clear(shape(r[0][0].shape(2),dlsm.shape(2)));
@@ -1228,7 +1228,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
    //then Sz 
    construct_double_layer('V',peps(0,0),Sz,dlsz);
 
-   //tmp comes out index (t,b)
+   //tmp comes out index (r,l)
    Contract(1.0,r[0][0],shape(1),dlsz,shape(1),0.0,tmp);
 
    Lz = tmp.reshape_clear(shape(r[0][0].shape(2),dlsz.shape(2)));
@@ -1243,7 +1243,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
 
       //first close down the +,- and z terms from the previous site
 
-      //construct the right intermediate contraction (paste top to right)
+      //construct the right intermediate contraction (paste 'right' to R)
       I.clear();
       Contract(1.0,r[0][row],shape(2),R[row - 1],shape(0),0.0,I);
 
@@ -1296,45 +1296,280 @@ double Heisenberg::energy(const PEPS<double> &peps){
 
    }
 
-   //last site of bottom row:close down the left +,- and z
+   //last site of left column: close down the left +,- and z
 
    //1) Sm to close down Lp
-   construct_double_layer('H',peps(0,Lx-1),Sm,dlsm);
+   construct_double_layer('V',peps(Ly-1,0),Sm,dlsm);
 
-   //tmp comes out index (t,b)
+   //tmp comes out index (r,l)
    tmp.clear();
-   Contract(1.0,t[0][Lx - 1],shape(1),dlsm,shape(1),0.0,tmp);
+   Contract(1.0,r[0][Ly - 1],shape(1),dlsm,shape(1),0.0,tmp);
 
    //reshape tmp to a 2-index array
-   R[Lx - 3] = tmp.reshape_clear(shape(t[0][Lx - 1].shape(0),dlsm.shape(0)));
+   R[Ly - 3] = tmp.reshape_clear(shape(r[0][Ly - 1].shape(0),dlsm.shape(0)));
 
-   val += 0.5 * Dot(Lp,R[Lx-3]);
+   val += 0.5 * Dot(Lp,R[Ly-3]);
 
    //2) Sp to close down Lm
-   construct_double_layer('H',peps(0,Lx-1),Sp,dlsp);
+   construct_double_layer('V',peps(Ly-1,0),Sp,dlsp);
 
-   //tmp comes out index (t,b)
+   //tmp comes out index (r,l)
    tmp.clear();
-   Contract(1.0,t[0][Lx - 1],shape(1),dlsp,shape(1),0.0,tmp);
+   Contract(1.0,r[0][Ly - 1],shape(1),dlsp,shape(1),0.0,tmp);
 
    //reshape tmp to a 2-index array
-   R[Lx - 3] = tmp.reshape_clear(shape(t[0][Lx - 1].shape(0),dlsp.shape(0)));
+   R[Ly - 3] = tmp.reshape_clear(shape(r[0][Ly - 1].shape(0),dlsp.shape(0)));
 
-   val += 0.5 * Dot(Lm,R[Lx-3]);
+   val += 0.5 * Dot(Lm,R[Ly-3]);
 
    //3) Sz to close down Lz
-   construct_double_layer('H',peps(0,Lx-1),Sz,dlsz);
+   construct_double_layer('V',peps(Ly-1,0),Sz,dlsz);
 
    //tmp comes out index (t,b)
    tmp.clear();
-   Contract(1.0,t[0][Lx - 1],shape(1),dlsz,shape(1),0.0,tmp);
+   Contract(1.0,r[0][Ly - 1],shape(1),dlsz,shape(1),0.0,tmp);
 
    //reshape tmp to a 2-index array
-   R[Lx - 3] = tmp.reshape_clear(shape(t[0][Lx - 1].shape(0),dlsz.shape(0)));
+   R[Ly - 3] = tmp.reshape_clear(shape(r[0][Ly - 1].shape(0),dlsz.shape(0)));
 
-   val += Dot(Lz,R[Lx-3]);
-*/
- 
+   val += Dot(Lz,R[Ly-3]);
+
+   // -- (2) -- now move from left to right calculating everything like an MPO/MPS expectation value
+   for(int col = 1;col < Lx - 1;++col){
+
+      //first create right renormalized operator
+
+      //first site make double layer object from peps
+      Heisenberg::construct_double_layer('V',peps(Ly-1,col),dlou);
+
+      //paste right environment on
+      DArray<5> tmp5;
+      Contract(1.0,r[col][Ly - 1],shape(1),dlou,shape(1),0.0,tmp5);
+
+      //then left enviroment
+      DArray<6> tmp6;
+      Contract(1.0,tmp5,shape(3),l[col-1][Ly-1],shape(1),0.0,tmp6);
+
+      //move to a DArray<3> object
+      RO[Lx - 3] = tmp6.reshape_clear(shape(r[col][Ly - 1].shape(0),dlou.shape(0),l[col-1][Ly - 1].shape(0)));
+
+      DArray<4> I4;
+      DArray<4> I4bis;
+
+      //now construct the middle operators
+      for(int row = Ly-2;row > 1;--row){
+
+         I4.clear();
+         Contract(1.0,r[col][row],shape(2),RO[row-1],shape(0),0.0,I4);
+
+         enum {i,j,k,o,m,n};
+
+         Heisenberg::construct_double_layer('V',peps(row,col),dlou);
+
+         I4bis.clear();
+         Contract(1.0,I4,shape(i,j,k,o),dlou,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
+
+         RO[row-2].clear();
+         Contract(1.0,I4bis,shape(2,3),l[col-1][row],shape(1,2),0.0,RO[row-2]);
+
+      }
+
+      // --- now move from left to right to get the expecation value of the interactions ---
+      // --- First construct the left going operators for the first site -----
+
+      // 1) S+ -- make double layer object from peps with Sp
+      Heisenberg::construct_double_layer('V',peps(0,col),Sp,dlop);
+
+      //paste right environment on
+      tmp5.clear();
+      Contract(1.0,r[col][0],shape(1),dlop,shape(1),0.0,tmp5);
+
+      //then left enviroment
+      tmp6.clear();
+      Contract(1.0,tmp5,shape(3),l[col-1][0],shape(1),0.0,tmp6);
+
+      //move to a DArray<3> object: order (right-env,peps-col,left-env)
+      LOp = tmp6.reshape_clear(shape(r[col][0].shape(2),dlop.shape(3),l[col-1][0].shape(2)));
+
+      // 2) S- -- make double layer object from peps with Sm
+      Heisenberg::construct_double_layer('V',peps(0,col),Sm,dlom);
+
+      //paste right environment on
+      tmp5.clear();
+      Contract(1.0,r[col][0],shape(1),dlom,shape(1),0.0,tmp5);
+
+      //then left enviroment
+      tmp6.clear();
+      Contract(1.0,tmp5,shape(3),l[col-1][0],shape(1),0.0,tmp6);
+
+      //move to a DArray<3> object: 
+      LOm = tmp6.reshape_clear(shape(r[col][0].shape(2),dlom.shape(3),l[col-1][0].shape(2)));
+
+      // 3) Sz -- make double layer object from peps with Sz
+      Heisenberg::construct_double_layer('V',peps(0,col),Sz,dloz);
+
+      //paste right environment on
+      tmp5.clear();
+      Contract(1.0,r[col][0],shape(1),dloz,shape(1),0.0,tmp5);
+
+      //then bottom enviroment
+      tmp6.clear();
+      Contract(1.0,tmp5,shape(3),l[col-1][0],shape(1),0.0,tmp6);
+
+      //move to a DArray<3> object: order (top-env,peps-row,bottom-env)
+      LOz = tmp6.reshape_clear(shape(r[col][0].shape(2),dlom.shape(3),l[col-1][0].shape(2)));
+
+      // 4) 1 -- finally construct left renormalized operator with unity
+      Heisenberg::construct_double_layer('V',peps(0,col),dlou);
+
+      //paste right environment on
+      tmp5.clear();
+      Contract(1.0,r[col][0],shape(1),dlou,shape(1),0.0,tmp5);
+
+      //then left enviroment
+      tmp6.clear();
+      Contract(1.0,tmp5,shape(3),l[col-1][0],shape(1),0.0,tmp6);
+
+      //move to a DArray<3> object: 
+      LOu = tmp6.reshape_clear(shape(r[col][0].shape(2),dlou.shape(3),l[col-1][0].shape(2)));
+
+      // --- now for the middle sites, close down the operators on the left and construct new ones --- 
+      for(int row = 1;row < Ly - 1;++row){
+
+         //first add right to the right side, put it in I4
+         I4.clear();
+         Contract(1.0,r[col][row],shape(2),RO[row-1],shape(0),0.0,I4);
+
+         enum {i,j,k,o,m,n};
+
+         //1) close down LOp with Sm
+         Heisenberg::construct_double_layer('V',peps(row,col),Sm,dlom);
+
+         I4bis.clear();
+         Contract(1.0,I4,shape(i,j,k,o),dlom,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
+
+         RO[row-1].clear();
+         Contract(1.0,I4bis,shape(2,3),l[col-1][row],shape(1,2),0.0,RO[row-1]);
+
+         //expectation value:
+         val += 0.5 * Dot(LOp,RO[row-1]);
+
+         //2) close down LOm with Sp
+         Heisenberg::construct_double_layer('V',peps(row,col),Sp,dlop);
+
+         I4bis.clear();
+         Contract(1.0,I4,shape(i,j,k,o),dlop,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
+
+         RO[row-1].clear();
+         Contract(1.0,I4bis,shape(2,3),l[col-1][row],shape(1,2),0.0,RO[row-1]);
+
+         //expectation value:
+         val += 0.5 * Dot(LOm,RO[row-1]);
+
+         //3) finally close down LOz with Sz
+         Heisenberg::construct_double_layer('V',peps(row,col),Sz,dloz);
+
+         I4bis.clear();
+         Contract(1.0,I4,shape(i,j,k,o),dloz,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
+
+         RO[row-1].clear();
+         Contract(1.0,I4bis,shape(2,3),l[col-1][row],shape(1,2),0.0,RO[row-1]);
+
+         //expectation value:
+         val += Dot(LOz,RO[row-1]);
+
+         // now construct the new left going renormalized operators
+         //first attach top to left unity
+         I4.clear();
+         Contract(1.0,r[col][row],shape(0),LOu,shape(0),0.0,I4);
+
+         // 1) construct left Sp operator
+         I4bis.clear();
+         Contract(1.0,I4,shape(i,j,k,o),dlop,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
+
+         LOp.clear();
+         Contract(1.0,I4bis,shape(2,3),l[col-1][row],shape(0,1),0.0,LOp);
+
+         // 2) construct left Sm operator
+         I4bis.clear();
+         Contract(1.0,I4,shape(i,j,k,o),dlom,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
+
+         LOm.clear();
+         Contract(1.0,I4bis,shape(2,3),l[col-1][row],shape(0,1),0.0,LOm);
+
+         // 3) construct left Sz operator
+         I4bis.clear();
+         Contract(1.0,I4,shape(i,j,k,o),dloz,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
+
+         LOz.clear();
+         Contract(1.0,I4bis,shape(2,3),l[col-1][row],shape(0,1),0.0,LOz);
+
+         // 4) finally construct new left unity
+         Heisenberg::construct_double_layer('V',peps(row,col),dlou);
+
+         I4bis.clear();
+         Contract(1.0,I4,shape(i,j,k,o),dlou,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
+
+         LOu.clear();
+         Contract(1.0,I4bis,shape(2,3),l[col-1][row],shape(0,1),0.0,LOu);
+
+      }
+
+      //last site on the right: close down on the incomings
+
+      //1) first Lp with Sm
+      Heisenberg::construct_double_layer('V',peps(Ly-1,col),Sm,dlom);
+
+      //paste right environment on
+      tmp5.clear();
+      Contract(1.0,r[col][Ly - 1],shape(1),dlom,shape(1),0.0,tmp5);
+
+      //then left enviroment
+      tmp6.clear();
+      Contract(1.0,tmp5,shape(3),l[col-1][Ly-1],shape(1),0.0,tmp6);
+
+      //move to a DArray<3> object
+      RO[Ly - 3] = tmp6.reshape_clear(shape(r[col][Ly - 1].shape(0),dlom.shape(0),l[col-1][Ly - 1].shape(0)));
+
+      //add to value
+      val += 0.5 * Dot(LOp,RO[Ly - 3]);
+
+      //2) then Lm with Sp
+      Heisenberg::construct_double_layer('V',peps(Ly-1,col),Sp,dlop);
+
+      //paste right environment on
+      tmp5.clear();
+      Contract(1.0,r[col][Ly - 1],shape(1),dlop,shape(1),0.0,tmp5);
+
+      //then bottom enviroment
+      tmp6.clear();
+      Contract(1.0,tmp5,shape(3),l[col-1][Ly-1],shape(1),0.0,tmp6);
+
+      //move to a DArray<3> object
+      RO[Ly - 3] = tmp6.reshape_clear(shape(r[col][Ly - 1].shape(0),dlop.shape(0),l[col-1][Ly - 1].shape(0)));
+
+      //add to value
+      val += 0.5 * Dot(LOm,RO[Ly - 3]);
+
+      //3) then Lz with Sz
+      Heisenberg::construct_double_layer('V',peps(Ly-1,col),Sz,dloz);
+
+      //paste top environment on
+      tmp5.clear();
+      Contract(1.0,r[col][Ly - 1],shape(1),dloz,shape(1),0.0,tmp5);
+
+      //then bottom enviroment
+      tmp6.clear();
+      Contract(1.0,tmp5,shape(3),l[col-1][Ly-1],shape(1),0.0,tmp6);
+
+      //move to a DArray<3> object
+      RO[Ly - 3] = tmp6.reshape_clear(shape(r[col][Ly - 1].shape(0),dloz.shape(0),l[col-1][Ly - 1].shape(0)));
+
+      //add to value
+      val += Dot(LOz,RO[Ly - 3]);
+
+   }
+
    return val;
 
 }
