@@ -16,7 +16,8 @@ CPPSRC	= main.cpp\
            MPO.cpp\
            compress.cpp\
            Global.cpp\
-           Heisenberg.cpp
+           Heisenberg.cpp\
+           Trotter.cpp
 
 OBJ	= $(CPPSRC:.cpp=.o)
 

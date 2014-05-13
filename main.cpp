@@ -34,11 +34,9 @@ int main(int argc,char *argv[]){
    int D_aux = 64;
 
    PEPS<double> peps(D);
-   peps.normalize(D_aux);
 
-   Heisenberg heisenberg;
-   heisenberg.construct_environment(peps,D_aux);
+   double tau = 0.01;
 
-   cout << heisenberg.energy(peps) << endl;
+   Trotter trotter(tau);
 
 }

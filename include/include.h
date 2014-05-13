@@ -17,3 +17,5 @@
 
 #include "compress.h"
 #include "Heisenberg.h"
+
+#include "Trotter.h"
