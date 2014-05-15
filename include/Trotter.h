@@ -19,23 +19,18 @@ class Trotter {
 
    public:
 
-      Trotter(double tau);
+      static void init (double tau);
 
-      Trotter(const Trotter &);
+      //!actual operators: left
+      static DArray<3> LO;
 
-      //destructor
-      virtual ~Trotter();
+      //!actual operators: right
+      static DArray<3> RO;
 
    private:
 
       //!timestep
-      double tau;
-
-      //!actual operators: left
-      DArray<3> LO;
-
-      //!actual operators: right
-      DArray<3> RO;
+      static double tau;
 
 };
 

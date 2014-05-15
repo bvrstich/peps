@@ -13,6 +13,12 @@ using std::ofstream;
 #include "include.h"
 
 /**
+ * construct an empty PEPS object, note: be sure to initialize the Lattice object before calling the constructor
+ */
+template<typename T>
+PEPS<T>::PEPS() : vector< TArray<T,5> >(Global::lat.gLx() * Global::lat.gLy()) { }
+
+/**
  * construct constructs a standard PEPS object, note: be sure to initialize the Lattice object before calling the constructor
  * @param D_in cutoff virtual dimension
  */
@@ -128,6 +134,49 @@ int PEPS<T>::gD() const {
 }
 
 /**
+ * @param D_in value to the D to
+ */
+template<typename T>
+void PEPS<T>::sD(int D_in) {
+
+   this->D = D_in;
+
+}
+
+/**
+ * initialize the peps to a antiferromagnetic D=1 structure
+ */
+template<typename T>
+void PEPS<T>::init_af() {
+
+   int Lx = Global::lat.gLx();
+   int Ly = Global::lat.gLy();
+   int d = Global::lat.gd();
+
+   //resize to D=1
+   for(int r = 0;r < Ly;++r)
+      for(int c = 0;c < Lx;++c){
+
+         (*this)[ Global::lat.grc2i(r,c) ].resize(1,1,d,1,1);
+
+         if( (r + c)%2 == 0){
+
+            (*this)[ Global::lat.grc2i(r,c) ](0,0,0,0,0) = (T) 0.0;
+            (*this)[ Global::lat.grc2i(r,c) ](0,0,1,0,0) = (T) 1.0;
+
+         }
+         else{
+
+            (*this)[ Global::lat.grc2i(r,c) ](0,0,0,0,0) = (T) 1.0;
+            (*this)[ Global::lat.grc2i(r,c) ](0,0,1,0,0) = (T) 0.0;
+
+         }
+
+      }
+
+}
+
+/**
  * @param peps_i peps to take the overlap with
  * @param D_aux auxiliary dimension of the contraction (determines the accuracy of the contraction)
  * @return the inner product of two PEPS <psi1|psi2> 
@@ -210,6 +259,9 @@ void PEPS<T>::normalize(int D_aux){
 }
 
 //forward declarations for types to be used!
+template PEPS<double>::PEPS();
+template PEPS< complex<double> >::PEPS();
+
 template PEPS<double>::PEPS(int);
 template PEPS< complex<double> >::PEPS(int);
 
@@ -229,6 +281,12 @@ template double PEPS<double>::dot(const PEPS<double> &peps_i,int D_aux) const;
 
 template int PEPS<double>::gD() const;
 template int PEPS< complex<double> >::gD() const;
+
+template void PEPS<double>::sD(int);
+template void PEPS< complex<double> >::sD(int);
+
+template void PEPS<double>::init_af();
+template void PEPS< complex<double> >::init_af();
 
 template void PEPS<double>::normalize(int D_aux);
 template void PEPS< complex<double> >::normalize(int D_aux);

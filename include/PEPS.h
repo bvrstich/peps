@@ -20,6 +20,9 @@ class PEPS : public vector< TArray<T,5> > {
 
    public:
 
+      //empty
+      PEPS();
+
       //constructor
       PEPS(int);
 
@@ -30,6 +33,10 @@ class PEPS : public vector< TArray<T,5> > {
       virtual ~PEPS();
 
       int gD() const;
+
+      void sD(int);
+
+      void init_af();
 
       const TArray<T,5> &operator()(int,int) const;
 

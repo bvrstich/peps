@@ -17,32 +17,24 @@ class Heisenberg {
 
    public:
 
-      Heisenberg();
-      
-      void construct_environment(const PEPS<double> &,int D_aux);
+      static void init();
 
-      double local(const PEPS<double> &,const DArray<2> &);
+      static double local(const PEPS<double> &,const DArray<2> &);
 
-      void construct_double_layer(char,const DArray<5> &peps,const DArray<2> &O,DArray<3> &dls);
+      static void construct_double_layer(char,const DArray<5> &peps,const DArray<2> &O,DArray<3> &dls);
 
-      void construct_double_layer(char,const DArray<5> &peps,DArray<4> &dlo);
+      static void construct_double_layer(char,const DArray<5> &peps,DArray<4> &dlo);
 
-      void construct_double_layer(char,const DArray<5> &peps,const DArray<2> &O,DArray<4> &dlo);
+      static void construct_double_layer(char,const DArray<5> &peps,const DArray<2> &O,DArray<4> &dlo);
 
-      double energy(const PEPS<double> &);
+      static double energy(const PEPS<double> &);
    
    private:
 
-      //!stores an array environment MPS's for l(eft) , r(ight), t(op) and b(ottom)
-      vector< MPS<double> > l;
-      vector< MPS<double> > r;
-      vector< MPS<double> > t;
-      vector< MPS<double> > b;
-
       //!operators!
-      DArray<2> Sp;
-      DArray<2> Sm;
-      DArray<2> Sz;
+      static DArray<2> Sp;
+      static DArray<2> Sm;
+      static DArray<2> Sz;
    
 };
 

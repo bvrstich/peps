@@ -12,11 +12,19 @@ using std::ofstream;
 
 #include "include.h"
 
+DArray<3> Trotter::LO;
+
+DArray<3> Trotter::RO;
+
+double Trotter::tau;
+
 /** 
- * constructor
+ * initialize the operators
  * @param tau timestep
  */
-Trotter::Trotter(double tau) {
+void Trotter::init(double tau_in) {
+
+   tau = tau_in;
 
    int d = Global::lat.gd();
 
@@ -43,7 +51,7 @@ Trotter::Trotter(double tau) {
    for(int i = 0;i < d*d;++i)
       for(int j = 0;j < d*d;++j){
 
-            ts_gate(i,j) = 0.0;
+         ts_gate(i,j) = 0.0;
 
          for(int k = 0;k < d*d;++k)
             ts_gate(i,j) += exp( -tau * eig(k) ) * Sij(i,k) * Sij(j,k);
@@ -90,52 +98,4 @@ Trotter::Trotter(double tau) {
 
       }
 
-   //lets test
-   vector<double> v(d*d);
-
-   for(int i = 0;i < d*d;++i)
-      v[i] = Global::rgen<double>();
-
-   //act with ts gate on it:
-   for(int i = 0;i < d*d;++i){
-
-      double ward = 0.0;
-
-      for(int j = 0;j < d*d;++j)
-         ward += ts_gate(i,j) * v[j];
-
-      cout << i << "\t" << ward << endl;
-
-   }
-
-   cout << endl;
-   for(int si = 0;si < d;++si)
-      for(int sj = 0;sj < d;++sj){
-
-         double ward = 0.0;
-
-         for(int si_ = 0;si_ < d;++si_)
-            for(int sj_ = 0;sj_ < d;++sj_){
-
-               for(int k = 0;k < d*d;++k)
-                  ward += LO(si,k,si_) * v[si_ * d + sj_] * RO(sj,k,sj_);
-
-            }
-
-         cout << si*d + sj << "\t" << ward << endl;
-
-      }
-
-
 }
-
-/**
- * copy constructor
- * @param trotter_copy input Trotter object to be copied
- */
-Trotter::Trotter(const Trotter &trotter) { }
-
-/**
- * empty destructor
- */
-Trotter::~Trotter(){ }

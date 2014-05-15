@@ -30,13 +30,25 @@ int main(int argc,char *argv[]){
 
    //initialize the dimensions
    Global::lat.set(L,L,d);
+   Environment::init();
 
    int D_aux = 64;
 
    PEPS<double> peps(D);
+   peps.normalize(D_aux);
+   
+   Environment::calc_env('A',peps,D_aux);
+   Heisenberg::energy(peps);
+   
+/*
+   peps.init_af();
+
+   cout << peps.dot(peps,D_aux) << endl;
+
+   peps.sD(D);
 
    double tau = 0.01;
 
-   Trotter trotter(tau);
-
+   Trotter::init(tau);
+*/
 }

@@ -16,6 +16,7 @@ CPPSRC	= main.cpp\
            MPO.cpp\
            compress.cpp\
            Global.cpp\
+           Environment.cpp\
            Heisenberg.cpp\
            Trotter.cpp
 

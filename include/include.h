@@ -16,6 +16,7 @@
 #include "MPO.h"
 
 #include "compress.h"
+#include "Environment.h"
 #include "Heisenberg.h"
 
 #include "Trotter.h"
