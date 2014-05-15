@@ -148,7 +148,9 @@ void PEPS<T>::sD(int D_in) {
  * @param D compressed dimensoin of the state
  */
 template<>
-void PEPS<double>::initialize_state(int D) {
+void PEPS<double>::initialize_state(int D_in) {
+
+   this->D = D_in;
 
    int Lx = Global::lat.gLx();
    int Ly = Global::lat.gLy();
@@ -257,6 +259,100 @@ void PEPS<double>::initialize_state(int D) {
 
    }
 
+   //then on the columns, i.e. vertical bonds
+   for(int c = 0;c < Lx;++c){
+
+      enum {i,j,k,l,m,n,p};
+      IVector<5> pshape;
+
+      //first the even bonds, (0,1)-(2,3),...
+      for(int r = 0;r < Ly-1;r+=2){
+
+         //left
+         pshape = (*this)[Global::lat.grc2i(r,c)].shape();
+         
+         DArray<6> tmp;
+         Contract(1.0,(*this)[Global::lat.grc2i(r,c)],shape(i,j,k,l,m),Trotter::LO,shape(n,p,k),0.0,tmp,shape(i,j,p,n,l,m));
+
+         (*this)[Global::lat.grc2i(r,c)] = tmp.reshape_clear(shape(pshape[0],pshape[1]*Trotter::LO.shape(1),d,pshape[3],pshape[4]));
+
+         //right
+         pshape = (*this)[Global::lat.grc2i(r+1,c)].shape();
+
+         Contract(1.0,Trotter::RO,shape(i,j,k),(*this)[Global::lat.grc2i(r+1,c)],shape(l,m,k,n,p),0.0,tmp,shape(l,m,i,n,j,p));
+
+         (*this)[Global::lat.grc2i(r+1,c)] = tmp.reshape_clear(shape(pshape[0],pshape[1],d,pshape[3]*Trotter::RO.shape(1),pshape[4]));
+
+         //now create 'two-site' object
+         DArray<8> ts;
+         Contract(1.0,(*this)[Global::lat.grc2i(r,c)],shape(1),(*this)[Global::lat.grc2i(r+1,c)],shape(3),0.0,ts);
+
+         //svd the fucker
+         DArray<1> S;
+         DArray<5> U;
+         DArray<5> VT;
+
+         Gesvd ('S','S', ts, S,U,VT,D);
+
+         //take the square root of the sv's
+         for(int i = 0;i < S.size();++i)
+            S(i) = sqrt(S(i));
+
+         //and multiply it left and right to the tensors
+         Dimm(U,S);
+         Dimm(S,VT);
+
+         //permute the memory the way it should be
+         Permute(U,shape(0,4,1,2,3),(*this)[Global::lat.grc2i(r,c)]);
+         Permute(VT,shape(1,2,3,0,4),(*this)[Global::lat.grc2i(r+1,c)]);
+
+      }
+
+      //then the odd bonds, (1,2)-(3,4),...
+      for(int r = 1;r < Ly-1;r+=2){
+
+         //left
+         pshape = (*this)[Global::lat.grc2i(r,c)].shape();
+         
+         DArray<6> tmp;
+         Contract(1.0,(*this)[Global::lat.grc2i(r,c)],shape(i,j,k,l,m),Trotter::LO,shape(n,p,k),0.0,tmp,shape(i,j,p,n,l,m));
+
+         (*this)[Global::lat.grc2i(r,c)] = tmp.reshape_clear(shape(pshape[0],pshape[1]*Trotter::LO.shape(1),d,pshape[3],pshape[4]));
+
+         //right
+         pshape = (*this)[Global::lat.grc2i(r+1,c)].shape();
+
+         Contract(1.0,Trotter::RO,shape(i,j,k),(*this)[Global::lat.grc2i(r+1,c)],shape(l,m,k,n,p),0.0,tmp,shape(l,m,i,n,j,p));
+
+         (*this)[Global::lat.grc2i(r+1,c)] = tmp.reshape_clear(shape(pshape[0],pshape[1],d,pshape[3]*Trotter::RO.shape(1),pshape[4]));
+
+         //now create 'two-site' object
+         DArray<8> ts;
+         Contract(1.0,(*this)[Global::lat.grc2i(r,c)],shape(1),(*this)[Global::lat.grc2i(r+1,c)],shape(3),0.0,ts);
+
+         //svd the fucker
+         DArray<1> S;
+         DArray<5> U;
+         DArray<5> VT;
+
+         Gesvd ('S','S', ts, S,U,VT,D);
+
+         //take the square root of the sv's
+         for(int i = 0;i < S.size();++i)
+            S(i) = sqrt(S(i));
+
+         //and multiply it left and right to the tensors
+         Dimm(U,S);
+         Dimm(S,VT);
+
+         //permute the memory the way it should be
+         Permute(U,shape(0,4,1,2,3),(*this)[Global::lat.grc2i(r,c)]);
+         Permute(VT,shape(1,2,3,0,4),(*this)[Global::lat.grc2i(r+1,c)]);
+
+      }
+
+   }
+
 }
 
 /**
@@ -286,7 +382,7 @@ T PEPS<T>::dot(const PEPS<T> &peps_i,int D_aux) const {
          MPS<T> mps_c(mps_b.size());
 
          //compress in sweeping fashion
-         mps_c.compress(D_aux,mps_b,5);
+         mps_c.compress(D_aux,mps_b,1);
 
          mps_b = std::move(mps_c);
 

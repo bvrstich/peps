@@ -27,6 +27,7 @@ int main(int argc,char *argv[]){
    int L = atoi(argv[1]);//dimension of the lattice: LxL
    int d = atoi(argv[2]);//physical dimension
    int D = atoi(argv[3]);//virtual dimension
+   int D_aux = atoi(argv[4]);//auxiliary dimension for the contraction
 
    double tau = 0.01;
 
@@ -36,20 +37,15 @@ int main(int argc,char *argv[]){
    Heisenberg::init();
    Trotter::init(tau);
 
-   int D_aux = 64;
-
    PEPS<double> peps;
-   
    peps.initialize_state(D);
-   cout << peps << endl;
-/*
+   
    peps.normalize(D_aux);
 
    Environment::calc_env('A',peps,D_aux);
+
    cout << Heisenberg::energy(peps) << endl;
 
-   cout << peps.dot(peps,D_aux) << endl;
-
    peps.sD(D);
-*/
+
 }
