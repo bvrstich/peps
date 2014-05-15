@@ -144,10 +144,11 @@ void PEPS<T>::sD(int D_in) {
 }
 
 /**
- * initialize the peps to a antiferromagnetic D=1 structure
+ * initialize the peps to an antiferromagnetic D=1 structure, where one time step has been acted on, and compressed to dimension D if necessary
+ * @param D compressed dimensoin of the state
  */
-template<typename T>
-void PEPS<T>::init_af() {
+template<>
+void PEPS<double>::initialize_state(int D) {
 
    int Lx = Global::lat.gLx();
    int Ly = Global::lat.gLy();
@@ -161,18 +162,100 @@ void PEPS<T>::init_af() {
 
          if( (r + c)%2 == 0){
 
-            (*this)[ Global::lat.grc2i(r,c) ](0,0,0,0,0) = (T) 0.0;
-            (*this)[ Global::lat.grc2i(r,c) ](0,0,1,0,0) = (T) 1.0;
+            (*this)[ Global::lat.grc2i(r,c) ](0,0,0,0,0) = 0.0;
+            (*this)[ Global::lat.grc2i(r,c) ](0,0,1,0,0) = 1.0;
 
          }
          else{
 
-            (*this)[ Global::lat.grc2i(r,c) ](0,0,0,0,0) = (T) 1.0;
-            (*this)[ Global::lat.grc2i(r,c) ](0,0,1,0,0) = (T) 0.0;
+            (*this)[ Global::lat.grc2i(r,c) ](0,0,0,0,0) = 1.0;
+            (*this)[ Global::lat.grc2i(r,c) ](0,0,1,0,0) = 0.0;
 
          }
 
       }
+
+   //now act the trotter gates on perform simple svd
+
+   //first on the rows, i.e. horizontal
+   for(int r = 0;r < Ly;++r){
+
+      enum {i,j,k,l,m,n,p};
+      IVector<5> pshape;
+
+      //first the even bonds, (0,1)-(2,3),...
+      for(int c = 0;c < Lx-1;c+=2){
+
+         //left
+         pshape = (*this)[Global::lat.grc2i(r,c)].shape();
+
+         DArray<6> tmp;
+         Contract(1.0,(*this)[Global::lat.grc2i(r,c)],shape(i,j,k,l,m),Trotter::LO,shape(n,p,k),0.0,tmp,shape(i,j,n,l,m,p));
+
+         (*this)[Global::lat.grc2i(r,c)] = tmp.reshape_clear(shape(pshape[0],pshape[1],d,pshape[3],pshape[4]*Trotter::LO.shape(1)));
+
+         //right
+         pshape = (*this)[Global::lat.grc2i(r,c+1)].shape();
+
+         Contract(1.0,Trotter::RO,shape(i,j,k),(*this)[Global::lat.grc2i(r,c+1)],shape(l,m,k,n,p),0.0,tmp,shape(l,j,m,i,n,p));
+
+         (*this)[Global::lat.grc2i(r,c+1)] = tmp.reshape_clear(shape(pshape[0]*Trotter::RO.shape(1),pshape[1],d,pshape[3],pshape[4]));
+
+         //now create 'two-site' object
+         DArray<8> ts;
+         Contract(1.0,(*this)[Global::lat.grc2i(r,c)],shape(4),(*this)[Global::lat.grc2i(r,c+1)],shape(0),0.0,ts);
+
+         //svd the fucker
+         DArray<1> S;
+         Gesvd ('S','S', ts, S,(*this)[Global::lat.grc2i(r,c)],(*this)[Global::lat.grc2i(r,c+1)],D);
+
+         //take the square root of the sv's
+         for(int i = 0;i < S.size();++i)
+            S(i) = sqrt(S(i));
+
+         //and multiply it left and right to the tensors
+         Dimm(S,(*this)[Global::lat.grc2i(r,c+1)]);
+         Dimm((*this)[Global::lat.grc2i(r,c)],S);
+
+      }
+
+      //then the odd bonds, (1,2)-(3,4),...
+      for(int c = 1;c < Lx-1;c+=2){
+
+         //left
+         pshape = (*this)[Global::lat.grc2i(r,c)].shape();
+
+         DArray<6> tmp;
+         Contract(1.0,(*this)[Global::lat.grc2i(r,c)],shape(i,j,k,l,m),Trotter::LO,shape(n,p,k),0.0,tmp,shape(i,j,n,l,m,p));
+
+         (*this)[Global::lat.grc2i(r,c)] = tmp.reshape_clear(shape(pshape[0],pshape[1],d,pshape[3],pshape[4]*Trotter::LO.shape(1)));
+
+         //right
+         pshape = (*this)[Global::lat.grc2i(r,c+1)].shape();
+
+         Contract(1.0,Trotter::RO,shape(i,j,k),(*this)[Global::lat.grc2i(r,c+1)],shape(l,m,k,n,p),0.0,tmp,shape(l,j,m,i,n,p));
+
+         (*this)[Global::lat.grc2i(r,c+1)] = tmp.reshape_clear(shape(pshape[0]*Trotter::RO.shape(1),pshape[1],d,pshape[3],pshape[4]));
+
+         //now create 'two-site' object
+         DArray<8> ts;
+         Contract(1.0,(*this)[Global::lat.grc2i(r,c)],shape(4),(*this)[Global::lat.grc2i(r,c+1)],shape(0),0.0,ts);
+
+         //svd the fucker
+         DArray<1> S;
+         Gesvd ('S','S', ts, S,(*this)[Global::lat.grc2i(r,c)],(*this)[Global::lat.grc2i(r,c+1)],D);
+
+         //take the square root of the sv's
+         for(int i = 0;i < S.size();++i)
+            S(i) = sqrt(S(i));
+
+         //and multiply it left and right to the tensors
+         Dimm(S,(*this)[Global::lat.grc2i(r,c+1)]);
+         Dimm((*this)[Global::lat.grc2i(r,c)],S);
+
+      }
+
+   }
 
 }
 
@@ -284,9 +367,6 @@ template int PEPS< complex<double> >::gD() const;
 
 template void PEPS<double>::sD(int);
 template void PEPS< complex<double> >::sD(int);
-
-template void PEPS<double>::init_af();
-template void PEPS< complex<double> >::init_af();
 
 template void PEPS<double>::normalize(int D_aux);
 template void PEPS< complex<double> >::normalize(int D_aux);

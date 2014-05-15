@@ -28,27 +28,28 @@ int main(int argc,char *argv[]){
    int d = atoi(argv[2]);//physical dimension
    int D = atoi(argv[3]);//virtual dimension
 
-   //initialize the dimensions
+   double tau = 0.01;
+
+   //initialize some statics dimensions
    Global::lat.set(L,L,d);
    Environment::init();
+   Heisenberg::init();
+   Trotter::init(tau);
 
    int D_aux = 64;
 
-   PEPS<double> peps(D);
-   peps.normalize(D_aux);
+   PEPS<double> peps;
    
-   Environment::calc_env('A',peps,D_aux);
-   Heisenberg::energy(peps);
-   
+   peps.initialize_state(D);
+   cout << peps << endl;
 /*
-   peps.init_af();
+   peps.normalize(D_aux);
+
+   Environment::calc_env('A',peps,D_aux);
+   cout << Heisenberg::energy(peps) << endl;
 
    cout << peps.dot(peps,D_aux) << endl;
 
    peps.sD(D);
-
-   double tau = 0.01;
-
-   Trotter::init(tau);
 */
 }

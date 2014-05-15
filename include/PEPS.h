@@ -36,7 +36,7 @@ class PEPS : public vector< TArray<T,5> > {
 
       void sD(int);
 
-      void init_af();
+      void initialize_state(int);
 
       const TArray<T,5> &operator()(int,int) const;
 
