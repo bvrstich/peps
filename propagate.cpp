@@ -60,7 +60,65 @@ namespace propagate {
 
       }
 
-      cout << R[0] << endl;
+      //now construct the reduced tensors of the pair to propagate
+      DArray<4> Q;
+      DArray<3> a_L;
+
+      construct_reduced_tensor('L',peps(0,0),Q,a_L);
+
+   }
+
+   /**
+    * construct the left or right reduced tensor form of a peps element by performing QR or LQ decomposition
+    * @param L == left, R == right
+    */
+   void construct_reduced_tensor(char option,DArray<5> &peps,DArray<4> &Q,DArray<3> &red){
+
+      if(option == 'L'){
+
+         DArray<5> tmp;
+         Permute(peps,shape(0,1,3,2,4),tmp);
+
+         cout << tmp << endl;
+
+         int nrows = tmp.shape(0) * tmp.shape(1) * tmp.shape(2);
+         int ncols = tmp.shape(3) * tmp.shape(4);
+
+         int min = std::min(nrows,ncols);
+
+         double* tau = new double [min];
+
+         lapack::geqrf(CblasRowMajor,nrows,ncols, tmp.data(), ncols, tau);
+
+         red.resize(shape(min,tmp.shape(3),tmp.shape(4)));
+         Q.resize(tmp.shape(0),tmp.shape(1),tmp.shape(2),min);
+
+         //r is in the upper diagonal part of tmp on exit of geqrf:
+         for(int i = 0;i < min;++i)
+            for(int j = i;j < ncols;++j)
+               red.data()[i*ncols + j] = tmp.data()[i*ncols + j];
+
+         //get the input for the Q construction function: lower diagonal part of the matrix
+         for(int i = 0;i < nrows;++i)
+            for(int j = 0;j < min;++j)
+               Q.data()[i*min + j] = tmp.data()[i*ncols + j];
+
+         //now get the Q matrix out
+         if(nrows < ncols)
+            lapack::orgqr(CblasRowMajor, nrows, nrows, min,Q.data(), nrows, tau);
+         else
+            lapack::orgqr(CblasRowMajor, nrows, ncols, min,Q.data(), ncols, tau);
+
+         tmp.clear();
+         Contract(1.0,Q,shape(3),red,shape(0),0.0,tmp);
+         cout << tmp << endl;
+
+         delete [] tau;
+
+      }
+      else{
+
+      }
 
    }
 
