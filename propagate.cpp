@@ -79,8 +79,6 @@ namespace propagate {
          DArray<5> tmp;
          Permute(peps,shape(0,1,3,2,4),tmp);
 
-         cout << tmp << endl;
-
          int nrows = tmp.shape(0) * tmp.shape(1) * tmp.shape(2);
          int ncols = tmp.shape(3) * tmp.shape(4);
 
@@ -109,14 +107,50 @@ namespace propagate {
          else
             lapack::orgqr(CblasRowMajor, nrows, ncols, min,Q.data(), ncols, tau);
 
-         tmp.clear();
-         Contract(1.0,Q,shape(3),red,shape(0),0.0,tmp);
-         cout << tmp << endl;
-
          delete [] tau;
 
       }
-      else{
+      else{//LQ
+
+         DArray<5> tmp;
+         Permute(peps,shape(0,2,1,3,4),tmp);
+
+         cout << tmp << endl;
+
+         int nrows = tmp.shape(0) * tmp.shape(1);
+         int ncols = tmp.shape(2) * tmp.shape(3) * tmp.shape(4);
+
+         int min = std::min(nrows,ncols);
+
+         double* tau = new double [min];
+
+         lapack::gelqf(CblasRowMajor,nrows,ncols,tmp.data(),ncols,tau);
+
+         red.resize(shape(tmp.shape(0),tmp.shape(1),min));
+         Q.resize(min,tmp.shape(2),tmp.shape(3),tmp.shape(4));
+
+         //l is in the lower diagonal part of tmp on exit of geqrf:
+         for(int j = 0;j < ncols;++j)
+            for(int i = j;i < nrows;++i)
+               red.data()[i*min + j] = tmp.data()[i*ncols + j];
+
+         //get the input for the Q construction function: upper diagonal part of the matrix
+         for(int i = 0;i < min;++i)
+            for(int j = 0;j < ncols;++j)
+               Q.data()[i*ncols + j] = tmp.data()[i*ncols + j];
+
+         //now get the Q matrix out
+         if(nrows > ncols)
+            lapack::orglq(CblasRowMajor,ncols,ncols,min,Q.data(),ncols,tau);
+         else
+            lapack::orglq(CblasRowMajor,nrows,ncols,min,Q.data(),ncols,tau);
+
+         tmp.clear();
+         Contract(1.0,red,shape(2),Q,shape(0),0.0,tmp);
+
+         cout << tmp << endl;
+
+         delete [] tau;
 
       }
 
