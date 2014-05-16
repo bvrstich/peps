@@ -12,6 +12,8 @@ namespace propagate {
 
    void construct_reduced_tensor(char,DArray<5> &,DArray<4> &,DArray<3> &);
 
+   void construct_double_layer(DArray<4> &,DArray<5> &);
+
 }
 
 #endif

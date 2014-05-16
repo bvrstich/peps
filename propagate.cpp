@@ -26,6 +26,7 @@ namespace propagate {
       int Ly = Global::lat.gLy();
 
       int d = Global::lat.gd();
+      int D = peps.gD();
 
       // ##################################################### //
       // first propagate applying the gates from bottom to top //
@@ -65,6 +66,10 @@ namespace propagate {
       DArray<3> a_L;
 
       construct_reduced_tensor('L',peps(0,0),Q,a_L);
+
+      //make a 'double layer' object out of Q for contraction with environment
+      DArray<5> dlQ;
+      construct_double_layer(Q,dlQ);
 
    }
 
@@ -145,14 +150,36 @@ namespace propagate {
          else
             lapack::orglq(CblasRowMajor,nrows,ncols,min,Q.data(),ncols,tau);
 
-         tmp.clear();
-         Contract(1.0,red,shape(2),Q,shape(0),0.0,tmp);
-
-         cout << tmp << endl;
-
          delete [] tau;
 
       }
+
+   }
+
+   /**
+    * construct a double layer object out of a Q coming from a reduced tensor construction.
+    * keep one leg, the one pointing to the reduced tensor, not doubled.
+    * @param Q input object
+    * @param dlQ output object
+    */
+   void construct_double_layer(DArray<4> &Q,DArray<5> &dlQ){
+
+      //first outer product of Q
+      DArray<8> tmp;
+      Ger(1.0,Q,Q,tmp);
+
+      DArray<8> reorder;
+
+      Permute(tmp,shape(0,4,1,5,2,6,3,7),reorder);
+
+      //and move it to dlQ
+      int d0 = reorder.shape(0) * reorder.shape(1);
+      int d1 = reorder.shape(2) * reorder.shape(3);
+      int d2 = reorder.shape(4) * reorder.shape(5);
+      int d3 = reorder.shape(6);
+      int d4 = reorder.shape(7);
+
+      dlQ = reorder.reshape_clear(shape(d0,d1,d2,d3,d4));
 
    }
 
