@@ -179,3 +179,124 @@ void Environment::test_env(){
    cout << endl;
 
 }
+
+/**
+ * construct the enviroment for a specific row/column of the input PEPS, it is assumed that 
+ * all prerequisites for the construction of the environment are there!
+ * @param option if 'L' construct full left environment
+ *               if 'R' construct full right environment
+ *               if 'T' construct full top environment
+ *               if 'B' construct full bottom environment
+ * @param rc row or column index for the L,R,T or B environment to be constructed
+ * @param peps input PEPS<double>
+ * @param D_aux dimension to which environment will be compressed
+ */
+void Environment::calc_env(char option,int rc,const PEPS<double> &peps,int D_aux){
+
+   int Lx = Global::lat.gLx();
+   int Ly = Global::lat.gLy();
+
+   int d = Global::lat.gd();
+
+   if(option == 'B'){
+
+      //construct bottom layer
+      if(rc == 0)
+         b[0] = MPS<double>('b',peps,peps);
+      else{
+
+         //i'th row as MPO
+         MPO<double> mpo('H',rc,peps,peps);
+
+         MPS<double> tmp(b[rc - 1]);
+
+         //apply to form MPS with bond dimension D^4
+         tmp.gemv('L',mpo);
+
+         //reduce the dimensions of the edge states using thin svd
+         tmp.cut_edges();
+
+         //compress in sweeping fashion
+         b[rc].resize(Lx);
+         b[rc].compress(D_aux,tmp,5);
+
+      }
+
+   }
+   else if(option == 'T'){
+/*
+      //then construct top layer
+      t[Ly - 2] = MPS<double>('t',peps,peps);
+
+      for(int i = Ly - 2;i > 0;--i){
+
+         //i'th row as MPO
+         MPO<double> mpo('H',i,peps,peps);
+
+         //apply to form MPS with bond dimension D^4
+         MPS<double> tmp(t[i]);
+
+         tmp.gemv('U',mpo);
+
+         //reduce the dimensions of the edge states using thin svd
+         tmp.cut_edges();
+
+         //compress in sweeping fashion
+         t[i - 1].resize(Lx);
+         t[i - 1].compress(D_aux,tmp,5);
+
+      }
+*/
+   }
+   else if(option == 'L'){
+/*
+      //then left layer
+      l[0] = MPS<double>('l',peps,peps);
+
+      for(int i = 1;i < Lx - 1;++i){
+
+         //i'th col as MPO
+         MPO<double> mpo('V',i,peps,peps);
+
+         MPS<double> tmp(l[i - 1]);
+
+         //apply to form MPS with bond dimension D^4
+         tmp.gemv('L',mpo);
+
+         //reduce the dimensions of the edge states using thin svd
+         tmp.cut_edges();
+
+         //compress in sweeping fashion
+         l[i].resize(Ly);
+         l[i].compress(D_aux,tmp,5);
+
+      }
+*/
+   }
+   else{//option == R
+/*
+      //finally construct right layer
+      r[Lx - 2] = MPS<double>('r',peps,peps);
+
+      for(int i = Lx - 2;i > 0;--i){
+
+         //i'th row as MPO
+         MPO<double> mpo('V',i,peps,peps);
+
+         //apply to form MPS with bond dimension D^4
+         MPS<double> tmp(r[i]);
+
+         tmp.gemv('U',mpo);
+
+         //reduce the dimensions of the edge states using thin svd
+         tmp.cut_edges();
+
+         //compress in sweeping fashion
+         r[i - 1].resize(Ly);
+         r[i - 1].compress(D_aux,tmp,5);
+
+      }
+*/
+   }
+
+}

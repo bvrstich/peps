@@ -42,10 +42,6 @@ int main(int argc,char *argv[]){
    
    peps.normalize(D_aux);
 
-   Environment::calc_env('A',peps,D_aux);
-
-   cout << Heisenberg::energy(peps) << endl;
-
-   peps.sD(D);
+   propagate::step(peps,D_aux);
 
 }

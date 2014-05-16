@@ -18,7 +18,8 @@ CPPSRC	= main.cpp\
            Global.cpp\
            Environment.cpp\
            Heisenberg.cpp\
-           Trotter.cpp
+           Trotter.cpp\
+           propagate.cpp
 
 OBJ	= $(CPPSRC:.cpp=.o)
 

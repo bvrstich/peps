@@ -20,3 +20,4 @@
 #include "Heisenberg.h"
 
 #include "Trotter.h"
+#include "propagate.h"
