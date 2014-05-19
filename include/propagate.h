@@ -16,6 +16,8 @@ namespace propagate {
 
    void get_X(DArray<4> &,DArray<3> &);
 
+   void invert(DArray<2> &);
+
 }
 
 #endif
