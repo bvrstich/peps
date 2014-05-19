@@ -42,22 +42,22 @@ namespace propagate {
       Environment::calc_env('B',0,peps,D_aux);
 
       //first the rightmost operator
-      DArray<4> tmp;
-      DArray<3> I;
+      DArray<4> tmp4;
+      DArray<3> tmp3;
 
       //tmp comes out index (t,b)
-      Contract(1.0,Environment::t[0][Lx - 1],shape(1),Environment::b[0][Lx - 1],shape(1),0.0,tmp);
+      Contract(1.0,Environment::t[0][Lx - 1],shape(1),Environment::b[0][Lx - 1],shape(1),0.0,tmp4);
 
       //reshape tmp to a 2-index array
-      R[Lx - 3] = tmp.reshape_clear(shape(Environment::t[0][Lx - 1].shape(0),Environment::b[0][Lx - 1].shape(0)));
+      R[Lx - 3] = tmp4.reshape_clear(shape(Environment::t[0][Lx - 1].shape(0),Environment::b[0][Lx - 1].shape(0)));
 
       //now construct the rest
       for(int col = Lx - 2;col > 1;--col){
 
-         I.clear();
-         Contract(1.0,Environment::t[0][col],shape(2),R[col-1],shape(0),0.0,I);
+         tmp3.clear();
+         Contract(1.0,Environment::t[0][col],shape(2),R[col-1],shape(0),0.0,tmp3);
 
-         Contract(1.0,I,shape(1,2),Environment::b[0][col],shape(1,2),0.0,R[col-2]);
+         Contract(1.0,tmp3,shape(1,2),Environment::b[0][col],shape(1,2),0.0,R[col-2]);
 
       }
 
@@ -65,11 +65,51 @@ namespace propagate {
       DArray<4> Q;
       DArray<3> a_L;
 
+      //Left
       construct_reduced_tensor('L',peps(0,0),Q,a_L);
 
       //make a 'double layer' object out of Q for contraction with environment
       DArray<5> dlQ;
-      construct_double_layer(Q,dlQ);
+      construct_double_layer('L',Q,dlQ);
+
+      //for this one only top contraction is needed:
+      DArray<6> tmp6;
+      Contract(1.0,Environment::t[0][0],shape(1),dlQ,shape(1),0.0,tmp6);
+
+      //construct the 'Left' eff environment
+      DArray<3> L_env = tmp6.reshape_clear(shape(Environment::t[0][0].shape(2),dlQ.shape(3),dlQ.shape(4)));
+
+      //Right
+      DArray<3> a_R;
+      construct_reduced_tensor('R',peps(0,1),Q,a_R);
+
+      //make a 'double layer' object out of Q for contraction with environment
+      construct_double_layer('R',Q,dlQ);
+
+      //contract with right renormalized operator:
+      tmp3.clear();
+      Contract(1.0,Environment::t[0][1],shape(2),R[0],shape(0),0.0,tmp3);
+
+      //to construct the R_environment
+      tmp4.clear();
+      Contract(1.0,tmp3,shape(1,2),dlQ,shape(2,4),0.0,tmp4);
+
+      //construct the 'Right' eff environment
+      DArray<3> R_env = tmp4.reshape_clear(shape(tmp4.shape(0),tmp4.shape(1),tmp4.shape(2)));
+
+      //now contract left and right environment to form N_eff
+      DArray<4> N_eff;
+
+      {
+         enum {i,j,k,l,m};
+         Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,l,m),0.0,N_eff,shape(j,l,k,m));
+      }
+
+      //now get the 'X' matrix:
+      DArray<3> X;
+
+      get_X(N_eff,X);
+
 
    }
 
@@ -120,8 +160,6 @@ namespace propagate {
          DArray<5> tmp;
          Permute(peps,shape(0,2,1,3,4),tmp);
 
-         cout << tmp << endl;
-
          int nrows = tmp.shape(0) * tmp.shape(1);
          int ncols = tmp.shape(2) * tmp.shape(3) * tmp.shape(4);
 
@@ -159,27 +197,91 @@ namespace propagate {
    /**
     * construct a double layer object out of a Q coming from a reduced tensor construction.
     * keep one leg, the one pointing to the reduced tensor, not doubled.
+    * @param option 'L'eft or 'R'ight
     * @param Q input object
     * @param dlQ output object
     */
-   void construct_double_layer(DArray<4> &Q,DArray<5> &dlQ){
+   void construct_double_layer(char option,DArray<4> &Q,DArray<5> &dlQ){
 
       //first outer product of Q
       DArray<8> tmp;
       Ger(1.0,Q,Q,tmp);
 
-      DArray<8> reorder;
+      if(option == 'L'){
 
-      Permute(tmp,shape(0,4,1,5,2,6,3,7),reorder);
+         DArray<8> reorder;
+         Permute(tmp,shape(0,4,1,5,2,6,3,7),reorder);
 
-      //and move it to dlQ
-      int d0 = reorder.shape(0) * reorder.shape(1);
-      int d1 = reorder.shape(2) * reorder.shape(3);
-      int d2 = reorder.shape(4) * reorder.shape(5);
-      int d3 = reorder.shape(6);
-      int d4 = reorder.shape(7);
+         //and move it to dlQ
+         int d0 = reorder.shape(0) * reorder.shape(1);
+         int d1 = reorder.shape(2) * reorder.shape(3);
+         int d2 = reorder.shape(4) * reorder.shape(5);
+         int d3 = reorder.shape(6);
+         int d4 = reorder.shape(7);
 
-      dlQ = reorder.reshape_clear(shape(d0,d1,d2,d3,d4));
+         dlQ = reorder.reshape_clear(shape(d0,d1,d2,d3,d4));
+
+      }
+      else{
+
+         DArray<8> reorder;
+         Permute(tmp,shape(0,4,1,5,2,6,3,7),reorder);
+
+         //and move it to dlQ
+         int d0 = reorder.shape(0);
+         int d1 = reorder.shape(1);
+         int d2 = reorder.shape(2) * reorder.shape(3);
+         int d3 = reorder.shape(4) * reorder.shape(5);
+         int d4 = reorder.shape(6) * reorder.shape(7);
+
+         dlQ = reorder.reshape_clear(shape(d0,d1,d2,d3,d4));
+
+      }
+
+   }
+
+   /**
+    * get the X matrix which is the square root of the closest positive approximation to the effective environment
+    * @param N_eff input effective environment
+    * @param X output DArray<3> is X
+    */
+   void get_X(DArray<4> &N_eff,DArray<3> &X){
+
+      int matdim = N_eff.shape(0)*N_eff.shape(1);
+
+      //symmetrize
+      for(int i = 0;i < matdim;++i)
+         for(int j = i + 1;j < matdim;++j){
+
+            N_eff.data()[i*matdim + j] = 0.5 * (N_eff.data()[i*matdim + j]  + N_eff.data()[j*matdim + i]);
+            N_eff.data()[j*matdim + i] = N_eff.data()[i*matdim + j];
+
+         }
+
+      cout << N_eff << endl;
+
+      DArray<1> eig(matdim);
+
+      //diagonalize
+      lapack::syev(CblasRowMajor, 'V','U', matdim, N_eff.data(), matdim, eig.data());
+
+      DArray<4> tmp(N_eff.shape());
+
+      //get the square root of the positive approximant:
+      for(int iL = 0;iL < N_eff.shape(0);++iL)
+         for(int iR = 0;iR < N_eff.shape(1);++iR)
+            for(int jL = 0;jL < N_eff.shape(2);++jL)
+               for(int jR = 0;jR < N_eff.shape(3);++jR){
+
+                  tmp(iL,iR,jL,jR) = 0.0;
+
+                  for(int kL = 0;kL < N_eff.shape(0);++kL)
+                     for(int kR = 0;kR < N_eff.shape(1);++kR)
+                        tmp(iL,iR,jL,jR) += eig(kL*N_eff.shape(1) + kR) * N_eff(iL,iR,kL,kR) * N_eff(jL,jR,kL,kR);
+
+               }
+
+      cout << tmp << endl;
 
    }
 

@@ -37,8 +37,8 @@ int main(int argc,char *argv[]){
    Heisenberg::init();
    Trotter::init(tau);
 
-   PEPS<double> peps;
-   peps.initialize_state(D);
+   PEPS<double> peps(D);
+   //peps.initialize_state(D);
    
    peps.normalize(D_aux);
 
