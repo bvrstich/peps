@@ -28,9 +28,16 @@ namespace propagate {
       int d = Global::lat.gd();
       int D = peps.gD();
 
-      // ##################################################### //
-      // first propagate applying the gates from bottom to top //
-      // ##################################################### //
+      // ########################################################### //
+      // ########################################################### //
+      // ## first propagate applying the gates from bottom to top ## //
+      // ########################################################### //
+      // ########################################################### //
+
+
+      // --------------------------------------//
+      // --- !!! (1) the bottom row (1) !!! ---// 
+      // --------------------------------------//
 
       //construct the top environment:
       Environment::calc_env('T',peps,D_aux);
@@ -102,8 +109,8 @@ namespace propagate {
       //now contract left and right environment to form N_eff
       DArray<4> N_eff;
 
-      enum {i,j,k,l,m,n};
-      Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,l,m),0.0,N_eff,shape(j,l,k,m));
+      enum {i,j,k,m,n,o,p,q};
+      Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,n,m),0.0,N_eff,shape(j,n,k,m));
 
       //now get the 'X' matrix:
       DArray<3> X;
@@ -152,13 +159,13 @@ namespace propagate {
 
       //left
       tmp4.clear();
-      Contract(1.0,a_L,shape(i,j,k),Trotter::LO,shape(l,m,j),0.0,tmp4,shape(i,l,k,m));
+      Contract(1.0,a_L,shape(i,j,k),Trotter::LO,shape(n,m,j),0.0,tmp4,shape(i,n,k,m));
 
       a_L = tmp4.reshape_clear(shape(a_L.shape(0),d,a_L.shape(2)*Trotter::LO.shape(1)));
 
       //right
       tmp4.clear();
-      Contract(1.0,Trotter::RO,shape(i,j,k),a_R,shape(l,k,m),0.0,tmp4,shape(l,j,i,m));
+      Contract(1.0,Trotter::RO,shape(i,j,k),a_R,shape(n,k,m),0.0,tmp4,shape(n,j,i,m));
 
       a_R = tmp4.reshape_clear(shape(a_R.shape(0)*Trotter::RO.shape(1),d,a_R.shape(2)));
 
@@ -179,8 +186,8 @@ namespace propagate {
       Dimm(a_L,S);
 
       //now expand back to the full tensors
-      Contract(1.0,QL,shape(i,j,k,l),a_L,shape(l,m,n),0.0,peps(0,0),shape(i,j,m,k,n));
-      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,l,m,n),0.0,peps(0,1),shape(i,l,j,m,n));
+      Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,0),shape(i,j,m,k,n));
+      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(0,1),shape(i,o,j,m,n));
 
       //finally construct the 'Left renormalized operator' for use on next site
       DArray<2> L;
@@ -194,12 +201,12 @@ namespace propagate {
       L = tmp4.reshape_clear(shape(Environment::t[0][0].shape(2),Environment::b[0][0].shape(2)));
 
       //middle sites of the bottom row:
-      for(int c = 1;c < Lx-2;++c){
+      for(int col = 1;col < Lx-2;++col){
 
          //first construct the reduced tensors of the first pair to propagate
 
          //Left
-         construct_reduced_tensor('L',peps(0,c),QL,a_L);
+         construct_reduced_tensor('L',peps(0,col),QL,a_L);
 
          //make a 'double layer' object out of Q for contraction with environment
          tmp5.clear();
@@ -207,16 +214,16 @@ namespace propagate {
 
          //contraction with left renormalized operator
          tmp3.clear();
-         Contract(1.0,L,shape(0),Environment::t[0][c],shape(0),0.0,tmp3);
+         Contract(1.0,L,shape(0),Environment::t[0][col],shape(0),0.0,tmp3);
 
          tmp4.clear();
          Contract(1.0,tmp3,shape(0,1),tmp5,shape(0,1),0.0,tmp4);
 
          //construct the 'Left' eff environment
-         L_env = tmp4.reshape_clear(shape(Environment::t[0][c].shape(2),tmp5.shape(3),tmp5.shape(4)));
+         L_env = tmp4.reshape_clear(shape(Environment::t[0][col].shape(2),tmp5.shape(3),tmp5.shape(4)));
 
          //Right
-         construct_reduced_tensor('R',peps(0,c+1),QR,a_R);
+         construct_reduced_tensor('R',peps(0,col+1),QR,a_R);
 
          //make a 'double layer' object out of Q for contraction with environment
          tmp5.clear();
@@ -224,7 +231,7 @@ namespace propagate {
 
          //contract with right renormalized operator:
          tmp3.clear();
-         Contract(1.0,Environment::t[0][c+1],shape(2),R[c],shape(0),0.0,tmp3);
+         Contract(1.0,Environment::t[0][col+1],shape(2),R[col],shape(0),0.0,tmp3);
 
          //to construct the R_environment
          tmp4.clear();
@@ -235,7 +242,7 @@ namespace propagate {
 
          //now contract left and right environment to form N_eff
          N_eff.clear();
-         Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,l,m),0.0,N_eff,shape(j,l,k,m));
+         Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,o,m),0.0,N_eff,shape(j,o,k,m));
 
          get_X(N_eff,X);
 
@@ -281,13 +288,13 @@ namespace propagate {
 
          //left
          tmp4.clear();
-         Contract(1.0,a_L,shape(i,j,k),Trotter::LO,shape(l,m,j),0.0,tmp4,shape(i,l,k,m));
+         Contract(1.0,a_L,shape(i,j,k),Trotter::LO,shape(o,m,j),0.0,tmp4,shape(i,o,k,m));
 
          a_L = tmp4.reshape_clear(shape(a_L.shape(0),d,a_L.shape(2)*Trotter::LO.shape(1)));
 
          //right
          tmp4.clear();
-         Contract(1.0,Trotter::RO,shape(i,j,k),a_R,shape(l,k,m),0.0,tmp4,shape(l,j,i,m));
+         Contract(1.0,Trotter::RO,shape(i,j,k),a_R,shape(o,k,m),0.0,tmp4,shape(o,j,i,m));
 
          a_R = tmp4.reshape_clear(shape(a_R.shape(0)*Trotter::RO.shape(1),d,a_R.shape(2)));
 
@@ -308,18 +315,18 @@ namespace propagate {
          Dimm(a_L,S);
 
          //now expand back to the full tensors
-         Contract(1.0,QL,shape(i,j,k,l),a_L,shape(l,m,n),0.0,peps(0,c),shape(i,j,m,k,n));
-         Contract(1.0,a_R,shape(i,j,k),QR,shape(k,l,m,n),0.0,peps(0,c+1),shape(i,l,j,m,n));
+         Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,col),shape(i,j,m,k,n));
+         Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(0,col+1),shape(i,o,j,m,n));
 
          //first construct a double layer object for the newly updated bottom 
-         Environment::construct_double_layer('H',peps(0,c),Environment::b[0][c]);
+         Environment::construct_double_layer('H',peps(0,col),Environment::b[0][col]);
 
          //update the left renormalized operator:
          tmp3.clear();
-         Contract(1.0,L,shape(0),Environment::t[0][c],shape(0),0.0,tmp3);
+         Contract(1.0,L,shape(0),Environment::t[0][col],shape(0),0.0,tmp3);
 
          L.clear();
-         Contract(1.0,tmp3,shape(0,1),Environment::b[0][c],shape(0,1),0.0,L);
+         Contract(1.0,tmp3,shape(0,1),Environment::b[0][col],shape(0,1),0.0,L);
 
       }
 
@@ -355,7 +362,7 @@ namespace propagate {
 
       //construct effective environment
       N_eff.clear();
-      Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,l,m),0.0,N_eff,shape(j,l,k,m));
+      Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,o,m),0.0,N_eff,shape(j,o,k,m));
 
       get_X(N_eff,X);
 
@@ -401,13 +408,13 @@ namespace propagate {
 
       //left
       tmp4.clear();
-      Contract(1.0,a_L,shape(i,j,k),Trotter::LO,shape(l,m,j),0.0,tmp4,shape(i,l,k,m));
+      Contract(1.0,a_L,shape(i,j,k),Trotter::LO,shape(o,m,j),0.0,tmp4,shape(i,o,k,m));
 
       a_L = tmp4.reshape_clear(shape(a_L.shape(0),d,a_L.shape(2)*Trotter::LO.shape(1)));
 
       //right
       tmp4.clear();
-      Contract(1.0,Trotter::RO,shape(i,j,k),a_R,shape(l,k,m),0.0,tmp4,shape(l,j,i,m));
+      Contract(1.0,Trotter::RO,shape(i,j,k),a_R,shape(o,k,m),0.0,tmp4,shape(o,j,i,m));
 
       a_R = tmp4.reshape_clear(shape(a_R.shape(0)*Trotter::RO.shape(1),d,a_R.shape(2)));
 
@@ -428,13 +435,98 @@ namespace propagate {
       Dimm(a_L,S);
 
       //now expand back to the full tensors
-      Contract(1.0,QL,shape(i,j,k,l),a_L,shape(l,m,n),0.0,peps(0,Lx-2),shape(i,j,m,k,n));
-      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,l,m,n),0.0,peps(0,Lx-1),shape(i,l,j,m,n));
+      Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,Lx-2),shape(i,j,m,k,n));
+      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(0,Lx-1),shape(i,o,j,m,n));
 
       //finally construct a double layer objects for the two new tensors on the bottom
       Environment::construct_double_layer('H',peps(0,Lx-2),Environment::b[0][Lx-2]);
       Environment::construct_double_layer('H',peps(0,Lx-1),Environment::b[0][Lx-1]);
 
+
+      // ---------------------------------------------------//
+      // --- !!! (2) the middle rows (1 -> Ly-2) (2) !!! ---// 
+      // ---------------------------------------------------//
+
+      //Right renormalized operators
+      vector< DArray<3> > RO(Lx - 2);
+
+      DArray<4> dlo;
+      DArray<4> tmp4bis;
+
+      //for(int row = 1;row < Ly-1;++r){
+         int row = 1;
+
+         //first create right renormalized operator
+
+         //last site make double layer object from peps
+         Environment::construct_double_layer('H',peps(row,Lx-1),dlo);
+
+      //paste top environment on
+      tmp5.clear();
+      Contract(1.0,Environment::t[row][Lx - 1],shape(1),dlo,shape(1),0.0,tmp5);
+
+      //then bottom enviroment
+      Contract(1.0,tmp5,shape(3),Environment::b[row-1][Lx-1],shape(1),0.0,tmp6);
+
+      //move to a DArray<3> object
+      RO[Lx - 3] = tmp6.reshape_clear(shape(Environment::t[row][Lx - 1].shape(0),dlo.shape(0),Environment::b[row-1][Lx - 1].shape(0)));
+
+      //now construct the middle operators
+      for(int col = Lx-2;col > 1;--col){
+
+         tmp4.clear();
+         Contract(1.0,Environment::t[row][col],shape(2),RO[col-1],shape(0),0.0,tmp4);
+
+         enum {i,j,k,o,m,n};
+
+         Environment::construct_double_layer('H',peps(row,col),dlo);
+
+         tmp4bis.clear();
+         Contract(1.0,tmp4,shape(i,j,k,o),dlo,shape(m,j,n,k),0.0,tmp4bis,shape(i,m,n,o));
+
+         RO[col-2].clear();
+         Contract(1.0,tmp4bis,shape(2,3),Environment::b[row-1][col],shape(1,2),0.0,RO[col-2]);
+
+      }
+
+      //now construct the reduced tensor and effective environment!
+
+      //Left
+      construct_reduced_tensor('L',peps(row,0),QL,a_L);
+
+      //make a 'double layer' object out of Q for contraction with environment
+      construct_double_layer('L',QL,tmp5);
+
+      //construct the 'Left' eff environment
+      Contract(1.0,Environment::t[row][0],shape(1),tmp5,shape(1),0.0,tmp6);
+
+      DArray<7> tmp7;
+      Contract(1.0,tmp6,shape(3),Environment::b[row-1][0],shape(1),0.0,tmp7);
+
+      DArray<4> LO_env = tmp7.reshape_clear(shape(Environment::t[row][0].shape(2),tmp5.shape(3),tmp5.shape(4),Environment::b[row-1][0].shape(2)));
+
+      //Right
+      construct_reduced_tensor('R',peps(row,1),QR,a_R);
+
+      //make a 'double layer' object out of Q for contraction with environment
+      construct_double_layer('R',QR,tmp5);
+
+      //contract with right renormalized operator:
+      tmp4.clear();
+      Contract(1.0,Environment::t[row][1],shape(2),RO[0],shape(0),0.0,tmp4);
+
+      //to construct the R_environment
+      DArray<5> tmp5bis;
+      Contract(1.0,tmp4,shape(i,j,k,m),tmp5,shape(n,o,j,p,k),0.0,tmp5bis,shape(i,n,o,p,m));
+
+      //construct the 'Right' eff environment
+      DArray<4> RO_env;
+      Contract(1.0,tmp5bis,shape(i,j,k,m,n),Environment::b[row-1][1],shape(p,m,n),0.0,RO_env,shape(i,j,k,p));
+
+      cout << RO_env << endl;
+
+
+      //}
    }
 
    /**
