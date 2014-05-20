@@ -300,3 +300,177 @@ void Environment::calc_env(char option,int rc,const PEPS<double> &peps,int D_aux
    }
 
 }
+
+/**
+ * construct a double layer MPO object from a PEPS
+ * @param option == 'H' horizontal if 'V' vertical
+ * @param peps THe input PEPS elements
+ * @param dlo output object
+ */
+void Environment::construct_double_layer(char option,const DArray<5> &peps,DArray<4> &dlo){
+
+   if(option == 'H'){
+
+      enum {i,j,k,s,m,n,o,p,q};
+
+      DArray<8> tmp;
+      Contract(1.0,peps,shape(i,j,k,s,m),peps,shape(n,o,k,p,q),0.0,tmp,shape(i,n,j,o,s,p,m,q));
+
+      int DL = tmp.shape(0) * tmp.shape(1);
+      int DU = tmp.shape(2) * tmp.shape(3);
+      int DD = tmp.shape(4) * tmp.shape(5);
+      int DR = tmp.shape(6) * tmp.shape(7);
+
+      dlo = tmp.reshape_clear(shape(DL,DU,DD,DR));
+
+   }
+   else{//V
+
+      enum {i,j,k,s,m,n,o,p,q};
+
+      DArray<8> tmp;
+      Contract(1.0,peps,shape(i,j,k,s,m),peps,shape(n,o,k,p,q),0.0,tmp,shape(s,p,m,q,i,n,j,o));
+
+      int DL = tmp.shape(0) * tmp.shape(1);
+      int DU = tmp.shape(2) * tmp.shape(3);
+      int DD = tmp.shape(4) * tmp.shape(5);
+      int DR = tmp.shape(6) * tmp.shape(7);
+
+      dlo = tmp.reshape_clear(shape(DL,DU,DD,DR));
+
+   }
+
+}
+
+/**
+ * construct a double layer MPO object from a PEPS, using operator O in between
+ * @param option == 'H' horizontal if 'V' vertical
+ * @param peps THe input PEPS elements
+ * @param O single particle operator
+ * @param dlo output object
+ */
+void Environment::construct_double_layer(char option,const DArray<5> &peps,const DArray<2> &O,DArray<4> &dlo){
+
+   if(option == 'H'){
+
+      enum {i,j,k,s,m,n,o,p,q};
+
+      DArray<5> tmp;
+      Contract(1.0,peps,shape(i,j,p,k,s),O,shape(p,q),0.0,tmp,shape(i,j,q,k,s));
+
+      DArray<8> tmp2;
+      Contract(1.0,tmp,shape(i,j,k,s,m),peps,shape(n,o,k,p,q),0.0,tmp2,shape(i,n,j,o,s,p,m,q));
+
+      int DL = tmp2.shape(0) * tmp2.shape(1);
+      int DU = tmp2.shape(2) * tmp2.shape(3);
+      int DD = tmp2.shape(4) * tmp2.shape(5);
+      int DR = tmp2.shape(6) * tmp2.shape(7);
+
+      dlo = tmp2.reshape_clear(shape(DL,DU,DD,DR));
+
+   }
+   else{//V
+
+      enum {i,j,k,s,m,n,o,p,q};
+
+      DArray<5> tmp;
+      Contract(1.0,peps,shape(i,j,p,k,s),O,shape(p,q),0.0,tmp,shape(i,j,q,k,s));
+
+      DArray<8> tmp2;
+      Contract(1.0,tmp,shape(i,j,k,s,m),peps,shape(n,o,k,p,q),0.0,tmp2,shape(s,p,m,q,i,n,j,o));
+
+      int DL = tmp2.shape(0) * tmp2.shape(1);
+      int DU = tmp2.shape(2) * tmp2.shape(3);
+      int DD = tmp2.shape(4) * tmp2.shape(5);
+      int DR = tmp2.shape(6) * tmp2.shape(7);
+
+      dlo = tmp2.reshape_clear(shape(DL,DU,DD,DR));
+
+   }
+
+}
+
+/**
+ * construct a double layer MPS object from a PEPS taking the expectation value of an operator O between the physical indices
+ * @param option == 'H' horizontal if 'V' vertical
+ * @param peps THe input PEPS elements
+ * @param O single particle operator
+ * @param dls output object
+ */
+void Environment::construct_double_layer(char option,const DArray<5> &peps,const DArray<2> &O,DArray<3> &dls){
+
+   if(option == 'H'){
+
+      enum {i,j,k,m,n,o,p,q,s};
+
+      DArray<5> tmp;
+      Contract(1.0,peps,shape(i,j,p,k,s),O,shape(p,q),0.0,tmp,shape(i,j,q,k,s));
+
+      DArray<8> tmp2;
+      Contract(1.0,tmp,shape(i,j,k,s,m),peps,shape(n,o,k,p,q),0.0,tmp2,shape(i,n,j,o,s,p,m,q));
+
+      int DL = tmp2.shape(0) * tmp2.shape(1);
+      int d_phys = tmp2.shape(2) * tmp2.shape(3) * tmp2.shape(4) * tmp2.shape(5);
+      int DR = tmp2.shape(6) * tmp2.shape(7);
+
+      dls = tmp2.reshape_clear(shape(DL,d_phys,DR));
+
+   }
+   else{//V
+
+      enum {i,j,k,s,m,n,o,p,q};
+
+      DArray<5> tmp;
+      Contract(1.0,peps,shape(i,j,p,k,s),O,shape(p,q),0.0,tmp,shape(i,j,q,k,s));
+
+      DArray<8> tmp2;
+      Contract(1.0,tmp,shape(i,j,k,s,m),peps,shape(n,o,k,p,q),0.0,tmp2,shape(s,p,i,n,m,q,j,o));
+
+      int DL = tmp2.shape(0) * tmp2.shape(1);
+      int d_phys = tmp2.shape(2) * tmp2.shape(3) * tmp2.shape(4) * tmp2.shape(5);
+      int DR = tmp2.shape(6) * tmp2.shape(7);
+
+      dls = tmp2.reshape_clear(shape(DL,d_phys,DR));
+
+   }
+
+}
+
+/**
+ * construct a double layer MPS object from a PEPS 
+ * @param option == 'H' horizontal if 'V' vertical
+ * @param peps THe input PEPS elements
+ * @param dls output object
+ */
+void Environment::construct_double_layer(char option,const DArray<5> &peps,DArray<3> &dls){
+
+   if(option == 'H'){
+
+      enum {i,j,k,m,n,o,p,q,s};
+
+      DArray<8> tmp;
+      Contract(1.0,peps,shape(i,j,k,s,m),peps,shape(n,o,k,p,q),0.0,tmp,shape(i,n,j,o,s,p,m,q));
+
+      int DL = tmp.shape(0) * tmp.shape(1);
+      int d_phys = tmp.shape(2) * tmp.shape(3) * tmp.shape(4) * tmp.shape(5);
+      int DR = tmp.shape(6) * tmp.shape(7);
+
+      dls = tmp.reshape_clear(shape(DL,d_phys,DR));
+
+   }
+   else{//V
+
+      enum {i,j,k,s,m,n,o,p,q};
+
+      DArray<8> tmp;
+      Contract(1.0,peps,shape(i,j,k,s,m),peps,shape(n,o,k,p,q),0.0,tmp,shape(s,p,i,n,m,q,j,o));
+
+      int DL = tmp.shape(0) * tmp.shape(1);
+      int d_phys = tmp.shape(2) * tmp.shape(3) * tmp.shape(4) * tmp.shape(5);
+      int DR = tmp.shape(6) * tmp.shape(7);
+
+      dls = tmp.reshape_clear(shape(DL,d_phys,DR));
+
+   }
+
+}

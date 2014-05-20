@@ -25,6 +25,14 @@ class Environment {
 
       static void test_env();
 
+      static void construct_double_layer(char,const DArray<5> &peps,DArray<3> &dls);
+
+      static void construct_double_layer(char,const DArray<5> &peps,const DArray<2> &O,DArray<3> &dls);
+
+      static void construct_double_layer(char,const DArray<5> &peps,DArray<4> &dlo);
+
+      static void construct_double_layer(char,const DArray<5> &peps,const DArray<2> &O,DArray<4> &dlo);
+
       //!stores an array environment MPS's for l(eft) , r(ight), t(op) and b(ottom)
       static vector< MPS<double> > l;
       static vector< MPS<double> > r;

@@ -21,14 +21,6 @@ class Heisenberg {
 
       static double local(const PEPS<double> &,const DArray<2> &);
 
-      static void construct_double_layer(char,const DArray<5> &peps,DArray<3> &dls);
-
-      static void construct_double_layer(char,const DArray<5> &peps,const DArray<2> &O,DArray<3> &dls);
-
-      static void construct_double_layer(char,const DArray<5> &peps,DArray<4> &dlo);
-
-      static void construct_double_layer(char,const DArray<5> &peps,const DArray<2> &O,DArray<4> &dlo);
-
       static double energy(const PEPS<double> &);
    
    private:

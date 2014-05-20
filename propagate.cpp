@@ -183,6 +183,15 @@ namespace propagate {
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,l,m,n),0.0,peps(0,1),shape(i,l,j,m,n));
 
       //finally construct the 'Left renormalized operator' for use on next site
+      DArray<2> L;
+
+      //first construct a double layer object for the newly updated bottom left site
+      Environment::construct_double_layer('H',peps(0,0),Environment::b[0][0]);
+
+      tmp4.clear();
+      Contract(1.0,Environment::t[0][0],shape(1),Environment::b[0][0],shape(1),0.0,tmp4);
+
+      L = tmp4.reshape_clear(shape(Environment::t[0][0].shape(2),Environment::b[0][0].shape(2)));
 
    }
 
