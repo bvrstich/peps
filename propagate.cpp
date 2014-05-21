@@ -28,6 +28,8 @@ namespace propagate {
       int d = Global::lat.gd();
       int D = peps.gD();
 
+      enum {i,j,k,m,n,o,p,q};
+
       // ########################################################### //
       // ########################################################### //
       // ## first propagate applying the gates from bottom to top ## //
@@ -44,6 +46,7 @@ namespace propagate {
 
       //for the bottom row: construct the right renormalized operator
       vector< DArray<2> > R(Lx - 2);
+      DArray<2> L;
 
       //for this we need the construct the 'bottom environment' for the bottom row:
       Environment::calc_env('B',0,peps,D_aux);
@@ -75,127 +78,34 @@ namespace propagate {
       //Left
       construct_reduced_tensor('L',peps(0,0),QL,a_L);
 
-      //make a 'double layer' object out of Q for contraction with environment
-      DArray<5> tmp5;
-      construct_double_layer('L',QL,tmp5);
-
-      //for this one only top contraction is needed:
-      DArray<6> tmp6;
-      Contract(1.0,Environment::t[0][0],shape(1),tmp5,shape(1),0.0,tmp6);
-
-      //construct the 'Left' eff environment
-      DArray<3> L_env = tmp6.reshape_clear(shape(Environment::t[0][0].shape(2),tmp5.shape(3),tmp5.shape(4)));
-
       //Right
       DArray<4> QR;
       DArray<3> a_R;
 
       construct_reduced_tensor('R',peps(0,1),QR,a_R);
 
-      //make a 'double layer' object out of Q for contraction with environment
-      construct_double_layer('R',QR,tmp5);
-
-      //contract with right renormalized operator:
-      tmp3.clear();
-      Contract(1.0,Environment::t[0][1],shape(2),R[0],shape(0),0.0,tmp3);
-
-      //to construct the R_environment
-      tmp4.clear();
-      Contract(1.0,tmp3,shape(1,2),tmp5,shape(2,4),0.0,tmp4);
-
-      //construct the 'Right' eff environment
-      DArray<3> R_env = tmp4.reshape_clear(shape(tmp4.shape(0),tmp4.shape(1),tmp4.shape(2)));
-
-      //now contract left and right environment to form N_eff
       DArray<4> N_eff;
-
-      enum {i,j,k,m,n,o,p,q};
-      Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,n,m),0.0,N_eff,shape(j,n,k,m));
+      calc_N_eff('b',0,L,QL,R[0],QR,N_eff);
 
       //now get the 'X' matrix:
       DArray<3> X;
       get_X(N_eff,X);
-
-      //now QR and LQ the X matrix and paste it on the aR and aL
-      DArray<3> X_copy(X);
-
-      //QR
-      DArray<2> tmp2;
-      Geqrf(X_copy,tmp2);
-
-      //first paste it on the reduced tensor: a_R * R
-      tmp3.clear();
-      Contract(1.0,a_R,shape(2),tmp2,shape(1),0.0,tmp3);
-
-      a_R = std::move(tmp3);
-
-      //paste the inverse to the environment tensor: R^{-1} * QR
-      invert(tmp2);
-
-      tmp4.clear();
-      Contract(1.0,tmp2,shape(0),QR,shape(0),0.0,tmp4);
-
-      QR = std::move(tmp4);
-
-      //LQ
-      tmp2.clear();
-      Gelqf(tmp2,X);
-
-      //first paste it on the reduced tensor: L * a_L
-      tmp3.clear();
-      Contract(1.0,tmp2,shape(0),a_L,shape(0),0.0,tmp3);
-
-      a_L = std::move(tmp3);
-
-      //paste the inverse to the environment tensor: QL * L^{-1}
-      invert(tmp2);
-
-      tmp4.clear();
-      Contract(1.0,QL,shape(3),tmp2,shape(1),0.0,tmp4);
-
-      QL = std::move(tmp4);
+      
+      //make the environment as 'unitary' as possible
+      canonicalize(X,a_L,QL,a_R,QR);
 
       //now do the update! Apply the gates!
+      update(D,a_L,a_R);
 
-      //left
-      tmp4.clear();
-      Contract(1.0,a_L,shape(i,j,k),Trotter::LO,shape(n,m,j),0.0,tmp4,shape(i,n,k,m));
-
-      a_L = tmp4.reshape_clear(shape(a_L.shape(0),d,a_L.shape(2)*Trotter::LO.shape(1)));
-
-      //right
-      tmp4.clear();
-      Contract(1.0,Trotter::RO,shape(i,j,k),a_R,shape(n,k,m),0.0,tmp4,shape(n,j,i,m));
-
-      a_R = tmp4.reshape_clear(shape(a_R.shape(0)*Trotter::RO.shape(1),d,a_R.shape(2)));
-
-      //now create 'two-site' object
-      tmp4.clear();
-      Contract(1.0,a_L,shape(2),a_R,shape(0),0.0,tmp4);
-
-      //svd the fucker
-      DArray<1> S;
-      Gesvd ('S','S', tmp4, S,a_L,a_R,D);
-
-      //take the square root of the sv's
-      for(int i = 0;i < S.size();++i)
-         S(i) = sqrt(S(i));
-
-      //and multiply it left and right to the tensors
-      Dimm(S,a_R);
-      Dimm(a_L,S);
-
-      //now expand back to the full tensors
+      //now expand updated reduced tensors back to the full tensors
       Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,0),shape(i,j,m,k,n));
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(0,1),shape(i,o,j,m,n));
 
       //finally construct the 'Left renormalized operator' for use on next site
-      DArray<2> L;
 
       //first construct a double layer object for the newly updated bottom left site
       Environment::construct_double_layer('H',peps(0,0),Environment::b[0][0]);
 
-      tmp4.clear();
       Contract(1.0,Environment::t[0][0],shape(1),Environment::b[0][0],shape(1),0.0,tmp4);
 
       L = tmp4.reshape_clear(shape(Environment::t[0][0].shape(2),Environment::b[0][0].shape(2)));
@@ -205,116 +115,22 @@ namespace propagate {
 
          //first construct the reduced tensors of the first pair to propagate
 
-         //Left
          construct_reduced_tensor('L',peps(0,col),QL,a_L);
-
-         //make a 'double layer' object out of Q for contraction with environment
-         tmp5.clear();
-         construct_double_layer('L',QL,tmp5);
-
-         //contraction with left renormalized operator
-         tmp3.clear();
-         Contract(1.0,L,shape(0),Environment::t[0][col],shape(0),0.0,tmp3);
-
-         tmp4.clear();
-         Contract(1.0,tmp3,shape(0,1),tmp5,shape(0,1),0.0,tmp4);
-
-         //construct the 'Left' eff environment
-         L_env = tmp4.reshape_clear(shape(Environment::t[0][col].shape(2),tmp5.shape(3),tmp5.shape(4)));
-
-         //Right
          construct_reduced_tensor('R',peps(0,col+1),QR,a_R);
 
-         //make a 'double layer' object out of Q for contraction with environment
-         tmp5.clear();
-         construct_double_layer('R',QR,tmp5);
+         //calculate the effective environment N_eff
+         calc_N_eff('b',col,L,QL,R[col],QR,N_eff);
 
-         //contract with right renormalized operator:
-         tmp3.clear();
-         Contract(1.0,Environment::t[0][col+1],shape(2),R[col],shape(0),0.0,tmp3);
-
-         //to construct the R_environment
-         tmp4.clear();
-         Contract(1.0,tmp3,shape(1,2),tmp5,shape(2,4),0.0,tmp4);
-
-         //construct the 'Right' eff environment
-         R_env = tmp4.reshape_clear(shape(tmp4.shape(0),tmp4.shape(1),tmp4.shape(2)));
-
-         //now contract left and right environment to form N_eff
-         N_eff.clear();
-         Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,o,m),0.0,N_eff,shape(j,o,k,m));
-
+         //extract positive appromixant
          get_X(N_eff,X);
 
-         //now QR and LQ the X matrix and paste it on the aR and aL
-         X_copy = X;
+         //make environment close to unitary before the update
+         canonicalize(X,a_L,QL,a_R,QR);
 
-         //QR
-         Geqrf(X_copy,tmp2);
+         //now do the update! Apply the gates!
+         update(D,a_L,a_R);
 
-         //first paste it on the reduced tensor: a_R * R
-         tmp3.clear();
-         Contract(1.0,a_R,shape(2),tmp2,shape(1),0.0,tmp3);
-
-         a_R = std::move(tmp3);
-
-         //paste the inverse to the environment tensor: R^{-1} * QR
-         invert(tmp2);
-
-         tmp4.clear();
-         Contract(1.0,tmp2,shape(0),QR,shape(0),0.0,tmp4);
-
-         QR = std::move(tmp4);
-
-         //LQ
-         tmp2.clear();
-         Gelqf(tmp2,X);
-
-         //first paste it on the reduced tensor: L * a_L
-         tmp3.clear();
-         Contract(1.0,tmp2,shape(0),a_L,shape(0),0.0,tmp3);
-
-         a_L = std::move(tmp3);
-
-         //paste the inverse to the environment tensor: QL * L^{-1}
-         invert(tmp2);
-
-         tmp4.clear();
-         Contract(1.0,QL,shape(3),tmp2,shape(1),0.0,tmp4);
-
-         QL = std::move(tmp4);
-
-         // ### now do the update! Apply the gates! ###
-
-         //left
-         tmp4.clear();
-         Contract(1.0,a_L,shape(i,j,k),Trotter::LO,shape(o,m,j),0.0,tmp4,shape(i,o,k,m));
-
-         a_L = tmp4.reshape_clear(shape(a_L.shape(0),d,a_L.shape(2)*Trotter::LO.shape(1)));
-
-         //right
-         tmp4.clear();
-         Contract(1.0,Trotter::RO,shape(i,j,k),a_R,shape(o,k,m),0.0,tmp4,shape(o,j,i,m));
-
-         a_R = tmp4.reshape_clear(shape(a_R.shape(0)*Trotter::RO.shape(1),d,a_R.shape(2)));
-
-         //now create 'two-site' object
-         tmp4.clear();
-         Contract(1.0,a_L,shape(2),a_R,shape(0),0.0,tmp4);
-
-         //svd the fucker
-         S.clear();
-         Gesvd ('S','S', tmp4, S,a_L,a_R,D);
-
-         //take the square root of the sv's
-         for(int i = 0;i < S.size();++i)
-            S(i) = sqrt(S(i));
-
-         //and multiply it left and right to the tensors
-         Dimm(S,a_R);
-         Dimm(a_L,S);
-
-         //now expand back to the full tensors
+         //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,col),shape(i,j,m,k,n));
          Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(0,col+1),shape(i,o,j,m,n));
 
@@ -332,117 +148,30 @@ namespace propagate {
 
       //right bottom pair update
 
-      //Left
+      //get the reduced tensors
       construct_reduced_tensor('L',peps(0,Lx-2),QL,a_L);
-
-      //make a 'double layer' object out of Q for contraction with environment
-      tmp5.clear();
-      construct_double_layer('L',QL,tmp5);
-
-      //contraction with left renormalized operator
-      tmp3.clear();
-      Contract(1.0,L,shape(0),Environment::t[0][Lx-2],shape(0),0.0,tmp3);
-
-      tmp4.clear();
-      Contract(1.0,tmp3,shape(0,1),tmp5,shape(0,1),0.0,tmp4);
-
-      //construct the 'Left' eff environment
-      L_env = tmp4.reshape_clear(shape(Environment::t[0][Lx-2].shape(2),tmp5.shape(3),tmp5.shape(4)));
-
-      //Right
       construct_reduced_tensor('R',peps(0,Lx-1),QR,a_R);
 
-      //make a 'double layer' object out of Q for contraction with environment
-      construct_double_layer('R',QR,tmp5);
+      //calculate effective environment
+      calc_N_eff('b',Lx-2,L,QL,R[Lx-3],QR,N_eff);
 
-      //only attach to top to construct R_env
-      Contract(1.0,Environment::t[0][Lx-1],shape(1),tmp5,shape(2),0.0,tmp6);
-
-      R_env = tmp6.reshape_clear(shape(Environment::t[0][Lx-1].shape(0),tmp5.shape(0),tmp5.shape(1)));
-
-      //construct effective environment
-      N_eff.clear();
-      Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,o,m),0.0,N_eff,shape(j,o,k,m));
-
+      //get positive approximant
       get_X(N_eff,X);
 
-      //now QR and LQ the X matrix and paste it on the aR and aL
-      X_copy = X;
+      //make environment close to unitary before the update
+      canonicalize(X,a_L,QL,a_R,QR);
 
-      //QR
-      Geqrf(X_copy,tmp2);
+      //now do the update! Apply the gates!
+      update(D,a_L,a_R);
 
-      //first paste it on the reduced tensor: a_R * R
-      tmp3.clear();
-      Contract(1.0,a_R,shape(2),tmp2,shape(1),0.0,tmp3);
-
-      a_R = std::move(tmp3);
-
-      //paste the inverse to the environment tensor: R^{-1} * QR
-      invert(tmp2);
-
-      tmp4.clear();
-      Contract(1.0,tmp2,shape(0),QR,shape(0),0.0,tmp4);
-
-      QR = std::move(tmp4);
-
-      //LQ
-      tmp2.clear();
-      Gelqf(tmp2,X);
-
-      //first paste it on the reduced tensor: L * a_L
-      tmp3.clear();
-      Contract(1.0,tmp2,shape(0),a_L,shape(0),0.0,tmp3);
-
-      a_L = std::move(tmp3);
-
-      //paste the inverse to the environment tensor: QL * L^{-1}
-      invert(tmp2);
-
-      tmp4.clear();
-      Contract(1.0,QL,shape(3),tmp2,shape(1),0.0,tmp4);
-
-      QL = std::move(tmp4);
-
-      // ### now do the update! Apply the gates! ###
-
-      //left
-      tmp4.clear();
-      Contract(1.0,a_L,shape(i,j,k),Trotter::LO,shape(o,m,j),0.0,tmp4,shape(i,o,k,m));
-
-      a_L = tmp4.reshape_clear(shape(a_L.shape(0),d,a_L.shape(2)*Trotter::LO.shape(1)));
-
-      //right
-      tmp4.clear();
-      Contract(1.0,Trotter::RO,shape(i,j,k),a_R,shape(o,k,m),0.0,tmp4,shape(o,j,i,m));
-
-      a_R = tmp4.reshape_clear(shape(a_R.shape(0)*Trotter::RO.shape(1),d,a_R.shape(2)));
-
-      //now create 'two-site' object
-      tmp4.clear();
-      Contract(1.0,a_L,shape(2),a_R,shape(0),0.0,tmp4);
-
-      //svd the fucker
-      S.clear();
-      Gesvd ('S','S', tmp4, S,a_L,a_R,D);
-
-      //take the square root of the sv's
-      for(int i = 0;i < S.size();++i)
-         S(i) = sqrt(S(i));
-
-      //and multiply it left and right to the tensors
-      Dimm(S,a_R);
-      Dimm(a_L,S);
-
-      //now expand back to the full tensors
+      //and expand back to the full tensors
       Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,Lx-2),shape(i,j,m,k,n));
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(0,Lx-1),shape(i,o,j,m,n));
 
       //finally construct a double layer objects for the two new tensors on the bottom
       Environment::construct_double_layer('H',peps(0,Lx-2),Environment::b[0][Lx-2]);
       Environment::construct_double_layer('H',peps(0,Lx-1),Environment::b[0][Lx-1]);
-
-
+/*
       // ---------------------------------------------------//
       // --- !!! (2) the middle rows (1 -> Ly-2) (2) !!! ---// 
       // ---------------------------------------------------//
@@ -454,12 +183,12 @@ namespace propagate {
       DArray<4> tmp4bis;
 
       //for(int row = 1;row < Ly-1;++r){
-         int row = 1;
+      int row = 1;
 
-         //first create right renormalized operator
+      //first create right renormalized operator
 
-         //last site make double layer object from peps
-         Environment::construct_double_layer('H',peps(row,Lx-1),dlo);
+      //last site make double layer object from peps
+      Environment::construct_double_layer('H',peps(row,Lx-1),dlo);
 
       //paste top environment on
       tmp5.clear();
@@ -523,17 +252,59 @@ namespace propagate {
       DArray<4> RO_env;
       Contract(1.0,tmp5bis,shape(i,j,k,m,n),Environment::b[row-1][1],shape(p,m,n),0.0,RO_env,shape(i,j,k,p));
 
-      cout << RO_env << endl;
+      //construct effective environment
+      N_eff.clear();
+      Contract(1.0,LO_env,shape(i,j,k,m),RO_env,shape(i,n,o,m),0.0,N_eff,shape(j,n,k,o));
 
+      get_X(N_eff,X);
 
+      //now QR and LQ the X matrix and paste it on the aR and aL
+      X_copy = X;
+
+      //QR
+      Geqrf(X_copy,tmp2);
+
+      //first paste it on the reduced tensor: a_R * R
+      tmp3.clear();
+      Contract(1.0,a_R,shape(2),tmp2,shape(1),0.0,tmp3);
+
+      a_R = std::move(tmp3);
+
+      //paste the inverse to the environment tensor: R^{-1} * QR
+      invert(tmp2);
+
+      tmp4.clear();
+      Contract(1.0,tmp2,shape(0),QR,shape(0),0.0,tmp4);
+
+      QR = std::move(tmp4);
+
+      //LQ
+      tmp2.clear();
+      Gelqf(tmp2,X);
+
+      //first paste it on the reduced tensor: L * a_L
+      tmp3.clear();
+      Contract(1.0,tmp2,shape(0),a_L,shape(0),0.0,tmp3);
+
+      a_L = std::move(tmp3);
+
+      //paste the inverse to the environment tensor: QL * L^{-1}
+      invert(tmp2);
+
+      tmp4.clear();
+      Contract(1.0,QL,shape(3),tmp2,shape(1),0.0,tmp4);
+
+      QL = std::move(tmp4);
+*/
       //}
+
    }
 
    /**
     * construct the left or right reduced tensor form of a peps element by performing QR or LQ decomposition
     * @param L == left, R == right
     */
-   void construct_reduced_tensor(char option,DArray<5> &peps,DArray<4> &Q,DArray<3> &red){
+   void construct_reduced_tensor(char option,const DArray<5> &peps,DArray<4> &Q,DArray<3> &red){
 
       if(option == 'L'){
 
@@ -617,7 +388,7 @@ namespace propagate {
     * @param Q input object
     * @param dlQ output object
     */
-   void construct_double_layer(char option,DArray<4> &Q,DArray<5> &dlQ){
+   void construct_double_layer(char option,const DArray<4> &Q,DArray<5> &dlQ){
 
       //first outer product of Q
       DArray<8> tmp;
@@ -710,5 +481,219 @@ namespace propagate {
 
    }
 
+   /**
+    * calculate the effective environment of a pair with the left tensor on site (row,col)
+    * @param option 't'op or 'b'ottom row
+    * @param col column index of the left tensor
+    * @param L left environment matrix
+    * @param QL left unitary matrix coming out of the reduced tensor construction
+    * @param R left environment matrix
+    * @param QR right unitary matrix coming out of the reduced tensor construction
+    * @param N_eff output DArray<4> object containing the effective norm environment on exit
+    */
+   void calc_N_eff(char option,int col,const DArray<2> &L,const DArray<4> &QL,const DArray<2> &R, const DArray<4> &QR,DArray<4> &N_eff){
+
+      int Lx = Global::lat.gLx();
+      int Ly = Global::lat.gLy();
+
+      if(option == 'b'){
+
+         if(col == 0){//left edge
+
+            //make a 'double layer' object out of Q for contraction with environment
+            DArray<5> tmp5;
+            construct_double_layer('L',QL,tmp5);
+
+            //for this one only top contraction is needed:
+            DArray<6> tmp6;
+            Contract(1.0,Environment::t[0][0],shape(1),tmp5,shape(1),0.0,tmp6);
+
+            //construct the 'Left' eff environment
+            DArray<3> L_env = tmp6.reshape_clear(shape(Environment::t[0][0].shape(2),tmp5.shape(3),tmp5.shape(4)));
+
+            //make a 'double layer' object out of Q for contraction with environment
+            construct_double_layer('R',QR,tmp5);
+
+            //contract with right renormalized operator:
+            DArray<3> tmp3;
+            Contract(1.0,Environment::t[0][1],shape(2),R,shape(0),0.0,tmp3);
+
+            //to construct the R_environment
+            DArray<4> tmp4;
+            Contract(1.0,tmp3,shape(1,2),tmp5,shape(2,4),0.0,tmp4);
+
+            //construct the 'Right' eff environment
+            DArray<3> R_env = tmp4.reshape_clear(shape(tmp4.shape(0),tmp4.shape(1),tmp4.shape(2)));
+
+            //now contract left and right environment to form N_eff
+            enum {i,j,k,m,n};
+            Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,n,m),0.0,N_eff,shape(j,n,k,m));
+
+         }
+         else if(col == Lx - 2){//right edge
+
+            //Left
+
+            //make a 'double layer' object out of Q for contraction with environment
+            DArray<5> tmp5;
+            construct_double_layer('L',QL,tmp5);
+
+            //contraction with left renormalized operator
+            DArray<3> tmp3;
+            Contract(1.0,L,shape(0),Environment::t[0][Lx-2],shape(0),0.0,tmp3);
+
+            DArray<4> tmp4;
+            Contract(1.0,tmp3,shape(0,1),tmp5,shape(0,1),0.0,tmp4);
+
+            //construct the 'Left' eff environment
+            DArray<3> L_env = tmp4.reshape_clear(shape(Environment::t[0][Lx-2].shape(2),tmp5.shape(3),tmp5.shape(4)));
+
+            //Right
+
+            //make a 'double layer' object out of Q for contraction with environment
+            construct_double_layer('R',QR,tmp5);
+
+            //only attach to top to construct R_env
+            DArray<6> tmp6;
+            Contract(1.0,Environment::t[0][Lx-1],shape(1),tmp5,shape(2),0.0,tmp6);
+
+            DArray<3> R_env = tmp6.reshape_clear(shape(Environment::t[0][Lx-1].shape(0),tmp5.shape(0),tmp5.shape(1)));
+
+            //construct effective environment
+            enum {i,j,k,m,n};
+
+            N_eff.clear();
+            Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,m,n),0.0,N_eff,shape(j,m,k,n));
+
+         }
+         else{//middle
+
+            enum {i,j,k,m,n};
+
+            //make a 'double layer' object out of Q for contraction with environment
+            DArray<5> tmp5;
+            construct_double_layer('L',QL,tmp5);
+
+            //contraction with left renormalized operator
+            DArray<3> tmp3;
+            Contract(1.0,L,shape(0),Environment::t[0][col],shape(0),0.0,tmp3);
+
+            DArray<4> tmp4;
+            Contract(1.0,tmp3,shape(0,1),tmp5,shape(0,1),0.0,tmp4);
+
+            //construct the 'Left' eff environment
+            DArray<3> L_env = tmp4.reshape_clear(shape(Environment::t[0][col].shape(2),tmp5.shape(3),tmp5.shape(4)));
+
+            //make a 'double layer' object out of Q for contraction with environment
+            tmp5.clear();
+            construct_double_layer('R',QR,tmp5);
+
+            //contract with right renormalized operator:
+            tmp3.clear();
+            Contract(1.0,Environment::t[0][col+1],shape(2),R,shape(0),0.0,tmp3);
+
+            //to construct the R_environment
+            Contract(1.0,tmp3,shape(1,2),tmp5,shape(2,4),0.0,tmp4);
+
+            //construct the 'Right' eff environment
+            DArray<3> R_env = tmp4.reshape_clear(shape(tmp4.shape(0),tmp4.shape(1),tmp4.shape(2)));
+
+            //now contract left and right environment to form N_eff
+            N_eff.clear();
+            Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,m,n),0.0,N_eff,shape(j,m,k,n));
+
+         }
+
+      }
+
+   }
+
+   /**
+    * make the environment as 'canonical' as possible so that the svd for the pair update is as optimal as possible.
+    * @param X (XX^T) is the best positive approximation to the environment of the pair
+    * @param a_L left reduced tensor, will be multiplied with the L of the environment
+    * @param QL unitary part of the left tensor reduction, will be multiplied with the inverse of the L of the environment
+    * @param a_R right reduced tensor, will be multiplied with the R of the environment
+    * @param QR unitary part of the right tensor reduction, will be multiplied with the inverse of the R of the environment
+    */
+   void canonicalize(DArray<3> &X,DArray<3> &a_L,DArray<4> &QL,DArray<3> &a_R,DArray<4> &QR){
+
+      //now QR and LQ the X matrix and paste it on the aR and aL
+      DArray<3> X_copy(X);
+
+      //QR
+      DArray<2> tmp2;
+      Geqrf(X_copy,tmp2);
+
+      //first paste it on the reduced tensor: a_R * R
+      DArray<3> tmp3;
+      Contract(1.0,a_R,shape(2),tmp2,shape(1),0.0,tmp3);
+
+      a_R = std::move(tmp3);
+
+      //paste the inverse to the environment tensor: R^{-1} * QR
+      invert(tmp2);
+
+      DArray<4> tmp4;
+      Contract(1.0,tmp2,shape(0),QR,shape(0),0.0,tmp4);
+
+      QR = std::move(tmp4);
+
+      //LQ
+      Gelqf(tmp2,X);
+
+      //first paste it on the reduced tensor: L * a_L
+      tmp3.clear();
+      Contract(1.0,tmp2,shape(0),a_L,shape(0),0.0,tmp3);
+
+      a_L = std::move(tmp3);
+
+      //paste the inverse to the environment tensor: QL * L^{-1}
+      invert(tmp2);
+
+      tmp4.clear();
+      Contract(1.0,QL,shape(3),tmp2,shape(1),0.0,tmp4);
+
+      QL = std::move(tmp4);
+
+   }
+
+   /**
+    * update a tensor pair by applying a trotter gate over their mutual bond
+    * after which a svd is performed over the bond and the dimensions are set back to D
+    */
+   void update(int D,DArray<3> &a_L,DArray<3> &a_R){
+
+      enum {i,j,k,m,n};
+
+      //left
+      DArray<4> tmp4;
+      Contract(1.0,a_L,shape(i,j,k),Trotter::LO,shape(n,m,j),0.0,tmp4,shape(i,n,k,m));
+
+      a_L = tmp4.reshape_clear(shape(a_L.shape(0),a_L.shape(1),a_L.shape(2)*Trotter::LO.shape(1)));
+
+      //right
+      tmp4.clear();
+      Contract(1.0,Trotter::RO,shape(i,j,k),a_R,shape(n,k,m),0.0,tmp4,shape(n,j,i,m));
+
+      a_R = tmp4.reshape_clear(shape(a_R.shape(0)*Trotter::RO.shape(1),a_R.shape(1),a_R.shape(2)));
+
+      //now create 'two-site' object
+      tmp4.clear();
+      Contract(1.0,a_L,shape(2),a_R,shape(0),0.0,tmp4);
+
+      //svd the fucker
+      DArray<1> S;
+      Gesvd ('S','S', tmp4, S,a_L,a_R,D);
+
+      //take the square root of the sv's
+      for(int i = 0;i < S.size();++i)
+         S(i) = sqrt(S(i));
+
+      //and multiply it left and right to the tensors
+      Dimm(S,a_R);
+      Dimm(a_L,S);
+
+   }
 
 }
