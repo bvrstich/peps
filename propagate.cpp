@@ -44,32 +44,15 @@ namespace propagate {
       //construct the top environment:
       Environment::calc_env('T',peps,D_aux);
 
-      //for the bottom row: construct the right renormalized operator
+      //construct the 'bottom environment' for the bottom row:
+      Environment::calc_env('B',0,peps,D_aux);
+
+      //containers for the renormalized operators
       vector< DArray<2> > R(Lx - 2);
       DArray<2> L;
 
-      //for this we need the construct the 'bottom environment' for the bottom row:
-      Environment::calc_env('B',0,peps,D_aux);
-
-      //first the rightmost operator
-      DArray<4> tmp4;
-      DArray<3> tmp3;
-
-      //tmp comes out index (t,b)
-      Contract(1.0,Environment::t[0][Lx - 1],shape(1),Environment::b[0][Lx - 1],shape(1),0.0,tmp4);
-
-      //reshape tmp to a 2-index array
-      R[Lx - 3] = tmp4.reshape_clear(shape(Environment::t[0][Lx - 1].shape(0),Environment::b[0][Lx - 1].shape(0)));
-
-      //now construct the rest
-      for(int col = Lx - 2;col > 1;--col){
-
-         tmp3.clear();
-         Contract(1.0,Environment::t[0][col],shape(2),R[col-1],shape(0),0.0,tmp3);
-
-         Contract(1.0,tmp3,shape(1,2),Environment::b[0][col],shape(1,2),0.0,R[col-2]);
-
-      }
+      //initialize the right operators for the bottom row
+      init_ro('b',R);
 
       //now construct the reduced tensors of the first pair to propagate
       DArray<4> QL;
@@ -101,20 +84,16 @@ namespace propagate {
       Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,0),shape(i,j,m,k,n));
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(0,1),shape(i,o,j,m,n));
 
-      //finally construct the 'Left renormalized operator' for use on next site
-
-      //first construct a double layer object for the newly updated bottom left site
+      //construct a double layer object for the newly updated bottom left site
       Environment::construct_double_layer('H',peps(0,0),Environment::b[0][0]);
 
-      Contract(1.0,Environment::t[0][0],shape(1),Environment::b[0][0],shape(1),0.0,tmp4);
-
-      L = tmp4.reshape_clear(shape(Environment::t[0][0].shape(2),Environment::b[0][0].shape(2)));
+      //update left renormalized operator for use on next site
+      update_L('b',0,L);
 
       //middle sites of the bottom row:
       for(int col = 1;col < Lx-2;++col){
 
          //first construct the reduced tensors of the first pair to propagate
-
          construct_reduced_tensor('L',peps(0,col),QL,a_L);
          construct_reduced_tensor('R',peps(0,col+1),QR,a_R);
 
@@ -137,12 +116,7 @@ namespace propagate {
          //first construct a double layer object for the newly updated bottom 
          Environment::construct_double_layer('H',peps(0,col),Environment::b[0][col]);
 
-         //update the left renormalized operator:
-         tmp3.clear();
-         Contract(1.0,L,shape(0),Environment::t[0][col],shape(0),0.0,tmp3);
-
-         L.clear();
-         Contract(1.0,tmp3,shape(0,1),Environment::b[0][col],shape(0,1),0.0,L);
+         update_L('b',col,L);
 
       }
 
@@ -171,11 +145,11 @@ namespace propagate {
       //finally construct a double layer objects for the two new tensors on the bottom
       Environment::construct_double_layer('H',peps(0,Lx-2),Environment::b[0][Lx-2]);
       Environment::construct_double_layer('H',peps(0,Lx-1),Environment::b[0][Lx-1]);
-/*
+
       // ---------------------------------------------------//
       // --- !!! (2) the middle rows (1 -> Ly-2) (2) !!! ---// 
       // ---------------------------------------------------//
-
+/*
       //Right renormalized operators
       vector< DArray<3> > RO(Lx - 2);
 
@@ -693,6 +667,76 @@ namespace propagate {
       //and multiply it left and right to the tensors
       Dimm(S,a_R);
       Dimm(a_L,S);
+
+   }
+
+   /** 
+    * init the right renormalized operator for the top or bottom row
+    * @param option 'b'ottom or 't'op
+    * @param R vector containing the right operators on exit
+    */
+   void init_ro(char option,vector< DArray<2> > &R){
+
+      int Lx = Global::lat.gLx();
+      int Ly = Global::lat.gLy();
+
+      if(option == 'b'){
+
+         //first the rightmost operator
+         DArray<4> tmp4;
+         DArray<3> tmp3;
+
+         //tmp comes out index (t,b)
+         Contract(1.0,Environment::t[0][Lx - 1],shape(1),Environment::b[0][Lx - 1],shape(1),0.0,tmp4);
+
+         //reshape tmp to a 2-index array
+         R[Lx - 3] = tmp4.reshape_clear(shape(Environment::t[0][Lx - 1].shape(0),Environment::b[0][Lx - 1].shape(0)));
+
+         //now construct the rest
+         for(int col = Lx - 2;col > 1;--col){
+
+            tmp3.clear();
+            Contract(1.0,Environment::t[0][col],shape(2),R[col-1],shape(0),0.0,tmp3);
+
+            Contract(1.0,tmp3,shape(1,2),Environment::b[0][col],shape(1,2),0.0,R[col-2]);
+
+         }
+
+      }
+
+   }
+
+   /**
+    * update left renormalized operator on site col 
+    * @param option == 't'op or 'b'ottom
+    */
+   void update_L(char option,int col,DArray<2> &L){
+
+      int Lx = Global::lat.gLx();
+      int Ly = Global::lat.gLy();
+
+      if(option == 'b'){
+
+         if(col == 0){
+
+            DArray<4> tmp4;
+            Contract(1.0,Environment::t[0][0],shape(1),Environment::b[0][0],shape(1),0.0,tmp4);
+
+            L = tmp4.reshape_clear(shape(Environment::t[0][0].shape(2),Environment::b[0][0].shape(2)));
+
+         }
+         else{
+
+            //update the left renormalized operator:
+            DArray<3> tmp3;
+            Contract(1.0,L,shape(0),Environment::t[0][col],shape(0),0.0,tmp3);
+
+            L.clear();
+            Contract(1.0,tmp3,shape(0,1),Environment::b[0][col],shape(0,1),0.0,L);
+
+         }
+
+      }
 
    }
 

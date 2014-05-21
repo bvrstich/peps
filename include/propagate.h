@@ -24,6 +24,10 @@ namespace propagate {
 
    void update(int,DArray<3> &,DArray<3> &);
 
+   void init_ro(char option,vector< DArray<2> > &R);
+
+   void update_L(char option,int col,DArray<2> &L);
+
 }
 
 #endif
