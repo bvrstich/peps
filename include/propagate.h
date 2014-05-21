@@ -26,7 +26,7 @@ namespace propagate {
 
    void update(int,DArray<3> &,DArray<3> &);
 
-   void init_ro(char option,vector< DArray<2> > &R);
+   void init_ro(vector< DArray<2> > &R);
 
    void init_ro(int row,const PEPS<double> &,vector< DArray<3> > &R);
 
