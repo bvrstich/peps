@@ -182,6 +182,35 @@ namespace propagate {
 
       update_L(row,0,peps,LO);
 
+      //middle pairs of the row:
+      for(int col = 1;col < Lx-2;++col){
+
+         //first construct the reduced tensors of the first pair to propagate
+         construct_reduced_tensor('L',peps(row,col),QL,a_L);
+         construct_reduced_tensor('R',peps(row,col+1),QR,a_R);
+
+         //calculate the effective environment N_eff
+         calc_N_eff(row,col,LO,QL,RO[col],QR,N_eff);
+
+         //extract positive appromixant
+         get_X(N_eff,X);
+
+         //make environment close to unitary before the update
+         canonicalize(X,a_L,QL,a_R,QR);
+
+         //now do the update! Apply the gates!
+         update(D,a_L,a_R);
+
+         //and expand back to the full tensors
+         Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,col),shape(i,j,m,k,n));
+         Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(row,col+1),shape(i,o,j,m,n));
+
+         //first construct a double layer object for the newly updated bottom 
+         update_L(row,col,peps,LO);
+
+      }
+
+
       //}
 
    }
@@ -762,6 +791,45 @@ namespace propagate {
       }
       else{//middle
 
+         enum {i,j,k,m,n,o,p,q};
+
+         //Left
+
+         //make a 'double layer' object out of Q for contraction with environment
+         //first attach top to left unity
+         DArray<4> tmp4;
+         Contract(1.0,Environment::t[row][col],shape(0),LO,shape(0),0.0,tmp4);
+
+         DArray<5> tmp5;
+         construct_double_layer('L',QL,tmp5);
+
+         DArray<5> tmp5bis;
+         Contract(1.0,tmp4,shape(i,j,k,o),tmp5,shape(k,i,m,n,p),0.0,tmp5bis,shape(j,n,p,m,o));
+
+         DArray<4> LO_env;
+         Contract(1.0,tmp5bis,shape(j,n,p,m,o),Environment::b[row-1][col],shape(o,m,q),0.0,LO_env,shape(j,n,p,q));
+
+         //Right
+
+         //make a 'double layer' object out of Q for contraction with environment
+         construct_double_layer('R',QR,tmp5);
+
+         //contract with right renormalized operator:
+         tmp4.clear();
+         Contract(1.0,Environment::t[row][col+1],shape(2),RO,shape(0),0.0,tmp4);
+
+         //to construct the R_environment
+         tmp5bis.clear();
+         Contract(1.0,tmp4,shape(i,j,k,m),tmp5,shape(n,o,j,p,k),0.0,tmp5bis,shape(i,n,o,p,m));
+
+         //construct the 'Right' eff environment
+         DArray<4> RO_env;
+         Contract(1.0,tmp5bis,shape(i,j,k,m,n),Environment::b[row-1][col+1],shape(p,m,n),0.0,RO_env,shape(i,j,k,p));
+
+         //construct effective environment
+         N_eff.clear();
+         Contract(1.0,LO_env,shape(i,j,k,m),RO_env,shape(i,n,o,m),0.0,N_eff,shape(j,n,k,o));
+
       }
 
    }
@@ -796,6 +864,21 @@ namespace propagate {
 
       }
       else{
+
+         enum {i,j,k,m,n,o};
+
+         //first attach top to left unity
+         DArray<4> I4;
+         Contract(1.0,Environment::t[row][col],shape(0),LO,shape(0),0.0,I4);
+
+         DArray<4> tmp4;
+         Environment::construct_double_layer('H',peps(row,col),tmp4);
+
+         DArray<4> I4bis;
+         Contract(1.0,I4,shape(i,j,k,o),tmp4,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
+
+         LO.clear();
+         Contract(1.0,I4bis,shape(2,3),Environment::b[row-1][col],shape(0,1),0.0,LO);
 
       }
 
