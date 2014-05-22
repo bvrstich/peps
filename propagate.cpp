@@ -47,6 +47,9 @@ namespace propagate {
       //construct the 'bottom environment' for the bottom row:
       Environment::calc_env('B',0,peps,D_aux);
 
+      cout << peps(0,0) << endl;
+      cout << peps(0,1) << endl;
+
       //containers for the renormalized operators
       vector< DArray<2> > R(Lx - 2);
       DArray<2> L;
@@ -77,8 +80,17 @@ namespace propagate {
       //make the environment as 'unitary' as possible
       canonicalize(X,a_L,QL,a_R,QR);
 
+      //TEST
+      DArray<5> tmp5;
+      Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,tmp5,shape(i,j,m,k,n));
+      cout << tmp5 << endl;
+      tmp5.clear();
+      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,tmp5,shape(i,o,j,m,n));
+      cout << tmp5 << endl;
+/*
       //now do the update! Apply the gates!
-      update(D,a_L,a_R);
+//      update(D,a_L,a_R);
+
 
       //now expand updated reduced tensors back to the full tensors
       Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,0),shape(i,j,m,k,n));
@@ -136,7 +148,7 @@ namespace propagate {
       canonicalize(X,a_L,QL,a_R,QR);
 
       //now do the update! Apply the gates!
-      update(D,a_L,a_R);
+ //     update(D,a_L,a_R);
 
       //and expand back to the full tensors
       Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,Lx-2),shape(i,j,m,k,n));
@@ -145,6 +157,7 @@ namespace propagate {
       //finally construct a double layer objects for the two new tensors on the bottom
       Environment::construct_double_layer('H',peps(0,Lx-2),Environment::b[0][Lx-2]);
       Environment::construct_double_layer('H',peps(0,Lx-1),Environment::b[0][Lx-1]);
+
 
       // ---------------------------------------------------//
       // --- !!! (2) the middle rows (1 -> Ly-2) (2) !!! ---// 
@@ -155,7 +168,7 @@ namespace propagate {
       DArray<3> LO;
 
  //     for(int row = 1;row < Ly-1;++row){
-    int row = 1;
+      int row = 1;
 
          //first create right renormalized operator
          init_ro(row,peps,RO);
@@ -174,7 +187,7 @@ namespace propagate {
          canonicalize(X,a_L,QL,a_R,QR);
 
          //and update
-         update(D,a_L,a_R);
+//         update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,0),shape(i,j,m,k,n));
@@ -199,7 +212,7 @@ namespace propagate {
             canonicalize(X,a_L,QL,a_R,QR);
 
             //now do the update! Apply the gates!
-            update(D,a_L,a_R);
+  //          update(D,a_L,a_R);
 
             //and expand back to the full tensors
             Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,col),shape(i,j,m,k,n));
@@ -223,20 +236,18 @@ namespace propagate {
          canonicalize(X,a_L,QL,a_R,QR);
 
          //now do the update! Apply the gates!
-         update(D,a_L,a_R);
+ //        update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,Lx-2),shape(i,j,m,k,n));
          Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(row,Lx-1),shape(i,o,j,m,n));
 
          //finally update the 'bottom' environment for the row
-         Environment::calc_env('B',row,peps,D_aux);
-
-         cout << Environment::b[row][0] << endl;
+//         Environment::calc_env('B',row,peps,D_aux);
 
 
 //      }
-/*
+   
       // ------------------------------------------//
       // --- !!! (3) the top row (Ly-1) (3) !!! ---// 
       // ------------------------------------------//
