@@ -224,17 +224,17 @@ void Environment::calc_env(char option,int rc,const PEPS<double> &peps,int D_aux
 
    }
    else if(option == 'T'){
-/*
-      //then construct top layer
-      t[Ly - 2] = MPS<double>('t',peps,peps);
 
-      for(int i = Ly - 2;i > 0;--i){
+      //then construct top layer
+      if(rc == Ly-1)
+         t[Ly - 2] = MPS<double>('t',peps,peps);
+      else{
 
          //i'th row as MPO
-         MPO<double> mpo('H',i,peps,peps);
+         MPO<double> mpo('H',rc,peps,peps);
 
          //apply to form MPS with bond dimension D^4
-         MPS<double> tmp(t[i]);
+         MPS<double> tmp(t[rc]);
 
          tmp.gemv('U',mpo);
 
@@ -242,11 +242,11 @@ void Environment::calc_env(char option,int rc,const PEPS<double> &peps,int D_aux
          tmp.cut_edges();
 
          //compress in sweeping fashion
-         t[i - 1].resize(Lx);
-         t[i - 1].compress(D_aux,tmp,5);
+         t[rc - 1].resize(Lx);
+         t[rc - 1].compress(D_aux,tmp,5);
 
       }
-*/
+
    }
    else if(option == 'L'){
 /*

@@ -36,10 +36,6 @@ namespace propagate {
       // ########################################################### //
       // ########################################################### //
 
-      for(int r = 0;r < Ly-1;++r)
-         for(int c = 0;c < Lx;++c)
-            cout << peps(r,c) << endl;
-
       // --------------------------------------//
       // --- !!! (1) the bottom row (1) !!! ---// 
       // --------------------------------------//
@@ -81,7 +77,7 @@ namespace propagate {
       canonicalize(X,a_L,QL,a_R,QR);
 
       //now do the update! Apply the gates!
-//      update(D,a_L,a_R);
+      update(D,a_L,a_R);
 
       //now expand updated reduced tensors back to the full tensors
       Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,0),shape(i,j,m,k,n));
@@ -110,7 +106,7 @@ namespace propagate {
          canonicalize(X,a_L,QL,a_R,QR);
 
          //now do the update! Apply the gates!
-         //update(D,a_L,a_R);
+         update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,col),shape(i,j,m,k,n));
@@ -140,7 +136,7 @@ namespace propagate {
       canonicalize(X,a_L,QL,a_R,QR);
 
       //now do the update! Apply the gates!
- //     update(D,a_L,a_R);
+      update(D,a_L,a_R);
 
       //and expand back to the full tensors
       Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,Lx-2),shape(i,j,m,k,n));
@@ -177,7 +173,7 @@ namespace propagate {
          canonicalize(X,a_L,QL,a_R,QR);
 
          //and update
-//         update(D,a_L,a_R);
+         update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,0),shape(i,j,m,k,n));
@@ -202,7 +198,7 @@ namespace propagate {
             canonicalize(X,a_L,QL,a_R,QR);
 
             //now do the update! Apply the gates!
-  //          update(D,a_L,a_R);
+            update(D,a_L,a_R);
 
             //and expand back to the full tensors
             Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,col),shape(i,j,m,k,n));
@@ -226,7 +222,7 @@ namespace propagate {
          canonicalize(X,a_L,QL,a_R,QR);
 
          //now do the update! Apply the gates!
- //        update(D,a_L,a_R);
+         update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,Lx-2),shape(i,j,m,k,n));
@@ -237,12 +233,6 @@ namespace propagate {
 
       }
 
-      ofstream out("bis.out");
-      out.precision(15);
-      for(int r = 0;r < Ly-1;++r)
-         for(int c = 0;c < Lx;++c)
-            out << peps(r,c) << endl;
-/*   
       // ------------------------------------------//
       // --- !!! (3) the top row (Ly-1) (3) !!! ---// 
       // ------------------------------------------//
@@ -255,7 +245,25 @@ namespace propagate {
       construct_reduced_tensor('R',peps(Ly-1,1),QR,a_R);
 
       calc_N_eff('t',0,L,QL,R[0],QR,N_eff);
-*/
+
+      get_X(N_eff,X);
+
+      //make environment close to unitary before the update
+      canonicalize(X,a_L,QL,a_R,QR);
+
+      //now do the update! Apply the gates!
+      update(D,a_L,a_R);
+
+      //and expand back to the full tensors
+      Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(Ly-1,0),shape(i,j,m,k,n));
+      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(Ly-1,1),shape(i,o,j,m,n));
+
+      //construct a double layer object for the newly updated bottom left site
+      Environment::construct_double_layer('H',peps(Ly-1,0),Environment::t[Ly-2][0]);
+
+      //update left renormalized operator for use on next site
+      update_L('t',0,L);
+
    }
 
    /**
@@ -489,6 +497,8 @@ namespace propagate {
 
             //now contract left and right environment to form N_eff
             enum {i,j,k,m,n};
+
+            N_eff.clear();
             Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,n,m),0.0,N_eff,shape(j,n,k,m));
 
          }
@@ -570,7 +580,7 @@ namespace propagate {
       else{//top row!
 
          if(col == 0){
-            /*
+
             //make a 'double layer' object out of Q for contraction with environment
             DArray<5> tmp5;
             construct_double_layer('L',QL,tmp5);
@@ -578,7 +588,6 @@ namespace propagate {
             //for this one only bottom contraction is needed:
             DArray<6> tmp6;
             Contract(1.0,tmp5,shape(2),Environment::b[Ly-2][0],shape(1),0.0,tmp6);
-            cout << tmp6.shape() << endl;
 
             //construct the 'Left' eff environment
             DArray<3> L_env = tmp6.reshape_clear(shape(tmp5.shape(3),tmp5.shape(4),Environment::b[Ly-2][0].shape(2)));
@@ -588,19 +597,21 @@ namespace propagate {
 
             //contract with right renormalized operator:
             DArray<3> tmp3;
-            Contract(1.0,Environment::t[0][1],shape(2),R,shape(0),0.0,tmp3);
+            Contract(1.0,Environment::b[Ly-2][1],shape(2),R,shape(0),0.0,tmp3);
 
             //to construct the R_environment
             DArray<4> tmp4;
-            Contract(1.0,tmp3,shape(1,2),tmp5,shape(2,4),0.0,tmp4);
+            Contract(1.0,tmp5,shape(3,4),tmp3,shape(1,2),0.0,tmp4);
 
             //construct the 'Right' eff environment
-            DArray<3> R_env = tmp4.reshape_clear(shape(tmp4.shape(0),tmp4.shape(1),tmp4.shape(2)));
+            DArray<3> R_env = tmp4.reshape_clear(shape(tmp5.shape(0),tmp5.shape(1),Environment::b[Ly-2][1].shape(0)));
 
             //now contract left and right environment to form N_eff
             enum {i,j,k,m,n};
-            Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,n,m),0.0,N_eff,shape(j,n,k,m));
-             */
+
+            N_eff.clear();
+            Contract(1.0,L_env,shape(i,j,k),R_env,shape(m,n,k),0.0,N_eff,shape(i,m,j,n));
+
          }
          else if(col == Lx-2){
 
@@ -741,7 +752,7 @@ namespace propagate {
       int Lx = Global::lat.gLx();
       int Ly = Global::lat.gLy();
 
-      if(option == 'b'){
+      if(option == 'b'){//bottom
 
          if(col == 0){
 
@@ -759,6 +770,28 @@ namespace propagate {
 
             L.clear();
             Contract(1.0,tmp3,shape(0,1),Environment::b[0][col],shape(0,1),0.0,L);
+
+         }
+
+      }
+      else{//top
+
+         if(col == 0){
+
+            DArray<4> tmp4;
+            Contract(1.0,Environment::t[Ly-2][0],shape(1),Environment::b[Ly-2][0],shape(1),0.0,tmp4);
+
+            L = tmp4.reshape_clear(shape(Environment::t[Ly-2][0].shape(2),Environment::b[Ly-2][0].shape(2)));
+
+         }
+         else{
+
+            //update the left renormalized operator:
+            DArray<3> tmp3;
+            Contract(1.0,L,shape(0),Environment::t[Ly-2][col],shape(0),0.0,tmp3);
+
+            L.clear();
+            Contract(1.0,tmp3,shape(0,1),Environment::b[Ly-2][col],shape(0,1),0.0,L);
 
          }
 
