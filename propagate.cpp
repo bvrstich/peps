@@ -36,6 +36,9 @@ namespace propagate {
       // ########################################################### //
       // ########################################################### //
 
+      for(int r = 0;r < Ly-1;++r)
+         for(int c = 0;c < Lx;++c)
+            cout << peps(r,c) << endl;
 
       // --------------------------------------//
       // --- !!! (1) the bottom row (1) !!! ---// 
@@ -46,9 +49,6 @@ namespace propagate {
 
       //construct the 'bottom environment' for the bottom row:
       Environment::calc_env('B',0,peps,D_aux);
-
-      cout << peps(0,0) << endl;
-      cout << peps(0,1) << endl;
 
       //containers for the renormalized operators
       vector< DArray<2> > R(Lx - 2);
@@ -80,17 +80,8 @@ namespace propagate {
       //make the environment as 'unitary' as possible
       canonicalize(X,a_L,QL,a_R,QR);
 
-      //TEST
-      DArray<5> tmp5;
-      Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,tmp5,shape(i,j,m,k,n));
-      cout << tmp5 << endl;
-      tmp5.clear();
-      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,tmp5,shape(i,o,j,m,n));
-      cout << tmp5 << endl;
-/*
       //now do the update! Apply the gates!
 //      update(D,a_L,a_R);
-
 
       //now expand updated reduced tensors back to the full tensors
       Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,0),shape(i,j,m,k,n));
@@ -119,7 +110,7 @@ namespace propagate {
          canonicalize(X,a_L,QL,a_R,QR);
 
          //now do the update! Apply the gates!
-         update(D,a_L,a_R);
+         //update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,col),shape(i,j,m,k,n));
@@ -131,6 +122,7 @@ namespace propagate {
          update_L('b',col,L);
 
       }
+
 
       //right bottom pair update
 
@@ -158,7 +150,6 @@ namespace propagate {
       Environment::construct_double_layer('H',peps(0,Lx-2),Environment::b[0][Lx-2]);
       Environment::construct_double_layer('H',peps(0,Lx-1),Environment::b[0][Lx-1]);
 
-
       // ---------------------------------------------------//
       // --- !!! (2) the middle rows (1 -> Ly-2) (2) !!! ---// 
       // ---------------------------------------------------//
@@ -167,8 +158,7 @@ namespace propagate {
       vector< DArray<3> > RO(Lx - 2);
       DArray<3> LO;
 
- //     for(int row = 1;row < Ly-1;++row){
-      int row = 1;
+      for(int row = 1;row < Ly-1;++row){
 
          //first create right renormalized operator
          init_ro(row,peps,RO);
@@ -177,7 +167,7 @@ namespace propagate {
          construct_reduced_tensor('L',peps(row,0),QL,a_L);
          construct_reduced_tensor('R',peps(row,1),QR,a_R);
 
-         //get the effective norm environment
+                  //get the effective norm environment
          calc_N_eff(row,0,LO,QL,RO[0],QR,N_eff);
 
          //get the best positive approximant
@@ -193,7 +183,7 @@ namespace propagate {
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,0),shape(i,j,m,k,n));
          Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(row,1),shape(i,o,j,m,n));
 
-         update_L(row,0,peps,LO);
+          update_L(row,0,peps,LO);
 
          //middle pairs of the row:
          for(int col = 1;col < Lx-2;++col){
@@ -243,11 +233,16 @@ namespace propagate {
          Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(row,Lx-1),shape(i,o,j,m,n));
 
          //finally update the 'bottom' environment for the row
-//         Environment::calc_env('B',row,peps,D_aux);
+         Environment::calc_env('B',row,peps,D_aux);
 
+      }
 
-//      }
-   
+      ofstream out("bis.out");
+      out.precision(15);
+      for(int r = 0;r < Ly-1;++r)
+         for(int c = 0;c < Lx;++c)
+            out << peps(r,c) << endl;
+/*   
       // ------------------------------------------//
       // --- !!! (3) the top row (Ly-1) (3) !!! ---// 
       // ------------------------------------------//
@@ -286,6 +281,8 @@ namespace propagate {
          red.resize(shape(min,tmp.shape(3),tmp.shape(4)));
          Q.resize(tmp.shape(0),tmp.shape(1),tmp.shape(2),min);
 
+         red = 0.0;
+
          //r is in the upper diagonal part of tmp on exit of geqrf:
          for(int i = 0;i < min;++i)
             for(int j = i;j < ncols;++j)
@@ -322,7 +319,9 @@ namespace propagate {
          red.resize(shape(tmp.shape(0),tmp.shape(1),min));
          Q.resize(min,tmp.shape(2),tmp.shape(3),tmp.shape(4));
 
-         //l is in the lower diagonal part of tmp on exit of geqrf:
+         red = 0.0;
+
+         //l is in the lower diagonal part of tmp on exit of gelqf:
          for(int j = 0;j < ncols;++j)
             for(int i = j;i < nrows;++i)
                red.data()[i*min + j] = tmp.data()[i*ncols + j];
@@ -571,7 +570,7 @@ namespace propagate {
       else{//top row!
 
          if(col == 0){
-/*
+            /*
             //make a 'double layer' object out of Q for contraction with environment
             DArray<5> tmp5;
             construct_double_layer('L',QL,tmp5);
@@ -601,7 +600,7 @@ namespace propagate {
             //now contract left and right environment to form N_eff
             enum {i,j,k,m,n};
             Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,n,m),0.0,N_eff,shape(j,n,k,m));
-*/
+             */
          }
          else if(col == Lx-2){
 

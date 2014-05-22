@@ -39,9 +39,9 @@ int main(int argc,char *argv[]){
 
    PEPS<double> peps(D);
    //peps.initialize_state(D);
-   
+
    peps.normalize(D_aux);
 
    propagate::step(peps,D_aux);
-
+  
 }
