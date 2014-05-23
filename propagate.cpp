@@ -32,7 +32,9 @@ namespace propagate {
 
       // ########################################################### //
       // ########################################################### //
-      // ## first propagate applying the gates from bottom to top ## //
+      // ##                                                       ## //
+      // ## First propagate applying the gates from bottom to top ## //
+      // ##                                                       ## //
       // ########################################################### //
       // ########################################################### //
 
@@ -51,20 +53,20 @@ namespace propagate {
       DArray<2> L;
 
       //initialize the right operators for the bottom row
-      init_ro(R);
+      init_ro('b',R);
 
       //now construct the reduced tensors of the first pair to propagate
       DArray<4> QL;
       DArray<3> a_L;
 
       //Left
-      construct_reduced_tensor('L',peps(0,0),QL,a_L);
+      construct_reduced_tensor('H','L',peps(0,0),QL,a_L);
 
       //Right
       DArray<4> QR;
       DArray<3> a_R;
 
-      construct_reduced_tensor('R',peps(0,1),QR,a_R);
+      construct_reduced_tensor('H','R',peps(0,1),QR,a_R);
 
       DArray<4> N_eff;
       calc_N_eff('b',0,L,QL,R[0],QR,N_eff);
@@ -93,8 +95,8 @@ namespace propagate {
       for(int col = 1;col < Lx-2;++col){
 
          //first construct the reduced tensors of the first pair to propagate
-         construct_reduced_tensor('L',peps(0,col),QL,a_L);
-         construct_reduced_tensor('R',peps(0,col+1),QR,a_R);
+         construct_reduced_tensor('H','L',peps(0,col),QL,a_L);
+         construct_reduced_tensor('H','R',peps(0,col+1),QR,a_R);
 
          //calculate the effective environment N_eff
          calc_N_eff('b',col,L,QL,R[col],QR,N_eff);
@@ -119,12 +121,11 @@ namespace propagate {
 
       }
 
-
       //right bottom pair update
 
       //get the reduced tensors
-      construct_reduced_tensor('L',peps(0,Lx-2),QL,a_L);
-      construct_reduced_tensor('R',peps(0,Lx-1),QR,a_R);
+      construct_reduced_tensor('H','L',peps(0,Lx-2),QL,a_L);
+      construct_reduced_tensor('H','R',peps(0,Lx-1),QR,a_R);
 
       //calculate effective environment
       calc_N_eff('b',Lx-2,L,QL,R[Lx-3],QR,N_eff);
@@ -160,8 +161,8 @@ namespace propagate {
          init_ro(row,peps,RO);
 
          //construct reduced tensors
-         construct_reduced_tensor('L',peps(row,0),QL,a_L);
-         construct_reduced_tensor('R',peps(row,1),QR,a_R);
+         construct_reduced_tensor('H','L',peps(row,0),QL,a_L);
+         construct_reduced_tensor('H','R',peps(row,1),QR,a_R);
 
                   //get the effective norm environment
          calc_N_eff(row,0,LO,QL,RO[0],QR,N_eff);
@@ -185,8 +186,8 @@ namespace propagate {
          for(int col = 1;col < Lx-2;++col){
 
             //first construct the reduced tensors of the first pair to propagate
-            construct_reduced_tensor('L',peps(row,col),QL,a_L);
-            construct_reduced_tensor('R',peps(row,col+1),QR,a_R);
+            construct_reduced_tensor('H','L',peps(row,col),QL,a_L);
+            construct_reduced_tensor('H','R',peps(row,col+1),QR,a_R);
 
             //calculate the effective environment N_eff
             calc_N_eff(row,col,LO,QL,RO[col],QR,N_eff);
@@ -210,8 +211,8 @@ namespace propagate {
          }
 
          //last pair
-         construct_reduced_tensor('L',peps(row,Lx-2),QL,a_L);
-         construct_reduced_tensor('R',peps(row,Lx-1),QR,a_R);
+         construct_reduced_tensor('H','L',peps(row,Lx-2),QL,a_L);
+         construct_reduced_tensor('H','R',peps(row,Lx-1),QR,a_R);
 
          //calculate the effective environment N_eff
          calc_N_eff(row,Lx-2,LO,QL,RO[Lx-3],QR,N_eff);
@@ -238,11 +239,11 @@ namespace propagate {
       // ------------------------------------------//
 
       //make the right operators
-      init_ro(R);
+      init_ro('t',R);
 
       //construct the reduced tensor for the first bond of top row
-      construct_reduced_tensor('L',peps(Ly-1,0),QL,a_L);
-      construct_reduced_tensor('R',peps(Ly-1,1),QR,a_R);
+      construct_reduced_tensor('H','L',peps(Ly-1,0),QL,a_L);
+      construct_reduced_tensor('H','R',peps(Ly-1,1),QR,a_R);
 
       calc_N_eff('t',0,L,QL,R[0],QR,N_eff);
 
@@ -268,8 +269,8 @@ namespace propagate {
       for(int col = 1;col < Lx-2;++col){
 
          //first construct the reduced tensors of the first pair to propagate
-         construct_reduced_tensor('L',peps(Ly-1,col),QL,a_L);
-         construct_reduced_tensor('R',peps(Ly-1,col+1),QR,a_R);
+         construct_reduced_tensor('H','L',peps(Ly-1,col),QL,a_L);
+         construct_reduced_tensor('H','R',peps(Ly-1,col+1),QR,a_R);
 
          //calculate the effective environment N_eff
          calc_N_eff('t',col,L,QL,R[col],QR,N_eff);
@@ -297,8 +298,8 @@ namespace propagate {
       //last pair, top right
 
       //get the reduced tensors
-      construct_reduced_tensor('L',peps(Ly-1,Lx-2),QL,a_L);
-      construct_reduced_tensor('R',peps(Ly-1,Lx-1),QR,a_R);
+      construct_reduced_tensor('H','L',peps(Ly-1,Lx-2),QL,a_L);
+      construct_reduced_tensor('H','R',peps(Ly-1,Lx-1),QR,a_R);
 
       //calculate effective environment
       calc_N_eff('t',Lx-2,L,QL,R[Lx-3],QR,N_eff);
@@ -316,88 +317,275 @@ namespace propagate {
       Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(Ly-1,Lx-2),shape(i,j,m,k,n));
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(Ly-1,Lx-1),shape(i,o,j,m,n));
 
+      // ########################################################## //
+      // ########################################################## //
+      // ##                                                      ## //
+      // ## Then propagate applying the gates from left to right ## //
+      // ##                                                      ## //
+      // ########################################################## //
+      // ########################################################## //
+
+      // ---------------------------------------//
+      // --- !!! (1) the left column (1) !!! ---// 
+      // ---------------------------------------//
+
+      //construct the 'right' environment:
+      Environment::calc_env('R',peps,D_aux);
+
+      //construct the 'left environment' for the left row:
+      Environment::calc_env('L',0,peps,D_aux);
+
+      //first construct the right renormalized operators
+      R.resize(Ly - 2);
+      init_ro('l',R);
+
+      //construct the reduced tensor for the first bond of left column
+      construct_reduced_tensor('V','L',peps(0,0),QL,a_L);
+      construct_reduced_tensor('V','R',peps(1,0),QR,a_R);
+
+      calc_N_eff('l',0,L,QL,R[0],QR,N_eff);
+
+      get_X(N_eff,X);
+
+      //make environment close to unitary before the update
+      canonicalize(X,a_L,QL,a_R,QR);
+
+      //now do the update! Apply the gates!
+      update(D,a_L,a_R);
+
+      //and expand back to the full tensors
+      Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(0,0),shape(k,o,n,i,j));
+      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(1,0),shape(n,o,j,i,m));
+
+      //construct a double layer object for the newly updated bottom left site
+      Environment::construct_double_layer('V',peps(0,0),Environment::l[0][0]);
+
+      //update left renormalized operator for use on next site
+      update_L('l',0,L);
+      
+      //middle sites of the left column:
+      for(int row = 1;row < Ly-2;++row){
+
+         //first construct the reduced tensors of the first pair to propagate
+         construct_reduced_tensor('V','L',peps(row,0),QL,a_L);
+         construct_reduced_tensor('V','R',peps(row+1,0),QR,a_R);
+
+         //calculate the effective environment N_eff
+         calc_N_eff('l',row,L,QL,R[row],QR,N_eff);
+
+         //extract positive appromixant
+         get_X(N_eff,X);
+
+         //make environment close to unitary before the update
+         canonicalize(X,a_L,QL,a_R,QR);
+
+         //now do the update! Apply the gates!
+         update(D,a_L,a_R);
+
+         //and expand back to the full tensors
+         Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(row,0),shape(k,o,n,i,j));
+         Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(row+1,0),shape(n,o,j,i,m));
+
+         //first construct a double layer object for the newly updated bottom 
+         Environment::construct_double_layer('V',peps(row,0),Environment::l[0][row]);
+
+         update_L('l',row,L);
+
+      }
+
+      //top left vertical pair update
+
+      //get the reduced tensors
+      construct_reduced_tensor('V','L',peps(Ly-2,0),QL,a_L);
+      construct_reduced_tensor('V','R',peps(Ly-1,0),QR,a_R);
+
+      //calculate effective environment
+      calc_N_eff('l',Ly-2,L,QL,R[Lx-3],QR,N_eff);
+
+      //get positive approximant
+      get_X(N_eff,X);
+
+      //make environment close to unitary before the update
+      canonicalize(X,a_L,QL,a_R,QR);
+
+      //now do the update! Apply the gates!
+      update(D,a_L,a_R);
+
+      //and expand back to the full tensors
+      Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(Ly-2,0),shape(k,o,n,i,j));
+      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(Ly-1,0),shape(n,o,j,i,m));
+
+      //finally construct the double layer objects for the two new tensors on the left top
+      Environment::construct_double_layer('V',peps(Ly-2,0),Environment::l[0][Ly-2]);
+      Environment::construct_double_layer('V',peps(Ly-1,0),Environment::l[0][Ly-1]);
+
    }
 
    /**
     * construct the left or right reduced tensor form of a peps element by performing QR or LQ decomposition
+    * @param 'H'orizontal or 'V'ertical
     * @param L == left, R == right
     */
-   void construct_reduced_tensor(char option,const DArray<5> &peps,DArray<4> &Q,DArray<3> &red){
+   void construct_reduced_tensor(char hv,char option,const DArray<5> &peps,DArray<4> &Q,DArray<3> &red){
 
-      if(option == 'L'){
+      if(hv == 'H'){
 
-         DArray<5> tmp;
-         Permute(peps,shape(0,1,3,2,4),tmp);
+         if(option == 'L'){
 
-         int nrows = tmp.shape(0) * tmp.shape(1) * tmp.shape(2);
-         int ncols = tmp.shape(3) * tmp.shape(4);
+            DArray<5> tmp;
+            Permute(peps,shape(0,1,3,2,4),tmp);
 
-         int min = std::min(nrows,ncols);
+            int nrows = tmp.shape(0) * tmp.shape(1) * tmp.shape(2);
+            int ncols = tmp.shape(3) * tmp.shape(4);
 
-         double* tau = new double [min];
+            int min = std::min(nrows,ncols);
 
-         lapack::geqrf(CblasRowMajor,nrows,ncols, tmp.data(), ncols, tau);
+            double* tau = new double [min];
 
-         red.resize(shape(min,tmp.shape(3),tmp.shape(4)));
-         Q.resize(tmp.shape(0),tmp.shape(1),tmp.shape(2),min);
+            lapack::geqrf(CblasRowMajor,nrows,ncols, tmp.data(), ncols, tau);
 
-         red = 0.0;
+            red.resize(shape(min,tmp.shape(3),tmp.shape(4)));
+            Q.resize(tmp.shape(0),tmp.shape(1),tmp.shape(2),min);
 
-         //r is in the upper diagonal part of tmp on exit of geqrf:
-         for(int i = 0;i < min;++i)
-            for(int j = i;j < ncols;++j)
-               red.data()[i*ncols + j] = tmp.data()[i*ncols + j];
+            red = 0.0;
 
-         //get the input for the Q construction function: lower diagonal part of the matrix
-         for(int i = 0;i < nrows;++i)
-            for(int j = 0;j < min;++j)
-               Q.data()[i*min + j] = tmp.data()[i*ncols + j];
+            //r is in the upper diagonal part of tmp on exit of geqrf:
+            for(int i = 0;i < min;++i)
+               for(int j = i;j < ncols;++j)
+                  red.data()[i*ncols + j] = tmp.data()[i*ncols + j];
 
-         //now get the Q matrix out
-         if(nrows < ncols)
-            lapack::orgqr(CblasRowMajor, nrows, nrows, min,Q.data(), nrows, tau);
-         else
-            lapack::orgqr(CblasRowMajor, nrows, ncols, min,Q.data(), ncols, tau);
+            //get the input for the Q construction function: lower diagonal part of the matrix
+            for(int i = 0;i < nrows;++i)
+               for(int j = 0;j < min;++j)
+                  Q.data()[i*min + j] = tmp.data()[i*ncols + j];
 
-         delete [] tau;
+            //now get the Q matrix out
+            if(nrows < ncols)
+               lapack::orgqr(CblasRowMajor, nrows, nrows, min,Q.data(), nrows, tau);
+            else
+               lapack::orgqr(CblasRowMajor, nrows, ncols, min,Q.data(), ncols, tau);
+
+            delete [] tau;
+
+         }
+         else{//LQ
+
+            DArray<5> tmp;
+            Permute(peps,shape(0,2,1,3,4),tmp);
+
+            int nrows = tmp.shape(0) * tmp.shape(1);
+            int ncols = tmp.shape(2) * tmp.shape(3) * tmp.shape(4);
+
+            int min = std::min(nrows,ncols);
+
+            double* tau = new double [min];
+
+            lapack::gelqf(CblasRowMajor,nrows,ncols,tmp.data(),ncols,tau);
+
+            red.resize(shape(tmp.shape(0),tmp.shape(1),min));
+            Q.resize(min,tmp.shape(2),tmp.shape(3),tmp.shape(4));
+
+            red = 0.0;
+
+            //l is in the lower diagonal part of tmp on exit of gelqf:
+            for(int j = 0;j < ncols;++j)
+               for(int i = j;i < nrows;++i)
+                  red.data()[i*min + j] = tmp.data()[i*ncols + j];
+
+            //get the input for the Q construction function: upper diagonal part of the matrix
+            for(int i = 0;i < min;++i)
+               for(int j = 0;j < ncols;++j)
+                  Q.data()[i*ncols + j] = tmp.data()[i*ncols + j];
+
+            //now get the Q matrix out
+            if(nrows > ncols)
+               lapack::orglq(CblasRowMajor,ncols,ncols,min,Q.data(),ncols,tau);
+            else
+               lapack::orglq(CblasRowMajor,nrows,ncols,min,Q.data(),ncols,tau);
+
+            delete [] tau;
+
+         }
 
       }
-      else{//LQ
+      else{//Vertical gates
 
-         DArray<5> tmp;
-         Permute(peps,shape(0,2,1,3,4),tmp);
+         if(option == 'L'){
 
-         int nrows = tmp.shape(0) * tmp.shape(1);
-         int ncols = tmp.shape(2) * tmp.shape(3) * tmp.shape(4);
+            DArray<5> tmp;
+            Permute(peps,shape(3,4,0,2,1),tmp);
 
-         int min = std::min(nrows,ncols);
+            int nrows = tmp.shape(0) * tmp.shape(1) * tmp.shape(2);
+            int ncols = tmp.shape(3) * tmp.shape(4);
 
-         double* tau = new double [min];
+            int min = std::min(nrows,ncols);
 
-         lapack::gelqf(CblasRowMajor,nrows,ncols,tmp.data(),ncols,tau);
+            double* tau = new double [min];
 
-         red.resize(shape(tmp.shape(0),tmp.shape(1),min));
-         Q.resize(min,tmp.shape(2),tmp.shape(3),tmp.shape(4));
+            lapack::geqrf(CblasRowMajor,nrows,ncols, tmp.data(), ncols, tau);
 
-         red = 0.0;
+            red.resize(shape(min,tmp.shape(3),tmp.shape(4)));
+            Q.resize(tmp.shape(0),tmp.shape(1),tmp.shape(2),min);
 
-         //l is in the lower diagonal part of tmp on exit of gelqf:
-         for(int j = 0;j < ncols;++j)
-            for(int i = j;i < nrows;++i)
-               red.data()[i*min + j] = tmp.data()[i*ncols + j];
+            red = 0.0;
 
-         //get the input for the Q construction function: upper diagonal part of the matrix
-         for(int i = 0;i < min;++i)
+            //r is in the upper diagonal part of tmp on exit of geqrf:
+            for(int i = 0;i < min;++i)
+               for(int j = i;j < ncols;++j)
+                  red.data()[i*ncols + j] = tmp.data()[i*ncols + j];
+
+            //get the input for the Q construction function: lower diagonal part of the matrix
+            for(int i = 0;i < nrows;++i)
+               for(int j = 0;j < min;++j)
+                  Q.data()[i*min + j] = tmp.data()[i*ncols + j];
+
+            //now get the Q matrix out
+            if(nrows < ncols)
+               lapack::orgqr(CblasRowMajor, nrows, nrows, min,Q.data(), nrows, tau);
+            else
+               lapack::orgqr(CblasRowMajor, nrows, ncols, min,Q.data(), ncols, tau);
+
+            delete [] tau;
+
+         }
+         else{//LQ
+
+            DArray<5> tmp;
+            Permute(peps,shape(3,2,4,0,1),tmp);
+
+            int nrows = tmp.shape(0) * tmp.shape(1);
+            int ncols = tmp.shape(2) * tmp.shape(3) * tmp.shape(4);
+
+            int min = std::min(nrows,ncols);
+
+            double* tau = new double [min];
+
+            lapack::gelqf(CblasRowMajor,nrows,ncols,tmp.data(),ncols,tau);
+
+            red.resize(shape(tmp.shape(0),tmp.shape(1),min));
+            Q.resize(min,tmp.shape(2),tmp.shape(3),tmp.shape(4));
+
+            red = 0.0;
+
+            //l is in the lower diagonal part of tmp on exit of gelqf:
             for(int j = 0;j < ncols;++j)
-               Q.data()[i*ncols + j] = tmp.data()[i*ncols + j];
+               for(int i = j;i < nrows;++i)
+                  red.data()[i*min + j] = tmp.data()[i*ncols + j];
 
-         //now get the Q matrix out
-         if(nrows > ncols)
-            lapack::orglq(CblasRowMajor,ncols,ncols,min,Q.data(),ncols,tau);
-         else
-            lapack::orglq(CblasRowMajor,nrows,ncols,min,Q.data(),ncols,tau);
+            //get the input for the Q construction function: upper diagonal part of the matrix
+            for(int i = 0;i < min;++i)
+               for(int j = 0;j < ncols;++j)
+                  Q.data()[i*ncols + j] = tmp.data()[i*ncols + j];
 
-         delete [] tau;
+            //now get the Q matrix out
+            if(nrows > ncols)
+               lapack::orglq(CblasRowMajor,ncols,ncols,min,Q.data(),ncols,tau);
+            else
+               lapack::orglq(CblasRowMajor,nrows,ncols,min,Q.data(),ncols,tau);
+
+            delete [] tau;
+
+         }
 
       }
 
@@ -505,22 +693,22 @@ namespace propagate {
 
    /**
     * calculate the effective environment of a pair with the left tensor on site (row,col)
-    * @param option 't'op or 'b'ottom row
-    * @param col column index of the left tensor
+    * @param option 't'op ,'b'ottom row or 'l'eft, 'r'ight column
+    * @param rc column or row index of the left tensor
     * @param L left environment matrix
     * @param QL left unitary matrix coming out of the reduced tensor construction
     * @param R left environment matrix
     * @param QR right unitary matrix coming out of the reduced tensor construction
     * @param N_eff output DArray<4> object containing the effective norm environment on exit
     */
-   void calc_N_eff(char option,int col,const DArray<2> &L,const DArray<4> &QL,const DArray<2> &R, const DArray<4> &QR,DArray<4> &N_eff){
+   void calc_N_eff(char option,int rc,const DArray<2> &L,const DArray<4> &QL,const DArray<2> &R, const DArray<4> &QR,DArray<4> &N_eff){
 
       int Lx = Global::lat.gLx();
       int Ly = Global::lat.gLy();
 
       if(option == 'b'){
 
-         if(col == 0){//left edge
+         if(rc == 0){//left edge
 
             //make a 'double layer' object out of Q for contraction with environment
             DArray<5> tmp5;
@@ -554,7 +742,7 @@ namespace propagate {
             Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,n,m),0.0,N_eff,shape(j,n,k,m));
 
          }
-         else if(col == Lx - 2){//right edge
+         else if(rc == Lx - 2){//right edge
 
             //Left
 
@@ -600,13 +788,13 @@ namespace propagate {
 
             //contraction with left renormalized operator
             DArray<3> tmp3;
-            Contract(1.0,L,shape(0),Environment::t[0][col],shape(0),0.0,tmp3);
+            Contract(1.0,L,shape(0),Environment::t[0][rc],shape(0),0.0,tmp3);
 
             DArray<4> tmp4;
             Contract(1.0,tmp3,shape(0,1),tmp5,shape(0,1),0.0,tmp4);
 
             //construct the 'Left' eff environment
-            DArray<3> L_env = tmp4.reshape_clear(shape(Environment::t[0][col].shape(2),tmp5.shape(3),tmp5.shape(4)));
+            DArray<3> L_env = tmp4.reshape_clear(shape(Environment::t[0][rc].shape(2),tmp5.shape(3),tmp5.shape(4)));
 
             //make a 'double layer' object out of Q for contraction with environment
             tmp5.clear();
@@ -614,7 +802,7 @@ namespace propagate {
 
             //contract with right renormalized operator:
             tmp3.clear();
-            Contract(1.0,Environment::t[0][col+1],shape(2),R,shape(0),0.0,tmp3);
+            Contract(1.0,Environment::t[0][rc+1],shape(2),R,shape(0),0.0,tmp3);
 
             //to construct the R_environment
             Contract(1.0,tmp3,shape(1,2),tmp5,shape(2,4),0.0,tmp4);
@@ -629,9 +817,9 @@ namespace propagate {
          }
 
       }
-      else{//top row!
+      else if(option == 't'){//top row!
 
-         if(col == 0){
+         if(rc == 0){
 
             //make a 'double layer' object out of Q for contraction with environment
             DArray<5> tmp5;
@@ -649,7 +837,7 @@ namespace propagate {
 
             //contract with right renormalized operator:
             DArray<3> tmp3;
-            Contract(1.0,Environment::b[Ly-2][1],shape(2),R,shape(0),0.0,tmp3);
+            Contract(1.0,Environment::b[Ly-2][1],shape(2),R,shape(1),0.0,tmp3);
 
             //to construct the R_environment
             DArray<4> tmp4;
@@ -665,7 +853,7 @@ namespace propagate {
             Contract(1.0,L_env,shape(i,j,k),R_env,shape(m,n,k),0.0,N_eff,shape(i,m,j,n));
 
          }
-         else if(col == Lx-2){//right edge of top row
+         else if(rc == Lx-2){//right edge of top row
 
             //Left
 
@@ -675,13 +863,13 @@ namespace propagate {
 
             //contraction with left renormalized operator
             DArray<3> tmp3;
-            Contract(1.0,L,shape(1),Environment::b[Ly-2][col],shape(0),0.0,tmp3);
+            Contract(1.0,L,shape(1),Environment::b[Ly-2][rc],shape(0),0.0,tmp3);
 
             DArray<4> tmp4;
             Contract(1.0,tmp5,shape(0,2),tmp3,shape(0,1),0.0,tmp4);
 
             //construct the 'Left' eff environment
-            DArray<3> L_env = tmp4.reshape_clear(shape(tmp5.shape(3),tmp5.shape(4),Environment::b[Ly-2][col].shape(2)));
+            DArray<3> L_env = tmp4.reshape_clear(shape(tmp5.shape(3),tmp5.shape(4),Environment::b[Ly-2][rc].shape(2)));
 
             //Right
 
@@ -711,13 +899,13 @@ namespace propagate {
 
             //contraction with left renormalized operator
             DArray<3> tmp3;
-            Contract(1.0,L,shape(1),Environment::b[Ly-2][col],shape(0),0.0,tmp3);
+            Contract(1.0,L,shape(1),Environment::b[Ly-2][rc],shape(0),0.0,tmp3);
 
             DArray<4> tmp4;
             Contract(1.0,tmp5,shape(0,2),tmp3,shape(0,1),0.0,tmp4);
 
             //construct the 'Left' eff environment
-            DArray<3> L_env = tmp4.reshape_clear(shape(tmp5.shape(3),tmp5.shape(4),Environment::b[Ly-2][col].shape(2)));
+            DArray<3> L_env = tmp4.reshape_clear(shape(tmp5.shape(3),tmp5.shape(4),Environment::b[Ly-2][rc].shape(2)));
 
             //make a 'double layer' object out of Q for contraction with environment
             tmp5.clear();
@@ -725,19 +913,133 @@ namespace propagate {
 
             //contract with right renormalized operator:
             tmp3.clear();
-            Contract(1.0,Environment::b[Ly-2][col+1],shape(2),R,shape(0),0.0,tmp3);
+            Contract(1.0,Environment::b[Ly-2][rc+1],shape(2),R,shape(1),0.0,tmp3);
 
             //to construct the R_environment
             Contract(1.0,tmp5,shape(3,4),tmp3,shape(1,2),0.0,tmp4);
 
             //construct the 'Right' eff environment
-            DArray<3> R_env = tmp4.reshape_clear(shape(tmp5.shape(0),tmp5.shape(1),Environment::b[Ly-2][col+1].shape(0)));
+            DArray<3> R_env = tmp4.reshape_clear(shape(tmp5.shape(0),tmp5.shape(1),Environment::b[Ly-2][rc+1].shape(0)));
 
             //now contract left and right environment to form N_eff
             N_eff.clear();
             Contract(1.0,L_env,shape(i,j,k),R_env,shape(m,n,k),0.0,N_eff,shape(i,m,j,n));
 
          }
+
+      }
+      else if(option == 'l'){//left
+
+         if(rc == 0){//left edge
+
+            //make a 'double layer' object out of Q for contraction with environment
+            DArray<5> tmp5;
+            construct_double_layer('L',QL,tmp5);
+
+            //for this one only right contraction is needed:
+            DArray<6> tmp6;
+            Contract(1.0,Environment::r[0][0],shape(1),tmp5,shape(1),0.0,tmp6);
+
+            //construct the 'Left' eff environment
+            DArray<3> L_env = tmp6.reshape_clear(shape(Environment::r[0][0].shape(2),tmp5.shape(3),tmp5.shape(4)));
+
+            //make a 'double layer' object out of Q for contraction with environment
+            construct_double_layer('R',QR,tmp5);
+
+            //contract with right renormalized operator:
+            DArray<3> tmp3;
+            Contract(1.0,Environment::r[0][1],shape(2),R,shape(0),0.0,tmp3);
+
+            //to construct the R_environment
+            DArray<4> tmp4;
+            Contract(1.0,tmp3,shape(1,2),tmp5,shape(2,4),0.0,tmp4);
+
+            //construct the 'Right' eff environment
+            DArray<3> R_env = tmp4.reshape_clear(shape(tmp4.shape(0),tmp4.shape(1),tmp4.shape(2)));
+
+            //now contract left and right environment to form N_eff
+            enum {i,j,k,m,n};
+
+            N_eff.clear();
+            Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,n,m),0.0,N_eff,shape(j,n,k,m));
+
+         }
+         else if(rc == Ly - 2){//'right' edge
+
+            //Left
+
+            //make a 'double layer' object out of Q for contraction with environment
+            DArray<5> tmp5;
+            construct_double_layer('L',QL,tmp5);
+
+            //contraction with left renormalized operator
+            DArray<3> tmp3;
+            Contract(1.0,L,shape(0),Environment::r[0][Ly-2],shape(0),0.0,tmp3);
+
+            DArray<4> tmp4;
+            Contract(1.0,tmp3,shape(0,1),tmp5,shape(0,1),0.0,tmp4);
+
+            //construct the 'Left' eff environment
+            DArray<3> L_env = tmp4.reshape_clear(shape(Environment::r[0][Ly-2].shape(2),tmp5.shape(3),tmp5.shape(4)));
+
+            //Right
+
+            //make a 'double layer' object out of Q for contraction with environment
+            construct_double_layer('R',QR,tmp5);
+
+            //only attach to top to construct R_env
+            DArray<6> tmp6;
+            Contract(1.0,Environment::r[0][Ly-1],shape(1),tmp5,shape(2),0.0,tmp6);
+
+            DArray<3> R_env = tmp6.reshape_clear(shape(Environment::r[0][Ly-1].shape(0),tmp5.shape(0),tmp5.shape(1)));
+
+            //construct effective environment
+            enum {i,j,k,m,n};
+
+            N_eff.clear();
+            Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,m,n),0.0,N_eff,shape(j,m,k,n));
+
+         }
+         else{//middle
+
+            enum {i,j,k,m,n};
+
+            //make a 'double layer' object out of Q for contraction with environment
+            DArray<5> tmp5;
+            construct_double_layer('L',QL,tmp5);
+
+            //contraction with left renormalized operator
+            DArray<3> tmp3;
+            Contract(1.0,L,shape(0),Environment::r[0][rc],shape(0),0.0,tmp3);
+
+            DArray<4> tmp4;
+            Contract(1.0,tmp3,shape(0,1),tmp5,shape(0,1),0.0,tmp4);
+
+            //construct the 'Left' eff environment
+            DArray<3> L_env = tmp4.reshape_clear(shape(Environment::r[0][rc].shape(2),tmp5.shape(3),tmp5.shape(4)));
+
+            //make a 'double layer' object out of Q for contraction with environment
+            tmp5.clear();
+            construct_double_layer('R',QR,tmp5);
+
+            //contract with right renormalized operator:
+            tmp3.clear();
+            Contract(1.0,Environment::r[0][rc+1],shape(2),R,shape(0),0.0,tmp3);
+
+            //to construct the R_environment
+            Contract(1.0,tmp3,shape(1,2),tmp5,shape(2,4),0.0,tmp4);
+
+            //construct the 'Right' eff environment
+            DArray<3> R_env = tmp4.reshape_clear(shape(tmp4.shape(0),tmp4.shape(1),tmp4.shape(2)));
+
+            //now contract left and right environment to form N_eff
+            N_eff.clear();
+            Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,m,n),0.0,N_eff,shape(j,m,k,n));
+
+         }
+
+      }
+      else{//right
 
       }
 
@@ -833,30 +1135,84 @@ namespace propagate {
 
    /** 
     * init the right renormalized operator for the top or bottom row
+    * @param option == 'l'eft 'r'ight 'top' or 'b'ottom
     * @param R vector containing the right operators on exit
     */
-   void init_ro(vector< DArray<2> > &R){
+   void init_ro(char option,vector< DArray<2> > &R){
 
       int Lx = Global::lat.gLx();
       int Ly = Global::lat.gLy();
 
-      //first the rightmost operator
-      DArray<4> tmp4;
-      DArray<3> tmp3;
+      if(option == 'b'){
 
-      //tmp comes out index (t,b)
-      Contract(1.0,Environment::t[0][Lx - 1],shape(1),Environment::b[0][Lx - 1],shape(1),0.0,tmp4);
+         //first the rightmost operator
+         DArray<4> tmp4;
+         DArray<3> tmp3;
 
-      //reshape tmp to a 2-index array
-      R[Lx - 3] = tmp4.reshape_clear(shape(Environment::t[0][Lx - 1].shape(0),Environment::b[0][Lx - 1].shape(0)));
+         //tmp comes out index (t,b)
+         Contract(1.0,Environment::t[0][Lx - 1],shape(1),Environment::b[0][Lx - 1],shape(1),0.0,tmp4);
 
-      //now construct the rest
-      for(int col = Lx - 2;col > 1;--col){
+         //reshape tmp to a 2-index array
+         R[Lx - 3] = tmp4.reshape_clear(shape(Environment::t[0][Lx - 1].shape(0),Environment::b[0][Lx - 1].shape(0)));
 
-         tmp3.clear();
-         Contract(1.0,Environment::t[0][col],shape(2),R[col-1],shape(0),0.0,tmp3);
+         //now construct the rest
+         for(int col = Lx - 2;col > 1;--col){
 
-         Contract(1.0,tmp3,shape(1,2),Environment::b[0][col],shape(1,2),0.0,R[col-2]);
+            tmp3.clear();
+            Contract(1.0,Environment::t[0][col],shape(2),R[col-1],shape(0),0.0,tmp3);
+
+            R[col-2].clear();
+            Contract(1.0,tmp3,shape(1,2),Environment::b[0][col],shape(1,2),0.0,R[col-2]);
+
+         }
+
+      }
+      else if(option == 't'){
+
+         //first the rightmost operator
+         DArray<4> tmp4;
+         DArray<3> tmp3;
+
+         //tmp comes out index (t,b)
+         Contract(1.0,Environment::t[Ly-2][Lx - 1],shape(1),Environment::b[Ly-2][Lx - 1],shape(1),0.0,tmp4);
+
+         //reshape tmp to a 2-index array
+         R[Lx - 3] = tmp4.reshape_clear(shape(Environment::t[Ly-2][Lx - 1].shape(0),Environment::b[Ly-2][Lx - 1].shape(0)));
+
+         //now construct the rest
+         for(int col = Lx - 2;col > 1;--col){
+
+            tmp3.clear();
+            Contract(1.0,Environment::t[Ly-2][col],shape(2),R[col-1],shape(0),0.0,tmp3);
+
+            R[col-2].clear();
+            Contract(1.0,tmp3,shape(1,2),Environment::b[Ly-2][col],shape(1,2),0.0,R[col-2]);
+
+         }
+
+      }
+      else if(option == 'l'){
+
+         //first the rightmost operator
+         DArray<4> tmp4;
+         DArray<3> tmp3;
+
+         //tmp comes out index (r,l)
+         Contract(1.0,Environment::r[0][Ly - 1],shape(1),Environment::l[0][Ly - 1],shape(1),0.0,tmp4);
+
+         //reshape tmp to a 2-index array
+         R[Ly - 3] = tmp4.reshape_clear(shape(Environment::r[0][Ly - 1].shape(0),Environment::l[0][Ly - 1].shape(0)));
+
+         //now construct the rest
+         for(int row = Ly - 2;row > 1;--row){
+
+            tmp3.clear();
+            Contract(1.0,Environment::r[0][row],shape(2),R[row-1],shape(0),0.0,tmp3);
+
+            R[row-2].clear();
+            Contract(1.0,tmp3,shape(1,2),Environment::l[0][row],shape(1,2),0.0,R[row-2]);
+
+         }
 
       }
 
@@ -864,16 +1220,17 @@ namespace propagate {
 
    /**
     * update left renormalized operator on site col 
-    * @param option == 't'op or 'b'ottom
+    * @param option == 't'op ,'b'ottom, 'l'eft or 'r'ight
+    * @param rc is row or column index, col for t,b row for r,l
     */
-   void update_L(char option,int col,DArray<2> &L){
+   void update_L(char option,int rc,DArray<2> &L){
 
       int Lx = Global::lat.gLx();
       int Ly = Global::lat.gLy();
 
       if(option == 'b'){//bottom
 
-         if(col == 0){
+         if(rc == 0){
 
             DArray<4> tmp4;
             Contract(1.0,Environment::t[0][0],shape(1),Environment::b[0][0],shape(1),0.0,tmp4);
@@ -885,17 +1242,17 @@ namespace propagate {
 
             //update the left renormalized operator:
             DArray<3> tmp3;
-            Contract(1.0,L,shape(0),Environment::t[0][col],shape(0),0.0,tmp3);
+            Contract(1.0,L,shape(0),Environment::t[0][rc],shape(0),0.0,tmp3);
 
             L.clear();
-            Contract(1.0,tmp3,shape(0,1),Environment::b[0][col],shape(0,1),0.0,L);
+            Contract(1.0,tmp3,shape(0,1),Environment::b[0][rc],shape(0,1),0.0,L);
 
          }
 
       }
-      else{//top
+      else if(option == 't'){//top
 
-         if(col == 0){
+         if(rc == 0){
 
             DArray<4> tmp4;
             Contract(1.0,Environment::t[Ly-2][0],shape(1),Environment::b[Ly-2][0],shape(1),0.0,tmp4);
@@ -907,10 +1264,54 @@ namespace propagate {
 
             //update the left renormalized operator:
             DArray<3> tmp3;
-            Contract(1.0,L,shape(0),Environment::t[Ly-2][col],shape(0),0.0,tmp3);
+            Contract(1.0,L,shape(0),Environment::t[Ly-2][rc],shape(0),0.0,tmp3);
 
             L.clear();
-            Contract(1.0,tmp3,shape(0,1),Environment::b[Ly-2][col],shape(0,1),0.0,L);
+            Contract(1.0,tmp3,shape(0,1),Environment::b[Ly-2][rc],shape(0,1),0.0,L);
+
+         }
+
+      }
+      else if(option == 'l'){//left
+
+         if(rc == 0){
+
+            DArray<4> tmp4;
+            Contract(1.0,Environment::r[0][0],shape(1),Environment::l[0][0],shape(1),0.0,tmp4);
+
+            L = tmp4.reshape_clear(shape(Environment::r[0][0].shape(2),Environment::l[0][0].shape(2)));
+
+         }
+         else{
+
+            //update the left renormalized operator:
+            DArray<3> tmp3;
+            Contract(1.0,L,shape(0),Environment::r[0][rc],shape(0),0.0,tmp3);
+
+            L.clear();
+            Contract(1.0,tmp3,shape(0,1),Environment::l[0][rc],shape(0,1),0.0,L);
+
+         }
+
+      }
+      else{//right
+
+         if(rc == 0){
+
+            DArray<4> tmp4;
+            Contract(1.0,Environment::r[Lx-2][0],shape(1),Environment::l[Lx-2][0],shape(1),0.0,tmp4);
+
+            L = tmp4.reshape_clear(shape(Environment::r[Lx-2][0].shape(2),Environment::l[Lx-2][0].shape(2)));
+
+         }
+         else{
+
+            //update the left renormalized operator:
+            DArray<3> tmp3;
+            Contract(1.0,L,shape(0),Environment::r[Lx-2][rc],shape(0),0.0,tmp3);
+
+            L.clear();
+            Contract(1.0,tmp3,shape(0,1),Environment::l[Lx-2][rc],shape(0,1),0.0,L);
 
          }
 

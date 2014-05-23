@@ -249,16 +249,16 @@ void Environment::calc_env(char option,int rc,const PEPS<double> &peps,int D_aux
 
    }
    else if(option == 'L'){
-/*
-      //then left layer
-      l[0] = MPS<double>('l',peps,peps);
 
-      for(int i = 1;i < Lx - 1;++i){
+      //then left layer
+      if(rc == 0)
+         l[0] = MPS<double>('l',peps,peps);
+      else{
 
          //i'th col as MPO
-         MPO<double> mpo('V',i,peps,peps);
+         MPO<double> mpo('V',rc,peps,peps);
 
-         MPS<double> tmp(l[i - 1]);
+         MPS<double> tmp(l[rc - 1]);
 
          //apply to form MPS with bond dimension D^4
          tmp.gemv('L',mpo);
@@ -267,24 +267,24 @@ void Environment::calc_env(char option,int rc,const PEPS<double> &peps,int D_aux
          tmp.cut_edges();
 
          //compress in sweeping fashion
-         l[i].resize(Ly);
-         l[i].compress(D_aux,tmp,5);
+         l[rc].resize(Ly);
+         l[rc].compress(D_aux,tmp,5);
 
       }
-*/
+
    }
    else{//option == R
-/*
-      //finally construct right layer
-      r[Lx - 2] = MPS<double>('r',peps,peps);
 
-      for(int i = Lx - 2;i > 0;--i){
+      //finally construct right layer
+      if(rc == Lx - 1)
+         r[Lx - 2] = MPS<double>('r',peps,peps);
+      else{
 
          //i'th row as MPO
-         MPO<double> mpo('V',i,peps,peps);
+         MPO<double> mpo('V',rc,peps,peps);
 
          //apply to form MPS with bond dimension D^4
-         MPS<double> tmp(r[i]);
+         MPS<double> tmp(r[rc]);
 
          tmp.gemv('U',mpo);
 
@@ -292,11 +292,11 @@ void Environment::calc_env(char option,int rc,const PEPS<double> &peps,int D_aux
          tmp.cut_edges();
 
          //compress in sweeping fashion
-         r[i - 1].resize(Ly);
-         r[i - 1].compress(D_aux,tmp,5);
+         r[rc - 1].resize(Ly);
+         r[rc - 1].compress(D_aux,tmp,5);
 
       }
-*/
+
    }
 
 }
@@ -424,7 +424,7 @@ void Environment::construct_double_layer(char option,const DArray<5> &peps,const
       Contract(1.0,peps,shape(i,j,p,k,s),O,shape(p,q),0.0,tmp,shape(i,j,q,k,s));
 
       DArray<8> tmp2;
-      Contract(1.0,tmp,shape(i,j,k,s,m),peps,shape(n,o,k,p,q),0.0,tmp2,shape(s,p,i,n,m,q,j,o));
+      Contract(1.0,tmp,shape(i,j,k,s,m),peps,shape(n,o,k,p,q),0.0,tmp2,shape(s,p,m,q,i,n,j,o));
 
       int DL = tmp2.shape(0) * tmp2.shape(1);
       int d_phys = tmp2.shape(2) * tmp2.shape(3) * tmp2.shape(4) * tmp2.shape(5);
@@ -463,7 +463,7 @@ void Environment::construct_double_layer(char option,const DArray<5> &peps,DArra
       enum {i,j,k,s,m,n,o,p,q};
 
       DArray<8> tmp;
-      Contract(1.0,peps,shape(i,j,k,s,m),peps,shape(n,o,k,p,q),0.0,tmp,shape(s,p,i,n,m,q,j,o));
+      Contract(1.0,peps,shape(i,j,k,s,m),peps,shape(n,o,k,p,q),0.0,tmp,shape(s,p,m,q,i,n,j,o));
 
       int DL = tmp.shape(0) * tmp.shape(1);
       int d_phys = tmp.shape(2) * tmp.shape(3) * tmp.shape(4) * tmp.shape(5);
