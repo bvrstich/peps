@@ -294,6 +294,28 @@ namespace propagate {
 
       }
 
+      //last pair, top right
+
+      //get the reduced tensors
+      construct_reduced_tensor('L',peps(Ly-1,Lx-2),QL,a_L);
+      construct_reduced_tensor('R',peps(Ly-1,Lx-1),QR,a_R);
+
+      //calculate effective environment
+      calc_N_eff('t',Lx-2,L,QL,R[Lx-3],QR,N_eff);
+
+      //get positive approximant
+      get_X(N_eff,X);
+
+      //make environment close to unitary before the update
+      canonicalize(X,a_L,QL,a_R,QR);
+
+      //now do the update! Apply the gates!
+      update(D,a_L,a_R);
+
+      //and expand back to the full tensors
+      Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(Ly-1,Lx-2),shape(i,j,m,k,n));
+      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(Ly-1,Lx-1),shape(i,o,j,m,n));
+
    }
 
    /**
@@ -643,7 +665,40 @@ namespace propagate {
             Contract(1.0,L_env,shape(i,j,k),R_env,shape(m,n,k),0.0,N_eff,shape(i,m,j,n));
 
          }
-         else if(col == Lx-2){
+         else if(col == Lx-2){//right edge of top row
+
+            //Left
+
+            //make a 'double layer' object out of Q for contraction with environment
+            DArray<5> tmp5;
+            construct_double_layer('L',QL,tmp5);
+
+            //contraction with left renormalized operator
+            DArray<3> tmp3;
+            Contract(1.0,L,shape(1),Environment::b[Ly-2][col],shape(0),0.0,tmp3);
+
+            DArray<4> tmp4;
+            Contract(1.0,tmp5,shape(0,2),tmp3,shape(0,1),0.0,tmp4);
+
+            //construct the 'Left' eff environment
+            DArray<3> L_env = tmp4.reshape_clear(shape(tmp5.shape(3),tmp5.shape(4),Environment::b[Ly-2][col].shape(2)));
+
+            //Right
+
+            //make a 'double layer' object out of Q for contraction with environment
+            construct_double_layer('R',QR,tmp5);
+
+            //only attach to bottom to construct R_env
+            DArray<6> tmp6;
+            Contract(1.0,tmp5,shape(3),Environment::b[Ly-2][Lx-1],shape(1),0.0,tmp6);
+
+            DArray<3> R_env = tmp6.reshape_clear(shape(tmp5.shape(0),tmp5.shape(1),Environment::b[Ly-2][Lx-1].shape(0)));
+
+            //construct effective environment
+            enum {i,j,k,m,n};
+
+            N_eff.clear();
+            Contract(1.0,L_env,shape(i,j,k),R_env,shape(m,n,k),0.0,N_eff,shape(i,m,j,n));
 
          }
          else{//middle columns
