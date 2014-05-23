@@ -264,6 +264,36 @@ namespace propagate {
       //update left renormalized operator for use on next site
       update_L('t',0,L);
 
+      //middle sites of the bottom row:
+      for(int col = 1;col < Lx-2;++col){
+
+         //first construct the reduced tensors of the first pair to propagate
+         construct_reduced_tensor('L',peps(Ly-1,col),QL,a_L);
+         construct_reduced_tensor('R',peps(Ly-1,col+1),QR,a_R);
+
+         //calculate the effective environment N_eff
+         calc_N_eff('t',col,L,QL,R[col],QR,N_eff);
+
+         //extract positive appromixant
+         get_X(N_eff,X);
+
+         //make environment close to unitary before the update
+         canonicalize(X,a_L,QL,a_R,QR);
+
+         //now do the update! Apply the gates!
+         update(D,a_L,a_R);
+
+         //and expand back to the full tensors
+         Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(Ly-1,col),shape(i,j,m,k,n));
+         Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(Ly-1,col+1),shape(i,o,j,m,n));
+
+         //first construct a double layer object for the newly updated top 
+         Environment::construct_double_layer('H',peps(Ly-1,col),Environment::t[Ly-2][col]);
+
+         update_L('t',col,L);
+
+      }
+
    }
 
    /**
@@ -617,6 +647,40 @@ namespace propagate {
 
          }
          else{//middle columns
+
+            enum {i,j,k,m,n};
+
+            //make a 'double layer' object out of Q for contraction with environment
+            DArray<5> tmp5;
+            construct_double_layer('L',QL,tmp5);
+
+            //contraction with left renormalized operator
+            DArray<3> tmp3;
+            Contract(1.0,L,shape(1),Environment::b[Ly-2][col],shape(0),0.0,tmp3);
+
+            DArray<4> tmp4;
+            Contract(1.0,tmp5,shape(0,2),tmp3,shape(0,1),0.0,tmp4);
+
+            //construct the 'Left' eff environment
+            DArray<3> L_env = tmp4.reshape_clear(shape(tmp5.shape(3),tmp5.shape(4),Environment::b[Ly-2][col].shape(2)));
+
+            //make a 'double layer' object out of Q for contraction with environment
+            tmp5.clear();
+            construct_double_layer('R',QR,tmp5);
+
+            //contract with right renormalized operator:
+            tmp3.clear();
+            Contract(1.0,Environment::b[Ly-2][col+1],shape(2),R,shape(0),0.0,tmp3);
+
+            //to construct the R_environment
+            Contract(1.0,tmp5,shape(3,4),tmp3,shape(1,2),0.0,tmp4);
+
+            //construct the 'Right' eff environment
+            DArray<3> R_env = tmp4.reshape_clear(shape(tmp5.shape(0),tmp5.shape(1),Environment::b[Ly-2][col+1].shape(0)));
+
+            //now contract left and right environment to form N_eff
+            N_eff.clear();
+            Contract(1.0,L_env,shape(i,j,k),R_env,shape(m,n,k),0.0,N_eff,shape(i,m,j,n));
 
          }
 
