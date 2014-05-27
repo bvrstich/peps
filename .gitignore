@@ -6,6 +6,7 @@
 *.out
 *.png
 *.gif
+*.svg
 callgrind.out.*
 peps
 tags

@@ -29,7 +29,7 @@ int main(int argc,char *argv[]){
    int D = atoi(argv[3]);//virtual dimension
    int D_aux = atoi(argv[4]);//auxiliary dimension for the contraction
 
-   double tau = 0.00001;
+   double tau = 0.01;
 
    //initialize some statics dimensions
    Global::lat.set(L,L,d);
@@ -37,11 +37,34 @@ int main(int argc,char *argv[]){
    Heisenberg::init();
    Trotter::init(tau);
 
-   PEPS<double> peps(D);
-   //peps.initialize_state(D);
+   PEPS<double> peps;
+   peps.initialize_state(D);
 
    peps.normalize(D_aux);
 
-   propagate::step(peps,D_aux);
-  
+   Environment::calc_env('A',peps,D_aux);
+
+   cout << Heisenberg::energy(peps) << endl;
+
+   DArray<2> Sz(d,d);
+   Sz(0,0) = -0.5;
+   Sz(0,1) = 0.0;
+   Sz(1,0) = 0.0;
+   Sz(1,1) = 0.5;
+
+   for(int i = 0;i < 500;++i){
+
+      propagate::step(peps,D_aux);
+
+      peps.normalize(D_aux);
+
+      Environment::calc_env('A',peps,D_aux);
+
+      cout << i << "\t" << Heisenberg::energy(peps) << "\t" << Heisenberg::local(peps,Sz) << endl;
+
+   }
+
+   Environment::calc_env('A',peps,D_aux);
+   Environment::test_env();
+
 }
