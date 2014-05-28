@@ -317,6 +317,16 @@ namespace propagate {
       Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(Ly-1,Lx-2),shape(i,j,m,k,n));
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(Ly-1,Lx-1),shape(i,o,j,m,n));
 
+      //for norm: update the top layer:
+      Environment::construct_double_layer('H',peps(Ly-1,Lx-2),Environment::t[Ly-2][Lx-2]);
+      Environment::construct_double_layer('H',peps(Ly-1,Lx-1),Environment::t[Ly-2][Lx-1]);
+
+      //get the norm matrix
+      update_L('t',Lx-2,L);
+      update_L('t',Lx-1,L);
+
+      //scale the peps
+      peps.scal(1.0/sqrt(L(0,0)));
 
       // ########################################################## //
       // ########################################################## //
@@ -589,6 +599,17 @@ namespace propagate {
       //and expand back to the full tensors
       Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(Ly-2,Lx-1),shape(k,o,n,i,j));
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(Ly-1,Lx-1),shape(n,o,j,i,m));
+
+      //for norm: update the right layer:
+      Environment::construct_double_layer('V',peps(Ly-2,Lx-1),Environment::r[Lx-2][Ly-2]);
+      Environment::construct_double_layer('V',peps(Ly-1,Lx-1),Environment::r[Lx-2][Ly-1]);
+
+      //get the norm matrix
+      update_L('r',Ly-2,L);
+      update_L('r',Ly-1,L);
+
+      //scale the peps
+      peps.scal(1.0/sqrt(L(0,0)));
 
    }
 
@@ -2077,6 +2098,372 @@ namespace propagate {
          }
 
       }
+
+   }
+
+   /**
+    * to help convergence of the algorithm, it apparently helps to apply a staggered magnetic field during optimization
+    * @param peps input peps object, magnetic field to be applied
+    * @param B magnetic field strength
+    */
+   void apply_stag_field(PEPS<double> &peps,double B){
+
+      int Lx = Global::lat.gLx();
+      int Ly = Global::lat.gLy();
+
+      int d = Global::lat.gd();
+
+      DArray<2> Bp(d,d);
+      DArray<2> Bm(d,d);
+
+      Bp(0,0) = exp(-0.5 * Trotter::tau * B);
+      Bm(0,0) = exp(0.5 * Trotter::tau * B);
+
+      Bp(0,1) = 0.0;
+      Bm(0,1) = 0.0;
+
+      Bp(1,0) = 0.0;
+      Bm(1,0) = 0.0;
+
+      Bp(1,1) = exp(0.5 * Trotter::tau * B);
+      Bm(1,1) = exp(-0.5 * Trotter::tau * B);
+
+      DArray<5> tmp5;
+
+      enum {i,j,k,l,m,n};
+
+      for(int row = 0;row < Ly;++row)
+         for(int col = 0;col < Lx;++col){
+
+            if( (row + col)%2 == 0){ //positive field
+
+               tmp5.clear();
+               Contract(1.0,peps(row,col),shape(i,j,k,l,m),Bp,shape(k,n),0.0,tmp5,shape(i,j,n,l,m));
+
+               peps(row,col) = std::move(tmp5);
+
+            }
+            else{//negative field
+
+               tmp5.clear();
+               Contract(1.0,peps(row,col),shape(i,j,k,l,m),Bm,shape(k,n),0.0,tmp5,shape(i,j,n,l,m));
+
+               peps(row,col) = std::move(tmp5);
+
+            }
+
+         }
+
+   }
+
+   /**
+    * propagate the peps one imaginary time step: no environment correction!
+    * @param peps the PEPS to be propagated
+    * @param D_aux auxiliary dimension for the contractions. Determines the accuracy of the effective environment.
+    */
+   void step_no_env(PEPS<double> &peps,int D_aux){
+
+      int Lx = Global::lat.gLx();
+      int Ly = Global::lat.gLy();
+
+      int d = Global::lat.gd();
+      int D = peps.gD();
+
+      enum {i,j,k,m,n,o,p,q};
+
+      // ########################################################### //
+      // ########################################################### //
+      // ##                                                       ## //
+      // ## First propagate applying the gates from bottom to top ## //
+      // ##                                                       ## //
+      // ########################################################### //
+      // ########################################################### //
+
+      // --------------------------------------//
+      // --- !!! (1) the bottom row (1) !!! ---// 
+      // --------------------------------------//
+
+      //now construct the reduced tensors of the first pair to propagate
+      DArray<4> QL;
+      DArray<3> a_L;
+
+      //Left
+      construct_reduced_tensor('H','L',peps(0,0),QL,a_L);
+
+      //Right
+      DArray<4> QR;
+      DArray<3> a_R;
+
+      construct_reduced_tensor('H','R',peps(0,1),QR,a_R);
+
+      //now do the update! Apply the gates!
+      update(D,a_L,a_R);
+
+      //now expand updated reduced tensors back to the full tensors
+      Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,0),shape(i,j,m,k,n));
+      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(0,1),shape(i,o,j,m,n));
+
+      //middle sites of the bottom row:
+      for(int col = 1;col < Lx-2;++col){
+
+         //first construct the reduced tensors of the first pair to propagate
+         construct_reduced_tensor('H','L',peps(0,col),QL,a_L);
+         construct_reduced_tensor('H','R',peps(0,col+1),QR,a_R);
+
+         //now do the update! Apply the gates!
+         update(D,a_L,a_R);
+
+         //and expand back to the full tensors
+         Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,col),shape(i,j,m,k,n));
+         Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(0,col+1),shape(i,o,j,m,n));
+
+      }
+
+      //right bottom pair update
+
+      //get the reduced tensors
+      construct_reduced_tensor('H','L',peps(0,Lx-2),QL,a_L);
+      construct_reduced_tensor('H','R',peps(0,Lx-1),QR,a_R);
+
+      //now do the update! Apply the gates!
+      update(D,a_L,a_R);
+
+      //and expand back to the full tensors
+      Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,Lx-2),shape(i,j,m,k,n));
+      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(0,Lx-1),shape(i,o,j,m,n));
+
+      // ---------------------------------------------------//
+      // --- !!! (2) the middle rows (1 -> Ly-2) (2) !!! ---// 
+      // ---------------------------------------------------//
+
+      //renormalized operators for the middle sites
+      for(int row = 1;row < Ly-1;++row){
+
+         //construct reduced tensors
+         construct_reduced_tensor('H','L',peps(row,0),QL,a_L);
+         construct_reduced_tensor('H','R',peps(row,1),QR,a_R);
+
+         //and update
+         update(D,a_L,a_R);
+
+         //and expand back to the full tensors
+         Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,0),shape(i,j,m,k,n));
+         Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(row,1),shape(i,o,j,m,n));
+
+         //middle pairs of the row:
+         for(int col = 1;col < Lx-2;++col){
+
+            //first construct the reduced tensors of the first pair to propagate
+            construct_reduced_tensor('H','L',peps(row,col),QL,a_L);
+            construct_reduced_tensor('H','R',peps(row,col+1),QR,a_R);
+
+            update(D,a_L,a_R);
+
+            //and expand back to the full tensors
+            Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,col),shape(i,j,m,k,n));
+            Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(row,col+1),shape(i,o,j,m,n));
+
+         }
+
+         //last pair
+         construct_reduced_tensor('H','L',peps(row,Lx-2),QL,a_L);
+         construct_reduced_tensor('H','R',peps(row,Lx-1),QR,a_R);
+
+         //now do the update! Apply the gates!
+         update(D,a_L,a_R);
+
+         //and expand back to the full tensors
+         Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,Lx-2),shape(i,j,m,k,n));
+         Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(row,Lx-1),shape(i,o,j,m,n));
+
+      }
+
+      // ------------------------------------------//
+      // --- !!! (3) the top row (Ly-1) (3) !!! ---// 
+      // ------------------------------------------//
+
+      //construct the reduced tensor for the first bond of top row
+      construct_reduced_tensor('H','L',peps(Ly-1,0),QL,a_L);
+      construct_reduced_tensor('H','R',peps(Ly-1,1),QR,a_R);
+
+      //now do the update! Apply the gates!
+      update(D,a_L,a_R);
+
+      //and expand back to the full tensors
+      Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(Ly-1,0),shape(i,j,m,k,n));
+      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(Ly-1,1),shape(i,o,j,m,n));
+
+      //middle sites of the bottom row:
+      for(int col = 1;col < Lx-2;++col){
+
+         //first construct the reduced tensors of the first pair to propagate
+         construct_reduced_tensor('H','L',peps(Ly-1,col),QL,a_L);
+         construct_reduced_tensor('H','R',peps(Ly-1,col+1),QR,a_R);
+
+         //now do the update! Apply the gates!
+         update(D,a_L,a_R);
+
+         //and expand back to the full tensors
+         Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(Ly-1,col),shape(i,j,m,k,n));
+         Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(Ly-1,col+1),shape(i,o,j,m,n));
+
+      }
+
+      //last pair, top right
+
+      //get the reduced tensors
+      construct_reduced_tensor('H','L',peps(Ly-1,Lx-2),QL,a_L);
+      construct_reduced_tensor('H','R',peps(Ly-1,Lx-1),QR,a_R);
+
+      //now do the update! Apply the gates!
+      update(D,a_L,a_R);
+
+      //and expand back to the full tensors
+      Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(Ly-1,Lx-2),shape(i,j,m,k,n));
+      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(Ly-1,Lx-1),shape(i,o,j,m,n));
+
+
+      // ########################################################## //
+      // ########################################################## //
+      // ##                                                      ## //
+      // ## Then propagate applying the gates from left to right ## //
+      // ##                                                      ## //
+      // ########################################################## //
+      // ########################################################## //
+
+
+      // ---------------------------------------//
+      // --- !!! (1) the left column (1) !!! ---// 
+      // ---------------------------------------//
+
+      //construct the reduced tensor for the first bond of left column
+      construct_reduced_tensor('V','L',peps(0,0),QL,a_L);
+      construct_reduced_tensor('V','R',peps(1,0),QR,a_R);
+
+      //now do the update! Apply the gates!
+      update(D,a_L,a_R);
+
+      //and expand back to the full tensors
+      Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(0,0),shape(k,o,n,i,j));
+      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(1,0),shape(n,o,j,i,m));
+
+      //middle sites of the left column:
+      for(int row = 1;row < Ly-2;++row){
+
+         //first construct the reduced tensors of the first pair to propagate
+         construct_reduced_tensor('V','L',peps(row,0),QL,a_L);
+         construct_reduced_tensor('V','R',peps(row+1,0),QR,a_R);
+
+         //now do the update! Apply the gates!
+         update(D,a_L,a_R);
+
+         //and expand back to the full tensors
+         Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(row,0),shape(k,o,n,i,j));
+         Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(row+1,0),shape(n,o,j,i,m));
+
+      }
+
+      //top left vertical pair update
+
+      //get the reduced tensors
+      construct_reduced_tensor('V','L',peps(Ly-2,0),QL,a_L);
+      construct_reduced_tensor('V','R',peps(Ly-1,0),QR,a_R);
+
+      //now do the update! Apply the gates!
+      update(D,a_L,a_R);
+
+      //and expand back to the full tensors
+      Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(Ly-2,0),shape(k,o,n,i,j));
+      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(Ly-1,0),shape(n,o,j,i,m));
+
+      // -----------------------------------------------------//
+      // --- !!! (2) the middle colums (1 -> Lx-2) (2) !!! ---// 
+      // -----------------------------------------------------//
+
+      for(int col = 1;col < Lx-1;++col){
+
+         construct_reduced_tensor('V','L',peps(0,col),QL,a_L);
+         construct_reduced_tensor('V','R',peps(1,col),QR,a_R);
+
+         //and update
+         update(D,a_L,a_R);
+
+         //and expand back to the full tensors
+         Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(0,col),shape(k,o,n,i,j));
+         Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(1,col),shape(n,o,j,i,m));
+
+         //middle pairs of the col: loop over the rows
+         for(int row = 1;row < Ly-2;++row){
+
+            //first construct the reduced tensors of the first pair to propagate
+            construct_reduced_tensor('V','L',peps(row,col),QL,a_L);
+            construct_reduced_tensor('V','R',peps(row+1,col),QR,a_R);
+
+            //now do the update! Apply the gates!
+            update(D,a_L,a_R);
+
+            //and expand back to the full tensors
+            Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(row,col),shape(k,o,n,i,j));
+            Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(row+1,col),shape(n,o,j,i,m));
+
+         }
+
+         //last vertical pair on col 'col'
+         construct_reduced_tensor('V','L',peps(Ly-2,col),QL,a_L);
+         construct_reduced_tensor('V','R',peps(Ly-1,col),QR,a_R);
+
+         //now do the update! Apply the gates!
+         update(D,a_L,a_R);
+
+         //and expand back to the full tensors
+         Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(Ly-2,col),shape(k,o,n,i,j));
+         Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(Ly-1,col),shape(n,o,j,i,m));
+
+      }
+
+      // -----------------------------------------------//
+      // --- !!! (3) the right column (Lx-1) (3) !!! ---// 
+      // -----------------------------------------------//
+
+      //construct the reduced tensor for the first bond of top row
+      construct_reduced_tensor('V','L',peps(0,Lx-1),QL,a_L);
+      construct_reduced_tensor('V','R',peps(1,Lx-1),QR,a_R);
+
+      //now do the update! Apply the gates!
+      update(D,a_L,a_R);
+
+      //and expand back to the full tensors
+      Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(0,Lx-1),shape(k,o,n,i,j));
+      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(1,Lx-1),shape(n,o,j,i,m));
+
+      //middle sites of the bottom column
+      for(int row = 1;row < Ly-2;++row){
+
+         //first construct the reduced tensors of the first pair to propagate
+         construct_reduced_tensor('V','L',peps(row,Lx-1),QL,a_L);
+         construct_reduced_tensor('V','R',peps(row+1,Lx-1),QR,a_R);
+
+         //now do the update! Apply the gates!
+         update(D,a_L,a_R);
+
+         //and expand back to the full tensors
+         Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(row,Lx-1),shape(k,o,n,i,j));
+         Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(row+1,Lx-1),shape(n,o,j,i,m));
+
+      }
+
+      //last pair, vertical top right pair
+
+      //get the reduced tensors
+      construct_reduced_tensor('V','L',peps(Ly-2,Lx-1),QL,a_L);
+      construct_reduced_tensor('V','R',peps(Ly-1,Lx-1),QR,a_R);
+
+      //now do the update! Apply the gates!
+      update(D,a_L,a_R);
+
+      //and expand back to the full tensors
+      Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(Ly-2,Lx-1),shape(k,o,n,i,j));
+      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(Ly-1,Lx-1),shape(n,o,j,i,m));
 
    }
 

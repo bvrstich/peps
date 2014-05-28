@@ -35,36 +35,14 @@ int main(int argc,char *argv[]){
    Global::lat.set(L,L,d);
    Environment::init();
    Heisenberg::init();
-   Trotter::init(tau);
+
+   Trotter::set(tau);
 
    PEPS<double> peps;
-   peps.initialize_state(D);
+   peps.initialize_state(D,0.0);
+   
+   propagate::step(peps,D_aux);
 
-   peps.normalize(D_aux);
-
-   Environment::calc_env('A',peps,D_aux);
-
-   cout << Heisenberg::energy(peps) << endl;
-
-   DArray<2> Sz(d,d);
-   Sz(0,0) = -0.5;
-   Sz(0,1) = 0.0;
-   Sz(1,0) = 0.0;
-   Sz(1,1) = 0.5;
-
-   for(int i = 0;i < 500;++i){
-
-      propagate::step(peps,D_aux);
-
-      peps.normalize(D_aux);
-
-      Environment::calc_env('A',peps,D_aux);
-
-      cout << i << "\t" << Heisenberg::energy(peps) << "\t" << Heisenberg::local(peps,Sz) << endl;
-
-   }
-
-   Environment::calc_env('A',peps,D_aux);
-   Environment::test_env();
+   cout << peps.dot(peps,D_aux) << endl;
 
 }

@@ -145,10 +145,11 @@ void PEPS<T>::sD(int D_in) {
 
 /**
  * initialize the peps to an antiferromagnetic D=1 structure, where one time step has been acted on, and compressed to dimension D if necessary
- * @param D compressed dimensoin of the state
+ * @param D compressed dimension of the state
+ * @param noise level of noise added to the initial state
  */
 template<>
-void PEPS<double>::initialize_state(int D_in) {
+void PEPS<double>::initialize_state(int D_in,double noise) {
 
    this->D = D_in;
 
@@ -353,6 +354,12 @@ void PEPS<double>::initialize_state(int D_in) {
 
    }
 
+   //make some noise!
+   for(int r = 0;r < Ly;++r)
+      for(int c = 0;c < Lx;++c)
+         for(int index = 0;index < (*this)(r,c).size();++index)
+            (*this)(r,c).data()[index] += noise * Global::rgen<double>();
+
 }
 
 /**
@@ -437,6 +444,25 @@ void PEPS<T>::normalize(int D_aux){
 
 }
 
+/**
+ * scale the peps with a number
+ * @param val scalar to be multiplied with the peps
+ */
+template<typename T>
+void PEPS<T>::scal(T val){
+
+   int Lx = Global::lat.gLx();
+   int Ly = Global::lat.gLy();
+
+   val = pow(val,(T)1.0/(T)this->size());
+
+   //now initialize with random numbers
+   for(int r = 0;r < Ly;++r)
+      for(int c = 0;c < Lx;++c)
+         Scal(val,(*this)[ Global::lat.grc2i(r,c) ]);
+
+}
+
 //forward declarations for types to be used!
 template PEPS<double>::PEPS();
 template PEPS< complex<double> >::PEPS();
@@ -466,3 +492,6 @@ template void PEPS< complex<double> >::sD(int);
 
 template void PEPS<double>::normalize(int D_aux);
 template void PEPS< complex<double> >::normalize(int D_aux);
+
+template void PEPS<double>::scal(double val);
+template void PEPS< complex<double> >::scal(complex<double> val);

@@ -36,7 +36,7 @@ class PEPS : public vector< TArray<T,5> > {
 
       void sD(int);
 
-      void initialize_state(int);
+      void initialize_state(int,double);
 
       const TArray<T,5> &operator()(int,int) const;
 
@@ -45,6 +45,8 @@ class PEPS : public vector< TArray<T,5> > {
       T dot(const PEPS &,int D_aux) const;
 
       void normalize(int);
+
+      void scal(T );
 
    private:
 

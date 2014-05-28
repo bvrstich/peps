@@ -22,7 +22,7 @@ double Trotter::tau;
  * initialize the operators
  * @param tau timestep
  */
-void Trotter::init(double tau_in) {
+void Trotter::set(double tau_in) {
 
    tau = tau_in;
 

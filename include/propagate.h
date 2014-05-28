@@ -10,6 +10,8 @@ namespace propagate {
 
    void step(PEPS<double> &,int);
 
+   void step_no_env(PEPS<double> &,int);
+
    void construct_reduced_tensor(char,char,const DArray<5> &,DArray<4> &,DArray<3> &);
 
    void construct_double_layer(char,const DArray<4> &,DArray<5> &);
@@ -33,6 +35,8 @@ namespace propagate {
    void update_L(char option,int col,DArray<2> &L);
 
    void update_L(char option,int row,int col,const PEPS<double> &,DArray<3> &LO);
+
+   void apply_stag_field(PEPS<double> &,double B);
 
 }
 

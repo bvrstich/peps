@@ -19,7 +19,7 @@ class Trotter {
 
    public:
 
-      static void init (double tau);
+      static void set(double tau);
 
       //!actual operators: left
       static DArray<3> LO;
@@ -27,10 +27,10 @@ class Trotter {
       //!actual operators: right
       static DArray<3> RO;
 
-   private:
-
       //!timestep
       static double tau;
+
+   private:
 
 };
 
