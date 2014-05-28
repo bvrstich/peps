@@ -40,9 +40,20 @@ int main(int argc,char *argv[]){
 
    PEPS<double> peps;
    peps.initialize_state(D,0.0);
-   
-   propagate::step(peps,D_aux);
 
-   cout << peps.dot(peps,D_aux) << endl;
+   for(int i = 0;i < 1000;++i){
+
+      propagate::step(peps,D_aux);
+
+      if(i%10 == 0){
+
+         Environment::calc_env('A',peps,D_aux);
+
+         cout << "STEP \t" << i << "\t" << Heisenberg::energy(peps) << endl;
+
+
+      }
+
+   }
 
 }
