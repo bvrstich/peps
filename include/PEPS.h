@@ -48,6 +48,10 @@ class PEPS : public vector< TArray<T,5> > {
 
       void scal(T );
 
+      void save(const char *);
+
+      void load(const char *);
+
    private:
 
       //!cutoff virtual dimension

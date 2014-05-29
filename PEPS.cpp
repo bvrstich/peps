@@ -463,6 +463,65 @@ void PEPS<T>::scal(T val){
 
 }
 
+/**
+ * @param mpx will be written to file
+ * @param filename name of the file
+ * save the MPX object to a file in binary format.
+ */
+
+template<typename T>
+void PEPS<T>::save(const char *filename){
+
+   int Lx = Global::lat.gLx();
+   int Ly = Global::lat.gLy();
+
+   for(int r = 0;r < Ly;++r)
+      for(int c = 0;c < Lx;++c){
+
+         char name[200];
+
+         sprintf(name,"%s/site_(%d,%d).peps",filename,r,c);
+
+         std::ofstream fout(name);
+         
+         boost::archive::binary_oarchive oar(fout);
+
+ //        oar << (*this)[ Global::lat.grc2i(r,c) ];
+
+//         fout << (*this)[ Global::lat.grc2i(r,c) ];
+
+      }
+
+}
+
+/**
+ * @param mpx will be constructed from file
+ * @param filename name of the file
+ * load the MPX object from a file in binary format.
+ */
+ /*
+template<typename T>
+void PEPS<T>::load(const char *filename){
+
+   int Lx = Global::lat.gLx();
+   int Ly = Global::lat.gLy();
+
+   for(int r = 0;r < Ly;++r)
+      for(int c = 0;c < Lx;++c){
+
+         char name[200];
+
+         sprintf(name,"%s/site_(%d,%d).peps",filename,r,c);
+
+         std::ifstream fin(name);
+         boost::archive::binary_iarchive iar(fin);
+
+         iar >> (*this)[ Global::lat.grc2i(r,c) ];
+
+   }
+
+}
+*/
 //forward declarations for types to be used!
 template PEPS<double>::PEPS();
 template PEPS< complex<double> >::PEPS();
@@ -495,3 +554,9 @@ template void PEPS< complex<double> >::normalize(int D_aux);
 
 template void PEPS<double>::scal(double val);
 template void PEPS< complex<double> >::scal(complex<double> val);
+
+//template void PEPS<double>::load(const char *filename);
+//template void PEPS< complex<double> >::load(const char *filename);
+
+template void PEPS<double>::save(const char *filename);
+template void PEPS< complex<double> >::save(const char *filename);

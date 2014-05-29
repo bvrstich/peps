@@ -30,19 +30,21 @@ OBJ	= $(CPPSRC:.cpp=.o)
 
 BRIGHT_ROOT= .
 
+BTASLIB= /home/bright/btas/lib
+
 INCLUDE = ./include
 
-#LIBS= -lpthread -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core
-LIBS= -lblas -llapacke -lboost_serialization
+LIBS= -lpthread -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core
+#LIBS= -lblas -llapacke
 
-CC	= gcc
-CXX	= g++
+CC	= icc
+CXX	= icpc
 
 # -----------------------------------------------------------------------------
 #   Compiler & Linker flags
 # -----------------------------------------------------------------------------
-CFLAGS	= -I$(INCLUDE) -g -std=c++11 -D_HAS_CBLAS -D_HAS_LAPACKE
-LDFLAGS	= -g
+CFLAGS	= -I$(INCLUDE) -std=c++11 -openmp -D_HAS_CBLAS -D_HAS_INTEL_MKL -O3 -ipo
+LDFLAGS	= -openmp -O3 -ipo
 
 # =============================================================================
 #   Targets & Rules

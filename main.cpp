@@ -39,9 +39,21 @@ int main(int argc,char *argv[]){
    Trotter::set(tau);
 
    PEPS<double> peps;
-   peps.initialize_state(D,0.0);
+   peps.initialize_state(D,0.0001);
 
-   for(int i = 0;i < 1000;++i){
+   peps.normalize(D_aux);
+
+   std::ofstream fout("test.out");
+
+   boost::archive::binary_oarchive oar(fout);
+
+   TArray<double,2> A(4,4);
+   A.generate(Global::rgen<double>);
+
+   oar << A;
+
+/*
+   for(int i = 0;i < 500;++i){
 
       propagate::step(peps,D_aux);
 
@@ -55,5 +67,5 @@ int main(int argc,char *argv[]){
       }
 
    }
-
+*/
 }
