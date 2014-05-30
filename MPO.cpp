@@ -33,23 +33,18 @@ MPO<T>::MPO(char option,int rc,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : ve
 
       TArray<T,8> tmp;
 
-      //c == 0
-      Contract((T)1.0,peps_1(rc,0),shape(i,j,k,l,m),peps_2(rc,0),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+      for(int c = 0;c < Lx;++c){
 
-      (*this)[0] = tmp.reshape_clear(shape(1,D,D,D));
-
-      //c == 1 -> L - 2
-      for(int c = 1;c < Lx - 1;++c){
+         int DL = peps_1(rc,c).shape(0) * peps_2(rc,c).shape(0);
+         int DU = peps_1(rc,c).shape(1) * peps_2(rc,c).shape(1);
+         int DD = peps_1(rc,c).shape(3) * peps_2(rc,c).shape(3);
+         int DR = peps_1(rc,c).shape(4) * peps_2(rc,c).shape(4);
 
          Contract((T)1.0,peps_1(rc,c),shape(i,j,k,l,m),peps_2(rc,c),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
 
-         (*this)[c] = tmp.reshape_clear(shape(D,D,D,D));
+         (*this)[c] = tmp.reshape_clear(shape(DL,DU,DD,DR));
 
       }
-
-      Contract((T)1.0,peps_1(rc,Lx-1),shape(i,j,k,l,m),peps_2(rc,Lx-1),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
-
-      (*this)[Lx-1] = tmp.reshape_clear(shape(D,D,D,1));
 
    }
    else{//vertical!
@@ -60,23 +55,18 @@ MPO<T>::MPO(char option,int rc,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : ve
 
       TArray<T,8> tmp;
 
-      //r == 0
-      Contract((T)1.0,peps_1(0,rc),shape(i,j,k,l,m),peps_2(0,rc),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,m,q,i,n,j,o));
+      for(int r = 0;r < Ly;++r){
 
-      (*this)[0] = tmp.reshape_clear(shape(1,D,D,D));
-
-      //r == 1 -> L - 2
-      for(int r = 1;r < Ly - 1;++r){
+         int DL = peps_1(r,rc).shape(3) * peps_2(r,rc).shape(3);
+         int DU = peps_1(r,rc).shape(4) * peps_2(r,rc).shape(4);
+         int DD = peps_1(r,rc).shape(0) * peps_2(r,rc).shape(0);
+         int DR = peps_1(r,rc).shape(1) * peps_2(r,rc).shape(1);
 
          Contract((T)1.0,peps_1(r,rc),shape(i,j,k,l,m),peps_2(r,rc),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,m,q,i,n,j,o));
 
-         (*this)[r] = tmp.reshape_clear(shape(D,D,D,D));
+         (*this)[r] = tmp.reshape_clear(shape(DL,DU,DD,DR));
 
       }
-
-      Contract((T)1.0,peps_1(Ly-1,rc),shape(i,j,k,l,m),peps_2(Ly-1,rc),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,m,q,i,n,j,o));
-
-      (*this)[Ly-1] = tmp.reshape_clear(shape(D,D,D,1));
 
    }
 

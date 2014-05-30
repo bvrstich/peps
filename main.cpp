@@ -38,34 +38,137 @@ int main(int argc,char *argv[]){
 
    Trotter::set(tau);
 
-   PEPS<double> peps;
-   peps.initialize_state(D,0.0001);
-
+   PEPS<double> peps(D);
+   peps.initialize_state(D,0.001);
+   
    peps.normalize(D_aux);
 
-   std::ofstream fout("test.out");
+   char filename[200];
 
-   boost::archive::binary_oarchive oar(fout);
+   sprintf(filename,"output/%dx%d/D=%d",L,L,D);
 
-   TArray<double,2> A(4,4);
-   A.generate(Global::rgen<double>);
-
-   oar << A;
-
-/*
-   for(int i = 0;i < 500;++i){
+   for(int i = 0;i < 1000;++i){
 
       propagate::step(peps,D_aux);
 
-      if(i%10 == 0){
+      if(i % 10 == 0){
 
          Environment::calc_env('A',peps,D_aux);
+         cout << i << "\t" << Heisenberg::energy(peps) << endl;
 
-         cout << "STEP \t" << i << "\t" << Heisenberg::energy(peps) << endl;
-
+         //save:
+         peps.save(filename);
 
       }
 
    }
-*/
+
+   tau /= 10.0;
+
+   Trotter::set(tau);
+
+   cout << endl;
+   cout << "now for dt = " << tau << endl;
+   cout << endl;
+
+   for(int i = 1000;i < 2000;++i){
+
+      propagate::step(peps,D_aux);
+
+      if(i % 10 == 0){
+
+         Environment::calc_env('A',peps,D_aux);
+         cout << i << "\t" << Heisenberg::energy(peps) << endl;
+
+         //save:
+         peps.save(filename);
+
+      }
+
+   }
+
+   tau = 0.01;
+   Trotter::set(tau);
+   peps.grow_bond_dimension(++D,0.001);
+
+   sprintf(filename,"output/%dx%d/D=%d",L,L,D);
+
+   D_aux = D*D;
+
+   for(int i = 2000;i < 3000;++i){
+
+      propagate::step(peps,D_aux);
+
+      if(i % 10 == 0){
+
+         Environment::calc_env('A',peps,D_aux);
+         cout << i << "\t" << Heisenberg::energy(peps) << endl;
+
+         //save:
+         peps.save(filename);
+
+      }
+
+   }
+
+   tau = 0.001;
+   Trotter::set(tau);
+
+   for(int i = 3000;i < 4000;++i){
+
+      propagate::step(peps,D_aux);
+
+      if(i % 10 == 0){
+
+         Environment::calc_env('A',peps,D_aux);
+         cout << i << "\t" << Heisenberg::energy(peps) << endl;
+
+         //save:
+         peps.save(filename);
+
+      }
+
+   }
+
+   tau = 0.01;
+   Trotter::set(tau);
+   peps.grow_bond_dimension(++D,0.001);
+
+   D_aux = D*D;
+
+   for(int i = 4000;i < 5000;++i){
+
+      propagate::step(peps,D_aux);
+
+      if(i % 10 == 0){
+
+         Environment::calc_env('A',peps,D_aux);
+         cout << i << "\t" << Heisenberg::energy(peps) << endl;
+
+         //save:
+         peps.save(filename);
+
+      }
+
+   }
+
+   tau = 0.001;
+   Trotter::set(tau);
+
+   for(int i = 5000;i < 6000;++i){
+
+      propagate::step(peps,D_aux);
+
+      if(i % 10 == 0){
+
+         Environment::calc_env('A',peps,D_aux);
+         cout << i << "\t" << Heisenberg::energy(peps) << endl;
+
+         //save:
+         peps.save(filename);
+
+      }
+
+   }
+
 }

@@ -93,25 +93,18 @@ MPS<T>::MPS(char option,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< T
       enum {i,j,k,l,m,n,o,p,q};
 
       TArray<T,8> tmp;
-
-      //c == 0
-      Contract((T)1.0,peps_1(0,0),shape(i,j,k,l,m),peps_2(0,0),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
-
-      (*this)[0] = tmp.reshape_clear(shape(1,D,D));
-
-      //c == 1 -> L - 2
-      for(int c = 1;c < Lx - 1;++c){
+ 
+      for(int c = 0;c < Lx;++c){
 
          Contract((T)1.0,peps_1(0,c),shape(i,j,k,l,m),peps_2(0,c),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
 
-         (*this)[c] = tmp.reshape_clear(shape(D,D,D));
+         int DL = peps_1(0,c).shape(0) * peps_2(0,c).shape(0);
+         int phys_d = peps_1(0,c).shape(1) * peps_2(0,c).shape(1);
+         int DR = peps_1(0,c).shape(4) * peps_2(0,c).shape(4);
+
+         (*this)[c] = tmp.reshape_clear(shape(DL,phys_d,DR));
 
       }
-
-      //c == L - 1
-      Contract((T)1.0,peps_1(0,Lx - 1),shape(i,j,k,l,m),peps_2(0,Lx - 1),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
-
-      (*this)[Lx - 1] = tmp.reshape_clear(shape(D,D,1));
 
    }
    else if(option == 't'){//top
@@ -124,24 +117,17 @@ MPS<T>::MPS(char option,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< T
 
       TArray<T,8> tmp;
 
-      //c == 0
-      Contract((T)1.0,peps_1(Ly-1,0),shape(i,j,k,l,m),peps_2(Ly-1,0),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
+      for(int c = 0;c < Lx;++c){
 
-      (*this)[0] = tmp.reshape_clear(shape(1,D,D));
-
-      //c == 1 -> L - 2
-      for(int c = 1;c < Lx - 1;++c){
+         int DL = peps_1(Ly-1,c).shape(0) * peps_2(Ly-1,c).shape(0);
+         int phys_d = peps_1(Ly-1,c).shape(3) * peps_2(Ly-1,c).shape(3);
+         int DR = peps_1(Ly-1,c).shape(4) * peps_2(Ly-1,c).shape(4);
 
          Contract((T)1.0,peps_1(Ly-1,c),shape(i,j,k,l,m),peps_2(Ly-1,c),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
 
-         (*this)[c] = tmp.reshape_clear(shape(D,D,D));
+         (*this)[c] = tmp.reshape_clear(shape(DL,phys_d,DR));
 
       }
-
-      //c == L - 1
-      Contract((T)1.0,peps_1(Ly-1,Lx-1),shape(i,j,k,l,m),peps_2(Ly-1,Lx-1),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
-
-      (*this)[Lx-1] = tmp.reshape_clear(shape(D,D,1));
 
    }
    else if(option == 'l'){//left
@@ -154,24 +140,17 @@ MPS<T>::MPS(char option,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< T
 
       TArray<T,8> tmp;
 
-      //r == 0
-      Contract((T)1.0,peps_1(0,0),shape(i,j,k,l,m),peps_2(0,0),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,i,n,m,q,j,o));
+      for(int r = 0;r < Ly;++r){
 
-      (*this)[0] = tmp.reshape_clear(shape(1,D,D));
+         int DL = peps_1(r,0).shape(3) * peps_2(r,0).shape(3);
+         int phys_d = peps_1(r,0).shape(4) * peps_2(r,0).shape(4);
+         int DR = peps_1(r,0).shape(1) * peps_2(r,0).shape(1);
 
-      //r == 1 -> L - 2
-      for(int r = 1;r < Ly - 1;++r){
+         Contract((T)1.0,peps_1(r,0),shape(i,j,k,l,m),peps_2(r,0),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,m,q,i,n,j,o));
 
-         Contract((T)1.0,peps_1(r,0),shape(i,j,k,l,m),peps_2(r,0),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,i,n,m,q,j,o));
-
-         (*this)[r] = tmp.reshape_clear(shape(D,D,D));
+         (*this)[r] = tmp.reshape_clear(shape(DL,phys_d,DR));
 
       }
-
-      //r == L - 1
-      Contract((T)1.0,peps_1(Ly-1,0),shape(i,j,k,l,m),peps_2(Ly-1,0),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,i,n,m,q,j,o));
-
-      (*this)[Ly-1] = tmp.reshape_clear(shape(D,D,1));
 
    }
    else{//finally right
@@ -184,24 +163,17 @@ MPS<T>::MPS(char option,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< T
 
       TArray<T,8> tmp;
 
-      //c == 0
-      Contract((T)1.0,peps_1(0,Lx-1),shape(i,j,k,l,m),peps_2(0,Lx-1),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,i,n,m,q,j,o));
+      for(int r = 0;r < Ly;++r){
 
-      (*this)[0] = tmp.reshape_clear(shape(1,D,D));
-
-      //c == 1 -> L - 2
-      for(int r = 1;r < Ly - 1;++r){
+         int DL = peps_1(r,Lx-1).shape(3) * peps_2(r,Lx-1).shape(3);
+         int phys_d = peps_1(r,Lx-1).shape(0) * peps_2(r,Lx-1).shape(0);
+         int DR = peps_1(r,Lx-1).shape(1) * peps_2(r,Lx-1).shape(1);
 
          Contract((T)1.0,peps_1(r,Lx-1),shape(i,j,k,l,m),peps_2(r,Lx-1),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,i,n,m,q,j,o));
 
-         (*this)[r] = tmp.reshape_clear(shape(D,D,D));
+         (*this)[r] = tmp.reshape_clear(shape(DL,phys_d,DR));
 
       }
-
-      //c == L - 1
-      Contract((T)1.0,peps_1(Ly-1,Lx-1),shape(i,j,k,l,m),peps_2(Ly-1,Lx-1),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,i,n,m,q,j,o));
-
-      (*this)[Ly-1] = tmp.reshape_clear(shape(D,D,1));
 
    }
 

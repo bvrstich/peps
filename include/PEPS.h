@@ -38,6 +38,8 @@ class PEPS : public vector< TArray<T,5> > {
 
       void initialize_state(int,double);
 
+      void grow_bond_dimension(int,double);
+
       const TArray<T,5> &operator()(int,int) const;
 
       TArray<T,5> &operator()(int,int);

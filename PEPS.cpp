@@ -363,6 +363,204 @@ void PEPS<double>::initialize_state(int D_in,double noise) {
 }
 
 /**
+ * initialize the peps to an antiferromagnetic D=1 structure, where one time step has been acted on, and compressed to dimension D if necessary
+ * @param D compressed dimension of the state
+ * @param noise level of noise added to the initial state
+ */
+template<>
+void PEPS<double>::grow_bond_dimension(int D_in,double noise) {
+
+   this->D = D_in;
+
+   int Lx = Global::lat.gLx();
+   int Ly = Global::lat.gLy();
+   int d = Global::lat.gd();
+
+   for(int r = 0;r < Ly;++r){
+
+      enum {i,j,k,l,m,n,p};
+      IVector<5> pshape;
+
+      //first the even bonds, (0,1)-(2,3),...
+      for(int c = 0;c < Lx-1;c+=2){
+
+         //left
+         pshape = (*this)[Global::lat.grc2i(r,c)].shape();
+
+         DArray<6> tmp;
+         Contract(1.0,(*this)[Global::lat.grc2i(r,c)],shape(i,j,k,l,m),Trotter::LO,shape(n,p,k),0.0,tmp,shape(i,j,n,l,m,p));
+
+         (*this)[Global::lat.grc2i(r,c)] = tmp.reshape_clear(shape(pshape[0],pshape[1],d,pshape[3],pshape[4]*Trotter::LO.shape(1)));
+
+         //right
+         pshape = (*this)[Global::lat.grc2i(r,c+1)].shape();
+
+         Contract(1.0,Trotter::RO,shape(i,j,k),(*this)[Global::lat.grc2i(r,c+1)],shape(l,m,k,n,p),0.0,tmp,shape(l,j,m,i,n,p));
+
+         (*this)[Global::lat.grc2i(r,c+1)] = tmp.reshape_clear(shape(pshape[0]*Trotter::RO.shape(1),pshape[1],d,pshape[3],pshape[4]));
+
+         //now create 'two-site' object
+         DArray<8> ts;
+         Contract(1.0,(*this)[Global::lat.grc2i(r,c)],shape(4),(*this)[Global::lat.grc2i(r,c+1)],shape(0),0.0,ts);
+
+         //svd the fucker
+         DArray<1> S;
+         Gesvd ('S','S', ts, S,(*this)[Global::lat.grc2i(r,c)],(*this)[Global::lat.grc2i(r,c+1)],D);
+
+         //take the square root of the sv's
+         for(int i = 0;i < S.size();++i)
+            S(i) = sqrt(S(i));
+
+         //and multiply it left and right to the tensors
+         Dimm(S,(*this)[Global::lat.grc2i(r,c+1)]);
+         Dimm((*this)[Global::lat.grc2i(r,c)],S);
+
+
+      }
+
+      //then the odd bonds, (1,2)-(3,4),...
+      for(int c = 1;c < Lx-1;c+=2){
+
+         //left
+         pshape = (*this)[Global::lat.grc2i(r,c)].shape();
+
+         DArray<6> tmp;
+         Contract(1.0,(*this)[Global::lat.grc2i(r,c)],shape(i,j,k,l,m),Trotter::LO,shape(n,p,k),0.0,tmp,shape(i,j,n,l,m,p));
+
+         (*this)[Global::lat.grc2i(r,c)] = tmp.reshape_clear(shape(pshape[0],pshape[1],d,pshape[3],pshape[4]*Trotter::LO.shape(1)));
+
+         //right
+         pshape = (*this)[Global::lat.grc2i(r,c+1)].shape();
+
+         Contract(1.0,Trotter::RO,shape(i,j,k),(*this)[Global::lat.grc2i(r,c+1)],shape(l,m,k,n,p),0.0,tmp,shape(l,j,m,i,n,p));
+
+         (*this)[Global::lat.grc2i(r,c+1)] = tmp.reshape_clear(shape(pshape[0]*Trotter::RO.shape(1),pshape[1],d,pshape[3],pshape[4]));
+
+         //now create 'two-site' object
+         DArray<8> ts;
+         Contract(1.0,(*this)[Global::lat.grc2i(r,c)],shape(4),(*this)[Global::lat.grc2i(r,c+1)],shape(0),0.0,ts);
+
+         //svd the fucker
+         DArray<1> S;
+         Gesvd ('S','S', ts, S,(*this)[Global::lat.grc2i(r,c)],(*this)[Global::lat.grc2i(r,c+1)],D);
+
+         //take the square root of the sv's
+         for(int i = 0;i < S.size();++i)
+            S(i) = sqrt(S(i));
+
+         //and multiply it left and right to the tensors
+         Dimm(S,(*this)[Global::lat.grc2i(r,c+1)]);
+         Dimm((*this)[Global::lat.grc2i(r,c)],S);
+
+      }
+
+   }
+
+   //then on the columns, i.e. vertical bonds
+   for(int c = 0;c < Lx;++c){
+
+      enum {i,j,k,l,m,n,p};
+      IVector<5> pshape;
+
+      //first the even bonds, (0,1)-(2,3),...
+      for(int r = 0;r < Ly-1;r+=2){
+
+         //left
+         pshape = (*this)[Global::lat.grc2i(r,c)].shape();
+         
+         DArray<6> tmp;
+         Contract(1.0,(*this)[Global::lat.grc2i(r,c)],shape(i,j,k,l,m),Trotter::LO,shape(n,p,k),0.0,tmp,shape(i,j,p,n,l,m));
+
+         (*this)[Global::lat.grc2i(r,c)] = tmp.reshape_clear(shape(pshape[0],pshape[1]*Trotter::LO.shape(1),d,pshape[3],pshape[4]));
+
+         //right
+         pshape = (*this)[Global::lat.grc2i(r+1,c)].shape();
+
+         Contract(1.0,Trotter::RO,shape(i,j,k),(*this)[Global::lat.grc2i(r+1,c)],shape(l,m,k,n,p),0.0,tmp,shape(l,m,i,n,j,p));
+
+         (*this)[Global::lat.grc2i(r+1,c)] = tmp.reshape_clear(shape(pshape[0],pshape[1],d,pshape[3]*Trotter::RO.shape(1),pshape[4]));
+
+         //now create 'two-site' object
+         DArray<8> ts;
+         Contract(1.0,(*this)[Global::lat.grc2i(r,c)],shape(1),(*this)[Global::lat.grc2i(r+1,c)],shape(3),0.0,ts);
+
+         //svd the fucker
+         DArray<1> S;
+         DArray<5> U;
+         DArray<5> VT;
+
+         Gesvd ('S','S', ts, S,U,VT,D);
+
+         //take the square root of the sv's
+         for(int i = 0;i < S.size();++i)
+            S(i) = sqrt(S(i));
+
+         //and multiply it left and right to the tensors
+         Dimm(U,S);
+         Dimm(S,VT);
+
+         //permute the memory the way it should be
+         Permute(U,shape(0,4,1,2,3),(*this)[Global::lat.grc2i(r,c)]);
+         Permute(VT,shape(1,2,3,0,4),(*this)[Global::lat.grc2i(r+1,c)]);
+
+      }
+
+      //then the odd bonds, (1,2)-(3,4),...
+      for(int r = 1;r < Ly-1;r+=2){
+
+         //left
+         pshape = (*this)[Global::lat.grc2i(r,c)].shape();
+         
+         DArray<6> tmp;
+         Contract(1.0,(*this)[Global::lat.grc2i(r,c)],shape(i,j,k,l,m),Trotter::LO,shape(n,p,k),0.0,tmp,shape(i,j,p,n,l,m));
+
+         (*this)[Global::lat.grc2i(r,c)] = tmp.reshape_clear(shape(pshape[0],pshape[1]*Trotter::LO.shape(1),d,pshape[3],pshape[4]));
+
+         //right
+         pshape = (*this)[Global::lat.grc2i(r+1,c)].shape();
+
+         Contract(1.0,Trotter::RO,shape(i,j,k),(*this)[Global::lat.grc2i(r+1,c)],shape(l,m,k,n,p),0.0,tmp,shape(l,m,i,n,j,p));
+
+         (*this)[Global::lat.grc2i(r+1,c)] = tmp.reshape_clear(shape(pshape[0],pshape[1],d,pshape[3]*Trotter::RO.shape(1),pshape[4]));
+
+         //now create 'two-site' object
+         DArray<8> ts;
+         Contract(1.0,(*this)[Global::lat.grc2i(r,c)],shape(1),(*this)[Global::lat.grc2i(r+1,c)],shape(3),0.0,ts);
+
+         //svd the fucker
+         DArray<1> S;
+         DArray<5> U;
+         DArray<5> VT;
+
+         Gesvd ('S','S', ts, S,U,VT,D);
+
+         //take the square root of the sv's
+         for(int i = 0;i < S.size();++i)
+            S(i) = sqrt(S(i));
+
+         //and multiply it left and right to the tensors
+         Dimm(U,S);
+         Dimm(S,VT);
+
+         //permute the memory the way it should be
+         Permute(U,shape(0,4,1,2,3),(*this)[Global::lat.grc2i(r,c)]);
+         Permute(VT,shape(1,2,3,0,4),(*this)[Global::lat.grc2i(r+1,c)]);
+
+      }
+
+   }
+
+   //make some noise!
+   for(int r = 0;r < Ly;++r)
+      for(int c = 0;c < Lx;++c)
+         for(int index = 0;index < (*this)(r,c).size();++index)
+            (*this)(r,c).data()[index] += noise * Global::rgen<double>();
+
+}
+
+
+
+/**
  * @param peps_i peps to take the overlap with
  * @param D_aux auxiliary dimension of the contraction (determines the accuracy of the contraction)
  * @return the inner product of two PEPS <psi1|psi2> 
@@ -475,20 +673,30 @@ void PEPS<T>::save(const char *filename){
    int Lx = Global::lat.gLx();
    int Ly = Global::lat.gLy();
 
-   for(int r = 0;r < Ly;++r)
-      for(int c = 0;c < Lx;++c){
+   for(int row = 0;row < Ly;++row)
+      for(int col = 0;col < Lx;++col){
 
          char name[200];
 
-         sprintf(name,"%s/site_(%d,%d).peps",filename,r,c);
+         sprintf(name,"%s/site_(%d,%d).peps",filename,row,col);
 
          std::ofstream fout(name);
-         
-         boost::archive::binary_oarchive oar(fout);
+         fout.precision(16);
 
- //        oar << (*this)[ Global::lat.grc2i(r,c) ];
+         int Da = (*this)(row,col).shape(0);
+         int Db = (*this)(row,col).shape(1);
+         int Dc = (*this)(row,col).shape(2);
+         int Dd = (*this)(row,col).shape(3);
+         int De = (*this)(row,col).shape(4);
 
-//         fout << (*this)[ Global::lat.grc2i(r,c) ];
+         fout << Da << "\t" << Db << "\t" << Dc << "\t" << Dd << "\t" << De << endl;
+
+         for(int a = 0;a < Da;++a)
+            for(int b = 0;b < Db;++b)
+               for(int c = 0;c < Dc;++c)
+                  for(int d = 0;d < Dd;++d)
+                     for(int e = 0;e < De;++e)
+                        fout << a << "\t" << b << "\t" << c << "\t" << d << "\t" << e << "\t" << (*this)(row,col)(a,b,c,d,e) << endl;
 
       }
 
@@ -499,29 +707,38 @@ void PEPS<T>::save(const char *filename){
  * @param filename name of the file
  * load the MPX object from a file in binary format.
  */
- /*
 template<typename T>
 void PEPS<T>::load(const char *filename){
 
    int Lx = Global::lat.gLx();
    int Ly = Global::lat.gLy();
 
-   for(int r = 0;r < Ly;++r)
-      for(int c = 0;c < Lx;++c){
+   for(int row = 0;row < Ly;++row)
+      for(int col = 0;col < Lx;++col){
 
          char name[200];
 
-         sprintf(name,"%s/site_(%d,%d).peps",filename,r,c);
+         sprintf(name,"%s/site_(%d,%d).peps",filename,row,col);
 
          std::ifstream fin(name);
-         boost::archive::binary_iarchive iar(fin);
 
-         iar >> (*this)[ Global::lat.grc2i(r,c) ];
+         int Da,Db,Dc,Dd,De;
+
+         fin >> Da >> Db >> Dc >> Dd >> De;
+
+         (*this)(row,col).resize(Da,Db,Dc,Dd,De);
+
+         for(int a = 0;a < Da;++a)
+            for(int b = 0;b < Db;++b)
+               for(int c = 0;c < Dc;++c)
+                  for(int d = 0;d < Dd;++d)
+                     for(int e = 0;e < De;++e)
+                        fin >> a >> b >> c >> d >> e >> (*this)(row,col)(a,b,c,d,e);
 
    }
 
 }
-*/
+
 //forward declarations for types to be used!
 template PEPS<double>::PEPS();
 template PEPS< complex<double> >::PEPS();
@@ -555,8 +772,8 @@ template void PEPS< complex<double> >::normalize(int D_aux);
 template void PEPS<double>::scal(double val);
 template void PEPS< complex<double> >::scal(complex<double> val);
 
-//template void PEPS<double>::load(const char *filename);
-//template void PEPS< complex<double> >::load(const char *filename);
+template void PEPS<double>::load(const char *filename);
+template void PEPS< complex<double> >::load(const char *filename);
 
 template void PEPS<double>::save(const char *filename);
 template void PEPS< complex<double> >::save(const char *filename);

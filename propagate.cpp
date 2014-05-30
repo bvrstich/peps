@@ -1801,19 +1801,19 @@ namespace propagate {
 
             //Left
 
-            //make a 'double layer' object out of Q for contraction with environment
             //first attach top to left unity
             DArray<4> tmp4;
             Contract(1.0,Environment::t[li][si],shape(0),LO,shape(0),0.0,tmp4);
 
+            //make a 'double layer' object out of Q for contraction with environment
             DArray<5> tmp5;
             construct_double_layer('L',QL,tmp5);
 
             DArray<5> tmp5bis;
-            Contract(1.0,tmp4,shape(i,j,k,o),tmp5,shape(k,i,m,n,p),0.0,tmp5bis,shape(j,n,p,m,o));
+            Contract(1.0,tmp4,shape(i,j,k,o),tmp5,shape(k,i,m,n,p),0.0,tmp5bis,shape(j,n,p,o,m));
 
             DArray<4> LO_env;
-            Contract(1.0,tmp5bis,shape(j,n,p,m,o),Environment::b[li-1][si],shape(o,m,q),0.0,LO_env,shape(j,n,p,q));
+            Contract(1.0,tmp5bis,shape(j,n,p,o,m),Environment::b[li-1][si],shape(o,m,q),0.0,LO_env,shape(j,n,p,q));
 
             //Right
 
@@ -1822,7 +1822,7 @@ namespace propagate {
 
             //construct the 'Right' eff environment
             DArray<6> tmp6;
-            Contract(1.0,Environment::t[li][Lx-1],shape(1),tmp5,shape(1),0.0,tmp6);
+            Contract(1.0,Environment::t[li][Lx-1],shape(1),tmp5,shape(2),0.0,tmp6);
 
             DArray<7> tmp7;
             Contract(1.0,tmp6,shape(4),Environment::b[li-1][Lx-1],shape(1),0.0,tmp7);
@@ -1948,7 +1948,7 @@ namespace propagate {
 
             //construct the 'Right' eff environment
             DArray<6> tmp6;
-            Contract(1.0,Environment::r[li][Lx-1],shape(1),tmp5,shape(1),0.0,tmp6);
+            Contract(1.0,Environment::r[li][Lx-1],shape(1),tmp5,shape(2),0.0,tmp6);
 
             DArray<7> tmp7;
             Contract(1.0,tmp6,shape(4),Environment::l[li-1][Lx-1],shape(1),0.0,tmp7);
