@@ -507,7 +507,6 @@ void MPS<T>::compress(int Dc,const MPS<T> &mps,int n_iter){
    //initial guess by performing svd compression of uncanonicalized state: output is right-canonicalized state
    guess(Right,Dc,mps);
 
-
    //construct renormalized operators
    std::vector< TArray<T,2> > RO(L - 1);
    std::vector< TArray<T,2> > LO(L - 1);

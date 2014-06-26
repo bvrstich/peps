@@ -34,17 +34,17 @@ BTASLIB= /home/bright/btas/lib
 
 INCLUDE = ./include
 
-LIBS= -lpthread -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core
-#LIBS= -lblas -llapacke
+#LIBS= -lpthread -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core
+LIBS= -lblas -llapacke
 
-CC	= icc
-CXX	= icpc
+CC	= gcc
+CXX	= g++
 
 # -----------------------------------------------------------------------------
 #   Compiler & Linker flags
 # -----------------------------------------------------------------------------
-CFLAGS	= -I$(INCLUDE) -std=c++11 -openmp -D_HAS_CBLAS -D_HAS_INTEL_MKL -O3 -ipo
-LDFLAGS	= -openmp -O3 -ipo
+CFLAGS	= -I$(INCLUDE) -g -std=c++11 -D_HAS_CBLAS -D_HAS_LAPACKE
+LDFLAGS	= -g
 
 # =============================================================================
 #   Targets & Rules
