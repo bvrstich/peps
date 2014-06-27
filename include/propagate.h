@@ -26,7 +26,9 @@ namespace propagate {
 
    void canonicalize(DArray<3> &X,DArray<3> &a_L,DArray<4> &QL,DArray<3> &a_R,DArray<4> &QR);
 
-   void update(int,DArray<3> &,DArray<3> &);
+   void simple_update(int,DArray<3> &,DArray<3> &);
+
+   void full_update();
 
    void init_ro(char option,vector< DArray<2> > &R);
 

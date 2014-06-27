@@ -78,17 +78,17 @@ namespace propagate {
       //make the environment as 'unitary' as possible
       canonicalize(X,a_L,QL,a_R,QR);
 
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
+      //now do the simple_update! Apply the gates!
+      simple_update(D,a_L,a_R);
 
-      //now expand updated reduced tensors back to the full tensors
+      //now expand simple_updated reduced tensors back to the full tensors
       Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,0),shape(i,j,m,k,n));
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(0,1),shape(i,o,j,m,n));
 
-      //construct a double layer object for the newly updated bottom left site
+      //construct a double layer object for the newly simple_updated bottom left site
       Environment::construct_double_layer('H',peps(0,0),Environment::b[0][0]);
 
-      //update left renormalized operator for use on next site
+      //simple_update left renormalized operator for use on next site
       update_L('b',0,L);
 
       //middle sites of the bottom row:
@@ -104,24 +104,24 @@ namespace propagate {
          //extract positive appromixant
          get_X(N_eff,X);
 
-         //make environment close to unitary before the update
+         //make environment close to unitary before the simple_update
          canonicalize(X,a_L,QL,a_R,QR);
 
-         //now do the update! Apply the gates!
-         update(D,a_L,a_R);
+         //now do the simple_update! Apply the gates!
+         simple_update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,col),shape(i,j,m,k,n));
          Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(0,col+1),shape(i,o,j,m,n));
 
-         //first construct a double layer object for the newly updated bottom 
+         //first construct a double layer object for the newly simple_updated bottom 
          Environment::construct_double_layer('H',peps(0,col),Environment::b[0][col]);
 
          update_L('b',col,L);
 
       }
 
-      //right bottom pair update
+      //right bottom pair simple_update
 
       //get the reduced tensors
       construct_reduced_tensor('H','L',peps(0,Lx-2),QL,a_L);
@@ -133,11 +133,11 @@ namespace propagate {
       //get positive approximant
       get_X(N_eff,X);
 
-      //make environment close to unitary before the update
+      //make environment close to unitary before the simple_update
       canonicalize(X,a_L,QL,a_R,QR);
 
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
+      //now do the simple_update! Apply the gates!
+      simple_update(D,a_L,a_R);
 
       //and expand back to the full tensors
       Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,Lx-2),shape(i,j,m,k,n));
@@ -170,11 +170,11 @@ namespace propagate {
          //get the best positive approximant
          get_X(N_eff,X);
 
-         //make environment close to unitary before the update
+         //make environment close to unitary before the simple_update
          canonicalize(X,a_L,QL,a_R,QR);
 
-         //and update
-         update(D,a_L,a_R);
+         //and simple_update
+         simple_update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,0),shape(i,j,m,k,n));
@@ -195,17 +195,17 @@ namespace propagate {
             //extract positive appromixant
             get_X(N_eff,X);
 
-            //make environment close to unitary before the update
+            //make environment close to unitary before the simple_update
             canonicalize(X,a_L,QL,a_R,QR);
 
-            //now do the update! Apply the gates!
-            update(D,a_L,a_R);
+            //now do the simple_update! Apply the gates!
+            simple_update(D,a_L,a_R);
 
             //and expand back to the full tensors
             Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,col),shape(i,j,m,k,n));
             Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(row,col+1),shape(i,o,j,m,n));
 
-            //first construct a double layer object for the newly updated bottom 
+            //first construct a double layer object for the newly simple_updated bottom 
             update_L('H',row,col,peps,LO);
 
          }
@@ -219,17 +219,17 @@ namespace propagate {
 
          get_X(N_eff,X);
 
-         //make environment close to unitary before the update
+         //make environment close to unitary before the simple_update
          canonicalize(X,a_L,QL,a_R,QR);
 
-         //now do the update! Apply the gates!
-         update(D,a_L,a_R);
+         //now do the simple_update! Apply the gates!
+         simple_update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,Lx-2),shape(i,j,m,k,n));
          Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(row,Lx-1),shape(i,o,j,m,n));
 
-         //finally update the 'bottom' environment for the row
+         //finally simple_update the 'bottom' environment for the row
          Environment::calc_env('B',row,peps,D_aux);
 
       }
@@ -249,20 +249,20 @@ namespace propagate {
 
       get_X(N_eff,X);
 
-      //make environment close to unitary before the update
+      //make environment close to unitary before the simple_update
       canonicalize(X,a_L,QL,a_R,QR);
 
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
+      //now do the simple_update! Apply the gates!
+      simple_update(D,a_L,a_R);
 
       //and expand back to the full tensors
       Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(Ly-1,0),shape(i,j,m,k,n));
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(Ly-1,1),shape(i,o,j,m,n));
 
-      //construct a double layer object for the newly updated bottom left site
+      //construct a double layer object for the newly simple_updated bottom left site
       Environment::construct_double_layer('H',peps(Ly-1,0),Environment::t[Ly-2][0]);
 
-      //update left renormalized operator for use on next site
+      //simple_update left renormalized operator for use on next site
       update_L('t',0,L);
 
       //middle sites of the bottom row:
@@ -278,17 +278,17 @@ namespace propagate {
          //extract positive appromixant
          get_X(N_eff,X);
 
-         //make environment close to unitary before the update
+         //make environment close to unitary before the simple_update
          canonicalize(X,a_L,QL,a_R,QR);
 
-         //now do the update! Apply the gates!
-         update(D,a_L,a_R);
+         //now do the simple_update! Apply the gates!
+         simple_update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(Ly-1,col),shape(i,j,m,k,n));
          Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(Ly-1,col+1),shape(i,o,j,m,n));
 
-         //first construct a double layer object for the newly updated top 
+         //first construct a double layer object for the newly simple_updated top 
          Environment::construct_double_layer('H',peps(Ly-1,col),Environment::t[Ly-2][col]);
 
          update_L('t',col,L);
@@ -307,17 +307,17 @@ namespace propagate {
       //get positive approximant
       get_X(N_eff,X);
 
-      //make environment close to unitary before the update
+      //make environment close to unitary before the simple_update
       canonicalize(X,a_L,QL,a_R,QR);
 
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
+      //now do the simple_update! Apply the gates!
+      simple_update(D,a_L,a_R);
 
       //and expand back to the full tensors
       Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(Ly-1,Lx-2),shape(i,j,m,k,n));
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(Ly-1,Lx-1),shape(i,o,j,m,n));
 
-      //for norm: update the top layer:
+      //for norm: simple_update the top layer:
       Environment::construct_double_layer('H',peps(Ly-1,Lx-2),Environment::t[Ly-2][Lx-2]);
       Environment::construct_double_layer('H',peps(Ly-1,Lx-1),Environment::t[Ly-2][Lx-1]);
 
@@ -359,20 +359,20 @@ namespace propagate {
 
       get_X(N_eff,X);
 
-      //make environment close to unitary before the update
+      //make environment close to unitary before the simple_update
       canonicalize(X,a_L,QL,a_R,QR);
 
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
+      //now do the simple_update! Apply the gates!
+      simple_update(D,a_L,a_R);
 
       //and expand back to the full tensors
       Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(0,0),shape(k,o,n,i,j));
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(1,0),shape(n,o,j,i,m));
 
-      //construct a double layer object for the newly updated bottom left site
+      //construct a double layer object for the newly simple_updated bottom left site
       Environment::construct_double_layer('V',peps(0,0),Environment::l[0][0]);
 
-      //update left renormalized operator for use on next site
+      //simple_update left renormalized operator for use on next site
       update_L('l',0,L);
 
       //middle sites of the left column:
@@ -388,24 +388,24 @@ namespace propagate {
          //extract positive appromixant
          get_X(N_eff,X);
 
-         //make environment close to unitary before the update
+         //make environment close to unitary before the simple_update
          canonicalize(X,a_L,QL,a_R,QR);
 
-         //now do the update! Apply the gates!
-         update(D,a_L,a_R);
+         //now do the simple_update! Apply the gates!
+         simple_update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(row,0),shape(k,o,n,i,j));
          Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(row+1,0),shape(n,o,j,i,m));
 
-         //first construct a double layer object for the newly updated bottom 
+         //first construct a double layer object for the newly simple_updated bottom 
          Environment::construct_double_layer('V',peps(row,0),Environment::l[0][row]);
 
          update_L('l',row,L);
 
       }
 
-      //top left vertical pair update
+      //top left vertical pair simple_update
 
       //get the reduced tensors
       construct_reduced_tensor('V','L',peps(Ly-2,0),QL,a_L);
@@ -417,11 +417,11 @@ namespace propagate {
       //get positive approximant
       get_X(N_eff,X);
 
-      //make environment close to unitary before the update
+      //make environment close to unitary before the simple_update
       canonicalize(X,a_L,QL,a_R,QR);
 
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
+      //now do the simple_update! Apply the gates!
+      simple_update(D,a_L,a_R);
 
       //and expand back to the full tensors
       Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(Ly-2,0),shape(k,o,n,i,j));
@@ -453,11 +453,11 @@ namespace propagate {
          //get the best positive approximant
          get_X(N_eff,X);
 
-         //make environment close to unitary before the update
+         //make environment close to unitary before the simple_update
          canonicalize(X,a_L,QL,a_R,QR);
 
-         //and update
-         update(D,a_L,a_R);
+         //and simple_update
+         simple_update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(0,col),shape(k,o,n,i,j));
@@ -478,17 +478,17 @@ namespace propagate {
             //extract positive appromixant
             get_X(N_eff,X);
 
-            //make environment close to unitary before the update
+            //make environment close to unitary before the simple_update
             canonicalize(X,a_L,QL,a_R,QR);
 
-            //now do the update! Apply the gates!
-            update(D,a_L,a_R);
+            //now do the simple_update! Apply the gates!
+            simple_update(D,a_L,a_R);
 
             //and expand back to the full tensors
             Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(row,col),shape(k,o,n,i,j));
             Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(row+1,col),shape(n,o,j,i,m));
 
-            //first construct a double layer object for the newly updated bottom:again col is li, row is si
+            //first construct a double layer object for the newly simple_updated bottom:again col is li, row is si
             update_L('V',col,row,peps,LO);
 
          }
@@ -502,17 +502,17 @@ namespace propagate {
 
          get_X(N_eff,X);
 
-         //make environment close to unitary before the update
+         //make environment close to unitary before the simple_update
          canonicalize(X,a_L,QL,a_R,QR);
 
-         //now do the update! Apply the gates!
-         update(D,a_L,a_R);
+         //now do the simple_update! Apply the gates!
+         simple_update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(Ly-2,col),shape(k,o,n,i,j));
          Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(Ly-1,col),shape(n,o,j,i,m));
 
-         //finally update the 'bottom' environment for the row
+         //finally simple_update the 'bottom' environment for the row
          Environment::calc_env('L',col,peps,D_aux);
 
       }
@@ -532,20 +532,20 @@ namespace propagate {
 
       get_X(N_eff,X);
 
-      //make environment close to unitary before the update
+      //make environment close to unitary before the simple_update
       canonicalize(X,a_L,QL,a_R,QR);
 
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
+      //now do the simple_update! Apply the gates!
+      simple_update(D,a_L,a_R);
 
       //and expand back to the full tensors
       Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(0,Lx-1),shape(k,o,n,i,j));
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(1,Lx-1),shape(n,o,j,i,m));
 
-      //construct a double layer object for the newly updated bottom left site
+      //construct a double layer object for the newly simple_updated bottom left site
       Environment::construct_double_layer('V',peps(0,Lx-1),Environment::r[Lx-2][0]);
 
-      //update left renormalized operator for use on next site
+      //simple_update left renormalized operator for use on next site
       update_L('r',0,L);
 
       //middle sites of the bottom column
@@ -561,17 +561,17 @@ namespace propagate {
          //extract positive appromixant
          get_X(N_eff,X);
 
-         //make environment close to unitary before the update
+         //make environment close to unitary before the simple_update
          canonicalize(X,a_L,QL,a_R,QR);
 
-         //now do the update! Apply the gates!
-         update(D,a_L,a_R);
+         //now do the simple_update! Apply the gates!
+         simple_update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(row,Lx-1),shape(k,o,n,i,j));
          Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(row+1,Lx-1),shape(n,o,j,i,m));
 
-         //first construct a double layer object for the newly updated top 
+         //first construct a double layer object for the newly simple_updated top 
          Environment::construct_double_layer('V',peps(row,Lx-1),Environment::r[Lx-2][row]);
 
          update_L('r',row,L);
@@ -590,17 +590,17 @@ namespace propagate {
       //get positive approximant
       get_X(N_eff,X);
 
-      //make environment close to unitary before the update
+      //make environment close to unitary before the simple_update
       canonicalize(X,a_L,QL,a_R,QR);
 
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
+      //now do the simple_update! Apply the gates!
+      simple_update(D,a_L,a_R);
 
       //and expand back to the full tensors
       Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(Ly-2,Lx-1),shape(k,o,n,i,j));
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(Ly-1,Lx-1),shape(n,o,j,i,m));
 
-      //for norm: update the right layer:
+      //for norm: simple_update the right layer:
       Environment::construct_double_layer('V',peps(Ly-2,Lx-1),Environment::r[Lx-2][Ly-2]);
       Environment::construct_double_layer('V',peps(Ly-1,Lx-1),Environment::r[Lx-2][Ly-1]);
 
@@ -1346,7 +1346,7 @@ namespace propagate {
    }
 
    /**
-    * make the environment as 'canonical' as possible so that the svd for the pair update is as optimal as possible.
+    * make the environment as 'canonical' as possible so that the svd for the pair simple_update is as optimal as possible.
     * @param X (XX^T) is the best positive approximation to the environment of the pair
     * @param a_L left reduced tensor, will be multiplied with the L of the environment
     * @param QL unitary part of the left tensor reduction, will be multiplied with the inverse of the L of the environment
@@ -1396,10 +1396,10 @@ namespace propagate {
    }
 
    /**
-    * update a tensor pair by applying a trotter gate over their mutual bond
+    * simple_update a tensor pair by applying a trotter gate over their mutual bond
     * after which a svd is performed over the bond and the dimensions are set back to D
     */
-   void update(int D,DArray<3> &a_L,DArray<3> &a_R){
+   void simple_update(int D,DArray<3> &a_L,DArray<3> &a_R){
 
       enum {i,j,k,m,n};
 
@@ -1543,7 +1543,7 @@ namespace propagate {
    }
 
    /**
-    * update left renormalized operator on site col 
+    * simple_update left renormalized operator on site col 
     * @param option == 't'op ,'b'ottom, 'l'eft or 'r'ight
     * @param rc is row or column index, col for t,b row for r,l
     */
@@ -1564,7 +1564,7 @@ namespace propagate {
          }
          else{
 
-            //update the left renormalized operator:
+            //simple_update the left renormalized operator:
             DArray<3> tmp3;
             Contract(1.0,L,shape(0),Environment::t[0][rc],shape(0),0.0,tmp3);
 
@@ -1586,7 +1586,7 @@ namespace propagate {
          }
          else{
 
-            //update the left renormalized operator:
+            //simple_update the left renormalized operator:
             DArray<3> tmp3;
             Contract(1.0,L,shape(0),Environment::t[Ly-2][rc],shape(0),0.0,tmp3);
 
@@ -1608,7 +1608,7 @@ namespace propagate {
          }
          else{
 
-            //update the left renormalized operator:
+            //simple_update the left renormalized operator:
             DArray<3> tmp3;
             Contract(1.0,L,shape(0),Environment::r[0][rc],shape(0),0.0,tmp3);
 
@@ -1630,7 +1630,7 @@ namespace propagate {
          }
          else{
 
-            //update the left renormalized operator:
+            //simple_update the left renormalized operator:
             DArray<3> tmp3;
             Contract(1.0,L,shape(0),Environment::r[Lx-2][rc],shape(0),0.0,tmp3);
 
@@ -2008,7 +2008,7 @@ namespace propagate {
    }
 
    /**
-    * update left renormalized operator on site (row,col )
+    * simple_update left renormalized operator on site (row,col )
     * @param option 'H'orizonal or 'V'ertical
     * @param li large index, if 'H' then row, if 'V' then col
     * @param si small index, if 'H' then col, if 'V' then row
@@ -2196,10 +2196,10 @@ namespace propagate {
 
       construct_reduced_tensor('H','R',peps(0,1),QR,a_R);
 
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
+      //now do the simple_update! Apply the gates!
+      simple_update(D,a_L,a_R);
 
-      //now expand updated reduced tensors back to the full tensors
+      //now expand simple_updated reduced tensors back to the full tensors
       Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,0),shape(i,j,m,k,n));
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(0,1),shape(i,o,j,m,n));
 
@@ -2210,8 +2210,8 @@ namespace propagate {
          construct_reduced_tensor('H','L',peps(0,col),QL,a_L);
          construct_reduced_tensor('H','R',peps(0,col+1),QR,a_R);
 
-         //now do the update! Apply the gates!
-         update(D,a_L,a_R);
+         //now do the simple_update! Apply the gates!
+         simple_update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,col),shape(i,j,m,k,n));
@@ -2219,14 +2219,14 @@ namespace propagate {
 
       }
 
-      //right bottom pair update
+      //right bottom pair simple_update
 
       //get the reduced tensors
       construct_reduced_tensor('H','L',peps(0,Lx-2),QL,a_L);
       construct_reduced_tensor('H','R',peps(0,Lx-1),QR,a_R);
 
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
+      //now do the simple_update! Apply the gates!
+      simple_update(D,a_L,a_R);
 
       //and expand back to the full tensors
       Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,Lx-2),shape(i,j,m,k,n));
@@ -2243,8 +2243,8 @@ namespace propagate {
          construct_reduced_tensor('H','L',peps(row,0),QL,a_L);
          construct_reduced_tensor('H','R',peps(row,1),QR,a_R);
 
-         //and update
-         update(D,a_L,a_R);
+         //and simple_update
+         simple_update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,0),shape(i,j,m,k,n));
@@ -2257,7 +2257,7 @@ namespace propagate {
             construct_reduced_tensor('H','L',peps(row,col),QL,a_L);
             construct_reduced_tensor('H','R',peps(row,col+1),QR,a_R);
 
-            update(D,a_L,a_R);
+            simple_update(D,a_L,a_R);
 
             //and expand back to the full tensors
             Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,col),shape(i,j,m,k,n));
@@ -2269,8 +2269,8 @@ namespace propagate {
          construct_reduced_tensor('H','L',peps(row,Lx-2),QL,a_L);
          construct_reduced_tensor('H','R',peps(row,Lx-1),QR,a_R);
 
-         //now do the update! Apply the gates!
-         update(D,a_L,a_R);
+         //now do the simple_update! Apply the gates!
+         simple_update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,Lx-2),shape(i,j,m,k,n));
@@ -2286,8 +2286,8 @@ namespace propagate {
       construct_reduced_tensor('H','L',peps(Ly-1,0),QL,a_L);
       construct_reduced_tensor('H','R',peps(Ly-1,1),QR,a_R);
 
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
+      //now do the simple_update! Apply the gates!
+      simple_update(D,a_L,a_R);
 
       //and expand back to the full tensors
       Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(Ly-1,0),shape(i,j,m,k,n));
@@ -2300,8 +2300,8 @@ namespace propagate {
          construct_reduced_tensor('H','L',peps(Ly-1,col),QL,a_L);
          construct_reduced_tensor('H','R',peps(Ly-1,col+1),QR,a_R);
 
-         //now do the update! Apply the gates!
-         update(D,a_L,a_R);
+         //now do the simple_update! Apply the gates!
+         simple_update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(Ly-1,col),shape(i,j,m,k,n));
@@ -2315,8 +2315,8 @@ namespace propagate {
       construct_reduced_tensor('H','L',peps(Ly-1,Lx-2),QL,a_L);
       construct_reduced_tensor('H','R',peps(Ly-1,Lx-1),QR,a_R);
 
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
+      //now do the simple_update! Apply the gates!
+      simple_update(D,a_L,a_R);
 
       //and expand back to the full tensors
       Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(Ly-1,Lx-2),shape(i,j,m,k,n));
@@ -2340,8 +2340,8 @@ namespace propagate {
       construct_reduced_tensor('V','L',peps(0,0),QL,a_L);
       construct_reduced_tensor('V','R',peps(1,0),QR,a_R);
 
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
+      //now do the simple_update! Apply the gates!
+      simple_update(D,a_L,a_R);
 
       //and expand back to the full tensors
       Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(0,0),shape(k,o,n,i,j));
@@ -2354,8 +2354,8 @@ namespace propagate {
          construct_reduced_tensor('V','L',peps(row,0),QL,a_L);
          construct_reduced_tensor('V','R',peps(row+1,0),QR,a_R);
 
-         //now do the update! Apply the gates!
-         update(D,a_L,a_R);
+         //now do the simple_update! Apply the gates!
+         simple_update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(row,0),shape(k,o,n,i,j));
@@ -2363,14 +2363,14 @@ namespace propagate {
 
       }
 
-      //top left vertical pair update
+      //top left vertical pair simple_update
 
       //get the reduced tensors
       construct_reduced_tensor('V','L',peps(Ly-2,0),QL,a_L);
       construct_reduced_tensor('V','R',peps(Ly-1,0),QR,a_R);
 
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
+      //now do the simple_update! Apply the gates!
+      simple_update(D,a_L,a_R);
 
       //and expand back to the full tensors
       Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(Ly-2,0),shape(k,o,n,i,j));
@@ -2385,8 +2385,8 @@ namespace propagate {
          construct_reduced_tensor('V','L',peps(0,col),QL,a_L);
          construct_reduced_tensor('V','R',peps(1,col),QR,a_R);
 
-         //and update
-         update(D,a_L,a_R);
+         //and simple_update
+         simple_update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(0,col),shape(k,o,n,i,j));
@@ -2399,8 +2399,8 @@ namespace propagate {
             construct_reduced_tensor('V','L',peps(row,col),QL,a_L);
             construct_reduced_tensor('V','R',peps(row+1,col),QR,a_R);
 
-            //now do the update! Apply the gates!
-            update(D,a_L,a_R);
+            //now do the simple_update! Apply the gates!
+            simple_update(D,a_L,a_R);
 
             //and expand back to the full tensors
             Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(row,col),shape(k,o,n,i,j));
@@ -2412,8 +2412,8 @@ namespace propagate {
          construct_reduced_tensor('V','L',peps(Ly-2,col),QL,a_L);
          construct_reduced_tensor('V','R',peps(Ly-1,col),QR,a_R);
 
-         //now do the update! Apply the gates!
-         update(D,a_L,a_R);
+         //now do the simple_update! Apply the gates!
+         simple_update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(Ly-2,col),shape(k,o,n,i,j));
@@ -2429,8 +2429,8 @@ namespace propagate {
       construct_reduced_tensor('V','L',peps(0,Lx-1),QL,a_L);
       construct_reduced_tensor('V','R',peps(1,Lx-1),QR,a_R);
 
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
+      //now do the simple_update! Apply the gates!
+      simple_update(D,a_L,a_R);
 
       //and expand back to the full tensors
       Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(0,Lx-1),shape(k,o,n,i,j));
@@ -2443,8 +2443,8 @@ namespace propagate {
          construct_reduced_tensor('V','L',peps(row,Lx-1),QL,a_L);
          construct_reduced_tensor('V','R',peps(row+1,Lx-1),QR,a_R);
 
-         //now do the update! Apply the gates!
-         update(D,a_L,a_R);
+         //now do the simple_update! Apply the gates!
+         simple_update(D,a_L,a_R);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(row,Lx-1),shape(k,o,n,i,j));
@@ -2458,8 +2458,8 @@ namespace propagate {
       construct_reduced_tensor('V','L',peps(Ly-2,Lx-1),QL,a_L);
       construct_reduced_tensor('V','R',peps(Ly-1,Lx-1),QR,a_R);
 
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
+      //now do the simple_update! Apply the gates!
+      simple_update(D,a_L,a_R);
 
       //and expand back to the full tensors
       Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(Ly-2,Lx-1),shape(k,o,n,i,j));

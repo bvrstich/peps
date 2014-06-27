@@ -44,18 +44,11 @@ int main(int argc,char *argv[]){
    peps.normalize(D_aux);
 
    Environment::calc_env('A',peps,D_aux);
-/*
-   for(int i = 0;i < 1000;++i){
+   cout << Heisenberg::energy(peps) << endl;
 
-      propagate::step(peps,D_aux);
+   propagate::step(peps,D_aux);
 
-      if(i % 10 == 0){
+   Environment::calc_env('A',peps,D_aux);
+   cout << Heisenberg::energy(peps) << endl;
 
-         Environment::calc_env('A',peps,D_aux);
-         cout << i << "\t" << Heisenberg::energy(peps) << endl;
-
-      }
-
-   }
-*/
 }
