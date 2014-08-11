@@ -60,7 +60,6 @@ class MPS : public vector< TArray<T,3> > {
 
       //!dimension of the bonds
       int D;
-
 };
 
 /**

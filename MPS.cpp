@@ -504,9 +504,11 @@ void MPS<T>::compress(int Dc,const MPS<T> &mps,int n_iter){
 
    int L = mps.size();
 
+   T one = (T) 1.0;
+   T zero = (T) 0.0;
+
    //initial guess by performing svd compression of uncanonicalized state: output is right-canonicalized state
    guess(Right,Dc,mps);
-
 
    //construct renormalized operators
    std::vector< TArray<T,2> > RO(L - 1);
@@ -519,9 +521,11 @@ void MPS<T>::compress(int Dc,const MPS<T> &mps,int n_iter){
    while(iter < n_iter){
 
       //first site
-      (*this)[0].clear();
+      int M = mps[0].shape(1);
+      int N = RO[0].shape(0);
+      int K = mps[0].shape(2);
 
-      Contract((T)1.0,mps[0],shape(2),RO[0],shape(1),(T)0.0,(*this)[0]);
+      blas::gemm(CblasRowMajor,CblasNoTrans,CblasConjTrans, M, N, K, one, mps[0].data(),K,RO[0].data(),K,zero,(*this)[0].data(),N);
 
       //QR
       Geqrf((*this)[0],RO[0]);
@@ -529,7 +533,13 @@ void MPS<T>::compress(int Dc,const MPS<T> &mps,int n_iter){
       //paste to next matrix
       TArray<T,3> tmp;
 
-      Contract((T)1.0,RO[0],shape(1),(*this)[1],shape(0),(T)0.0,tmp);
+      M = RO[0].shape(0);
+      N = (*this)[1].shape(1) * (*this)[1].shape(2);
+      K = RO[0].shape(1);
+
+      tmp.resize(shape(M,(*this)[1].shape(1),(*this)[1].shape(2)));
+
+      blas::gemm(CblasRowMajor,CblasNoTrans,CblasNoTrans, M, N, K, one, RO[0].data(),K,(*this)[1].data(),N,zero,tmp.data(),N);
 
       (*this)[1] = std::move(tmp);
 
@@ -537,39 +547,57 @@ void MPS<T>::compress(int Dc,const MPS<T> &mps,int n_iter){
 
       for(int i = 1;i < L - 1;++i){
 
-         TArray<T,3> I;
+         M = mps[i].shape(0) * mps[i].shape(1);
+         N = RO[i].shape(0);
+         K = RO[i].shape(1);
 
-         Contract((T)1.0,mps[i],shape(2),RO[i],shape(1),(T)0.0,I);
+         tmp.resize(shape(mps[i].shape(0),mps[i].shape(1),N));
 
-         (*this)[i].clear();
+         blas::gemm(CblasRowMajor,CblasNoTrans,CblasConjTrans, M, N, K, one, mps[i].data(),K,RO[i].data(),K,zero,tmp.data(),N);
 
-         Contract((T)1.0,LO[i - 1],shape(1),I,shape(0),(T)0.0,(*this)[i]);
+         M = LO[i-1].shape(0);
+         N = tmp.shape(1)*tmp.shape(2);
+         K = tmp.shape(0);
+
+         (*this)[i].resize(shape(LO[i-1].shape(0),mps[i].shape(1),RO[i].shape(0)));
+
+         blas::gemm(CblasRowMajor,CblasNoTrans,CblasNoTrans, M, N, K, one, LO[i-1].data(),K,tmp.data(),N,zero,(*this)[i].data(),N);
 
          Geqrf((*this)[i],RO[i]);
 
          //paste to next matrix
-         tmp.clear();
+         M = RO[i].shape(0);
+         N = (*this)[i+1].shape(1) * (*this)[i+1].shape(2);
+         K = RO[i].shape(1);
 
-         Contract((T)1.0,RO[i],shape(1),(*this)[i + 1],shape(0),(T)0.0,tmp);
+         tmp.resize(shape(M,(*this)[i+1].shape(1),(*this)[i+1].shape(2)));
 
-         (*this)[i + 1] = std::move(tmp);
+         blas::gemm(CblasRowMajor,CblasNoTrans,CblasNoTrans, M, N, K, one, RO[i].data(),K,(*this)[i+1].data(),N,zero,tmp.data(),N);
+
+         (*this)[i+1] = std::move(tmp);
 
          compress::update_L(i,LO,mps,*this);
 
       }
 
       //and backward!
-      (*this)[L - 1].clear();
+      M = LO[L-2].shape(0);
+      N = (*this)[L-1].shape(1);
+      K = LO[L-2].shape(1);
 
-      Contract((T)1.0,LO[L - 2],shape(1),mps[L - 1],shape(0),(T)0.0,(*this)[L - 1]);
+      blas::gemm(CblasRowMajor,CblasNoTrans,CblasNoTrans, M, N, K, one, LO[L-2].data(),K,mps[L-1].data(),N,zero,(*this)[L-1].data(),N);
 
       //LQ
       Gelqf(LO[L - 2],(*this)[L - 1]);
 
-      //paste to next matrix
-      tmp.clear();
+      //paste to previous matrix
+      M = (*this)[L-2].shape(0)*(*this)[L-2].shape(1);
+      N = LO[L-2].shape(1);
+      K = LO[L-2].shape(0);
 
-      Contract((T)1.0,(*this)[L - 2],shape(2),LO[L -  2],shape(0),(T)0.0,tmp);
+      tmp.resize(shape((*this)[L-2].shape(0),(*this)[L-2].shape(1),N));
+
+      blas::gemm(CblasRowMajor,CblasNoTrans,CblasNoTrans, M, N, K, one, (*this)[L-2].data(),K,LO[L-2].data(),N,zero,tmp.data(),N);
 
       (*this)[L - 2] = std::move(tmp);
 
@@ -577,22 +605,34 @@ void MPS<T>::compress(int Dc,const MPS<T> &mps,int n_iter){
 
       for(int i = L - 2;i > 0;--i){
 
-         TArray<T,3> I;
+         M = mps[i].shape(0) * mps[i].shape(1);
+         N = RO[i].shape(0);
+         K = RO[i].shape(1);
 
-         Contract((T)1.0,mps[i],shape(2),RO[i],shape(1),(T)0.0,I);
+         tmp.resize(shape(mps[i].shape(0),mps[i].shape(1),N));
 
-         (*this)[i].clear();
+         blas::gemm(CblasRowMajor,CblasNoTrans,CblasConjTrans, M, N, K, one, mps[i].data(),K,RO[i].data(),K,zero,tmp.data(),N);
 
-         Contract((T)1.0,LO[i - 1],shape(1),I,shape(0),(T)0.0,(*this)[i]);
+         M = LO[i-1].shape(0);
+         N = tmp.shape(1)*tmp.shape(2);
+         K = tmp.shape(0);
+
+         (*this)[i].resize(shape(LO[i-1].shape(0),mps[i].shape(1),RO[i].shape(0)));
+
+         blas::gemm(CblasRowMajor,CblasNoTrans,CblasNoTrans, M, N, K, one, LO[i-1].data(),K,tmp.data(),N,zero,(*this)[i].data(),N);
 
          Gelqf(LO[i],(*this)[i]);
 
          //paste to previous matrix
-         tmp.clear();
+         M = (*this)[i-1].shape(0)*(*this)[i-1].shape(1);
+         N = LO[i].shape(1);
+         K = LO[i].shape(0);
 
-         Contract((T)1.0,(*this)[i - 1],shape(2),LO[i],shape(0),(T)0.0,tmp);
+         tmp.resize(shape((*this)[i-1].shape(0),(*this)[i-1].shape(1),N));
 
-         (*this)[i - 1] = std::move(tmp);
+         blas::gemm(CblasRowMajor,CblasNoTrans,CblasNoTrans, M, N, K, one, (*this)[i-1].data(),K,LO[i].data(),N,zero,tmp.data(),N);
+
+         (*this)[i-1] = std::move(tmp);
 
          compress::update_R(i,RO,mps,*this);
 
