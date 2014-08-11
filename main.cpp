@@ -47,22 +47,23 @@ int main(int argc,char *argv[]){
 
    sprintf(filename,"output/%dx%d/D=%d",L,L,D);
 
-   for(int i = 0;i < 1000;++i){
+   //for(int i = 0;i < 1000;++i){
 
-      propagate::step(peps,D_aux);
+      //propagate::step(peps,D_aux);
 
-      if(i % 10 == 0){
+      //if(i % 10 == 0){
 
          Environment::calc_env('A',peps,D_aux);
-         cout << i << "\t" << Heisenberg::energy(peps) << endl;
+         cout << 0 << "\t" << Heisenberg::energy(peps) << endl;
 
          //save:
          peps.save(filename);
 
-      }
+      //}
 
-   }
+   //}
 
+/*
    tau /= 10.0;
 
    Trotter::set(tau);
@@ -211,5 +212,5 @@ int main(int argc,char *argv[]){
       }
 
    }
-
+*/
 }
