@@ -38,12 +38,10 @@ int main(int argc,char *argv[]){
 
    Trotter::set(dtau);
 
-   PEPS<double> peps(D);
+   PEPS<double> peps;
    peps.initialize_state_sum(D);
 
    peps.normalize(D_aux);
-
-   Environment::calc_env('A',peps,D_aux);
 
    for(int i = 0;i < 1000;++i){
 
