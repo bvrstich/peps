@@ -39,8 +39,8 @@ int main(int argc,char *argv[]){
    Trotter::set(tau);
 
    PEPS<double> peps(D);
-   peps.initialize_state(D,0.001);
-   
+   peps.initialize_state_sum(D);
+
    peps.normalize(D_aux);
 
    char filename[200];

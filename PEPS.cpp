@@ -144,12 +144,216 @@ void PEPS<T>::sD(int D_in) {
 }
 
 /**
+ * initialize the peps to the direct sum of two antiferromagnetic D=1 structures
+ * @param D compressed dimension of the state
+ */
+template<>
+void PEPS<double>::initialize_state_sum(int D_in) {
+
+   this->D = D_in;
+
+   int Lx = Global::lat.gLx();
+   int Ly = Global::lat.gLy();
+   int d = Global::lat.gd();
+
+   //corners first
+
+   //r == 0 : c == 0
+   (*this)[ Global::lat.grc2i(0,0) ].resize(1,D,d,1,D);
+
+   (*this)[ Global::lat.grc2i(0,0) ] = 0.0;
+
+   (*this)[ Global::lat.grc2i(0,0) ](0,0,0,0,0) = 0.0;
+   (*this)[ Global::lat.grc2i(0,0) ](0,0,1,0,0) = 1.0;
+
+   (*this)[ Global::lat.grc2i(0,0) ](0,1,0,0,1) = 1.0;
+   (*this)[ Global::lat.grc2i(0,0) ](0,1,1,0,1) = 0.0;
+
+   //r == 0 : c == L - 1
+   (*this)[ Global::lat.grc2i(0,Lx-1) ].resize(D,D,d,1,1);
+
+   (*this)[ Global::lat.grc2i(0,Lx-1) ] = 0.0;
+
+   (*this)[ Global::lat.grc2i(0,Lx-1) ](0,0,0,0,0) = 1.0;
+   (*this)[ Global::lat.grc2i(0,Lx-1) ](0,0,1,0,0) = 0.0;
+
+   (*this)[ Global::lat.grc2i(0,Lx-1) ](1,1,0,0,0) = 0.0;
+   (*this)[ Global::lat.grc2i(0,Lx-1) ](1,1,1,0,0) = 1.0;
+
+   //r == L - 1 : c == 0
+   (*this)[ Global::lat.grc2i(Ly-1,0) ].resize(1,1,d,D,D);
+
+   (*this)[ Global::lat.grc2i(Ly-1,0) ] = 0.0;
+
+   (*this)[ Global::lat.grc2i(Ly-1,0) ](0,0,0,0,0) = 1.0;
+   (*this)[ Global::lat.grc2i(Ly-1,0) ](0,0,1,0,0) = 0.0;
+
+   (*this)[ Global::lat.grc2i(Ly-1,0) ](0,0,0,1,1) = 0.0;
+   (*this)[ Global::lat.grc2i(Ly-1,0) ](0,0,1,1,1) = 1.0;
+
+   //r == L - 1 : c == L - 1
+   (*this)[ Global::lat.grc2i(Ly-1,Lx-1) ].resize(D,1,d,D,1);
+
+   (*this)[ Global::lat.grc2i(Ly-1,Lx-1) ] = 0.0;
+
+   (*this)[ Global::lat.grc2i(Ly-1,Lx-1) ](0,0,0,0,0) = 0.0;
+   (*this)[ Global::lat.grc2i(Ly-1,Lx-1) ](0,0,1,0,0) = 1.0;
+
+   (*this)[ Global::lat.grc2i(Ly-1,Lx-1) ](1,0,0,1,0) = 1.0;
+   (*this)[ Global::lat.grc2i(Ly-1,Lx-1) ](1,0,1,1,0) = 0.0;
+
+   //sides:
+
+   //r == 0
+   for(int c = 1;c < Lx - 1;++c){
+
+      (*this)[ Global::lat.grc2i(0,c) ].resize(D,D,d,1,D);
+
+      (*this)[ Global::lat.grc2i(0,c) ] = 0.0;
+
+      if( c % 2 == 0){
+
+         (*this)[ Global::lat.grc2i(0,c) ](0,0,0,0,0) = 0.0;
+         (*this)[ Global::lat.grc2i(0,c) ](0,0,1,0,0) = 1.0;
+
+         (*this)[ Global::lat.grc2i(0,c) ](1,1,0,0,1) = 1.0;
+         (*this)[ Global::lat.grc2i(0,c) ](1,1,1,0,1) = 0.0;
+
+      }
+      else{
+
+         (*this)[ Global::lat.grc2i(0,c) ](0,0,0,0,0) = 1.0;
+         (*this)[ Global::lat.grc2i(0,c) ](0,0,1,0,0) = 0.0;
+
+         (*this)[ Global::lat.grc2i(0,c) ](1,1,0,0,1) = 0.0;
+         (*this)[ Global::lat.grc2i(0,c) ](1,1,1,0,1) = 1.0;
+
+      }
+
+   }
+
+   //r == Ly - 1
+   for(int c = 1;c < Lx - 1;++c){
+
+      (*this)[ Global::lat.grc2i(Ly-1,c) ].resize(D,1,d,D,D);
+
+      (*this)[ Global::lat.grc2i(Ly-1,c) ] = 0.0;
+
+      if( ( (c + 1) % 2 == 0 ) ){
+
+         (*this)[ Global::lat.grc2i(Ly-1,c) ](0,0,0,0,0) = 0.0;
+         (*this)[ Global::lat.grc2i(Ly-1,c) ](0,0,1,0,0) = 1.0;
+
+         (*this)[ Global::lat.grc2i(Ly-1,c) ](1,0,0,1,1) = 1.0;
+         (*this)[ Global::lat.grc2i(Ly-1,c) ](1,0,1,1,1) = 0.0;
+
+      }
+      else{
+
+         (*this)[ Global::lat.grc2i(Ly-1,c) ](0,0,0,0,0) = 1.0;
+         (*this)[ Global::lat.grc2i(Ly-1,c) ](0,0,1,0,0) = 0.0;
+
+         (*this)[ Global::lat.grc2i(Ly-1,c) ](1,0,0,1,1) = 0.0;
+         (*this)[ Global::lat.grc2i(Ly-1,c) ](1,0,1,1,1) = 1.0;
+
+      }
+
+   }
+
+   //c == 0
+   for(int r = 1;r < Ly - 1;++r){
+
+      (*this)[ Global::lat.grc2i(r,0) ].resize(1,D,d,D,D);
+
+      (*this)[ Global::lat.grc2i(r,0) ] = 0.0;
+
+      if( r % 2 == 0){
+
+         (*this)[ Global::lat.grc2i(r,0) ](0,0,0,0,0) = 0.0;
+         (*this)[ Global::lat.grc2i(r,0) ](0,0,1,0,0) = 1.0;
+
+         (*this)[ Global::lat.grc2i(r,0) ](0,1,0,1,1) = 1.0;
+         (*this)[ Global::lat.grc2i(r,0) ](0,1,1,1,1) = 0.0;
+
+      }
+      else{
+
+         (*this)[ Global::lat.grc2i(r,0) ](0,0,0,0,0) = 1.0;
+         (*this)[ Global::lat.grc2i(r,0) ](0,0,1,0,0) = 0.0;
+
+         (*this)[ Global::lat.grc2i(r,0) ](0,1,0,1,1) = 0.0;
+         (*this)[ Global::lat.grc2i(r,0) ](0,1,1,1,1) = 1.0;
+
+      }
+
+   }
+
+   //c == Lx - 1
+   for(int r = 1;r < Ly - 1;++r){
+
+      (*this)[ Global::lat.grc2i(r,Lx - 1) ].resize(D,D,d,D,1);
+
+      (*this)[ Global::lat.grc2i(r,Lx - 1) ] = 0.0;
+
+      if( (r + 1) % 2 == 0){
+
+         (*this)[ Global::lat.grc2i(r,Lx-1) ](0,0,0,0,0) = 0.0;
+         (*this)[ Global::lat.grc2i(r,Lx-1) ](0,0,1,0,0) = 1.0;
+
+         (*this)[ Global::lat.grc2i(r,Lx-1) ](1,1,0,1,0) = 1.0;
+         (*this)[ Global::lat.grc2i(r,Lx-1) ](1,1,1,1,0) = 0.0;
+
+      }
+      else{
+
+         (*this)[ Global::lat.grc2i(r,Lx-1) ](0,0,0,0,0) = 1.0;
+         (*this)[ Global::lat.grc2i(r,Lx-1) ](0,0,1,0,0) = 0.0;
+
+         (*this)[ Global::lat.grc2i(r,Lx-1) ](1,1,0,1,0) = 0.0;
+         (*this)[ Global::lat.grc2i(r,Lx-1) ](1,1,1,1,0) = 1.0;
+
+      }
+
+   }
+
+   //the rest is full
+   for(int r = 1;r < Ly - 1;++r)
+      for(int c = 1;c < Lx - 1;++c){
+
+         (*this)[ Global::lat.grc2i(r,c) ].resize(D,D,d,D,D);
+
+         (*this)[ Global::lat.grc2i(r,c) ] = 0.0;
+
+         if( (r + c)%2 == 0){
+
+            (*this)[ Global::lat.grc2i(r,c) ](0,0,0,0,0) = 0.0;
+            (*this)[ Global::lat.grc2i(r,c) ](0,0,1,0,0) = 1.0;
+
+            (*this)[ Global::lat.grc2i(r,c) ](1,1,0,1,1) = 1.0;
+            (*this)[ Global::lat.grc2i(r,c) ](1,1,1,1,1) = 0.0;
+
+         }
+         else{
+
+            (*this)[ Global::lat.grc2i(r,c) ](0,0,0,0,0) = 1.0;
+            (*this)[ Global::lat.grc2i(r,c) ](0,0,1,0,0) = 0.0;
+
+            (*this)[ Global::lat.grc2i(r,c) ](1,1,0,1,1) = 0.0;
+            (*this)[ Global::lat.grc2i(r,c) ](1,1,1,1,1) = 1.0;
+
+         }
+
+      }
+
+}
+
+/**
  * initialize the peps to an antiferromagnetic D=1 structure, where one time step has been acted on, and compressed to dimension D if necessary
  * @param D compressed dimension of the state
  * @param noise level of noise added to the initial state
  */
 template<>
-void PEPS<double>::initialize_state(int D_in,double noise) {
+void PEPS<double>::initialize_state_simple(int D_in,double noise) {
 
    this->D = D_in;
 
@@ -271,7 +475,7 @@ void PEPS<double>::initialize_state(int D_in,double noise) {
 
          //left
          pshape = (*this)[Global::lat.grc2i(r,c)].shape();
-         
+
          DArray<6> tmp;
          Contract(1.0,(*this)[Global::lat.grc2i(r,c)],shape(i,j,k,l,m),Trotter::LO,shape(n,p,k),0.0,tmp,shape(i,j,p,n,l,m));
 
@@ -314,7 +518,7 @@ void PEPS<double>::initialize_state(int D_in,double noise) {
 
          //left
          pshape = (*this)[Global::lat.grc2i(r,c)].shape();
-         
+
          DArray<6> tmp;
          Contract(1.0,(*this)[Global::lat.grc2i(r,c)],shape(i,j,k,l,m),Trotter::LO,shape(n,p,k),0.0,tmp,shape(i,j,p,n,l,m));
 
@@ -467,7 +671,7 @@ void PEPS<double>::grow_bond_dimension(int D_in,double noise) {
 
          //left
          pshape = (*this)[Global::lat.grc2i(r,c)].shape();
-         
+
          DArray<6> tmp;
          Contract(1.0,(*this)[Global::lat.grc2i(r,c)],shape(i,j,k,l,m),Trotter::LO,shape(n,p,k),0.0,tmp,shape(i,j,p,n,l,m));
 
@@ -510,7 +714,7 @@ void PEPS<double>::grow_bond_dimension(int D_in,double noise) {
 
          //left
          pshape = (*this)[Global::lat.grc2i(r,c)].shape();
-         
+
          DArray<6> tmp;
          Contract(1.0,(*this)[Global::lat.grc2i(r,c)],shape(i,j,k,l,m),Trotter::LO,shape(n,p,k),0.0,tmp,shape(i,j,p,n,l,m));
 
@@ -735,7 +939,7 @@ void PEPS<T>::load(const char *filename){
                      for(int e = 0;e < De;++e)
                         fin >> a >> b >> c >> d >> e >> (*this)(row,col)(a,b,c,d,e);
 
-   }
+      }
 
 }
 

@@ -36,7 +36,9 @@ class PEPS : public vector< TArray<T,5> > {
 
       void sD(int);
 
-      void initialize_state(int,double);
+      void initialize_state_simple(int,double);
+
+      void initialize_state_sum(int);
 
       void grow_bond_dimension(int,double);
 
