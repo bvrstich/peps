@@ -29,7 +29,7 @@ int main(int argc,char *argv[]){
    int D = atoi(argv[3]);//virtual dimension
    int D_aux = atoi(argv[4]);//auxiliary dimension for the contraction
 
-   double tau = 0.01;
+   double tau = 0.001;
 
    //initialize some statics dimensions
    Global::lat.set(L,L,d);
@@ -47,23 +47,25 @@ int main(int argc,char *argv[]){
 
    sprintf(filename,"output/%dx%d/D=%d",L,L,D);
 
-   //for(int i = 0;i < 1000;++i){
+   propagate::step(peps,D_aux);
 
-      //propagate::step(peps,D_aux);
+   Environment::calc_env('A',peps,D_aux);
+   cout << 0 << "\t" << Heisenberg::energy(peps) << endl;
 
-      //if(i % 10 == 0){
-
-         Environment::calc_env('A',peps,D_aux);
-         cout << 0 << "\t" << Heisenberg::energy(peps) << endl;
-
-         //save:
-         peps.save(filename);
-
-      //}
-
-   //}
+   peps.save(filename);
 
 /*
+   for(int i = 0;i < 1000;++i){
+
+      if(i % 10 == 0){
+
+            //save:
+         peps.save(filename);
+
+      }
+
+   }
+
    tau /= 10.0;
 
    Trotter::set(tau);
