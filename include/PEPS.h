@@ -32,13 +32,15 @@ class PEPS : public vector< TArray<T,5> > {
       //destructor
       virtual ~PEPS();
 
+      PEPS inverse() const;
+
       int gD() const;
 
       void sD(int);
 
-      void initialize_state_simple(int,double);
+      void initialize_state_simple(int,int,double);
 
-      void initialize_state_sum(int);
+      void initialize_state_sum(int,double);
 
       void grow_bond_dimension(int,double);
 

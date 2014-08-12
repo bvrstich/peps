@@ -98,6 +98,37 @@ template<typename T>
 PEPS<T>::~PEPS(){ }
 
 /**
+ * @return PEPS with up and down spin switched
+ */
+template<typename T>
+PEPS<T> PEPS<T>::inverse() const {
+
+   int Lx = Global::lat.gLx();
+   int Ly = Global::lat.gLy();
+   int d = Global::lat.gd();
+
+   PEPS<T> peps;
+
+   for(int r = 0;r < Ly;++r)
+      for(int c = 0;c < Lx;++c){
+
+         peps(r,c).resize((*this)[r*Lx + c].shape());
+
+         for(int i = 0;i < (*this)[r*Lx + c].shape(0);++i)
+            for(int j = 0;j < (*this)[r*Lx + c].shape(1);++j)
+               for(int s = 0;s < (*this)[r*Lx + c].shape(2);++s)
+                  for(int k = 0;k < (*this)[r*Lx + c].shape(3);++k)
+                     for(int l = 0;l < (*this)[r*Lx + c].shape(4);++l)
+                        peps(r,c)(i,j,1-s,k,l) = (*this)[r*Lx + c](i,j,s,k,l);
+
+
+      }
+
+   return peps;
+
+}
+
+/**
  * access to the individual tensors: const version
  * @param r row index
  * @param c col index
@@ -124,7 +155,7 @@ TArray<T,5> &PEPS<T>::operator()(int r,int c) {
 }
 
 /**
- * @return the cutoff virutal dimension
+ * @return the cutoff virtual dimension
  */
 template<typename T>
 int PEPS<T>::gD() const {
@@ -146,9 +177,10 @@ void PEPS<T>::sD(int D_in) {
 /**
  * initialize the peps to the direct sum of two antiferromagnetic D=1 structures
  * @param D compressed dimension of the state
+ * @param noise level of noise to be added
  */
 template<>
-void PEPS<double>::initialize_state_sum(int D_in) {
+void PEPS<double>::initialize_state_sum(int D_in,double noise) {
 
    this->D = D_in;
 
@@ -345,6 +377,12 @@ void PEPS<double>::initialize_state_sum(int D_in) {
 
       }
 
+   //make some noise!
+   for(int r = 0;r < Ly;++r)
+      for(int c = 0;c < Lx;++c)
+         for(int index = 0;index < (*this)(r,c).size();++index)
+            (*this)(r,c).data()[index] += noise * Global::rgen<double>();
+
 }
 
 /**
@@ -353,7 +391,7 @@ void PEPS<double>::initialize_state_sum(int D_in) {
  * @param noise level of noise added to the initial state
  */
 template<>
-void PEPS<double>::initialize_state_simple(int D_in,double noise) {
+void PEPS<double>::initialize_state_simple(int option,int D_in,double noise) {
 
    this->D = D_in;
 
@@ -367,7 +405,7 @@ void PEPS<double>::initialize_state_simple(int D_in,double noise) {
 
          (*this)[ Global::lat.grc2i(r,c) ].resize(1,1,d,1,1);
 
-         if( (r + c)%2 == 0){
+         if( (r + c + option)%2 == 0){
 
             (*this)[ Global::lat.grc2i(r,c) ](0,0,0,0,0) = 0.0;
             (*this)[ Global::lat.grc2i(r,c) ](0,0,1,0,0) = 1.0;
@@ -955,6 +993,9 @@ template PEPS< complex<double> >::PEPS(const PEPS< complex<double> > &);
 
 template PEPS<double>::~PEPS();
 template PEPS< complex<double> >::~PEPS();
+
+template PEPS<double> PEPS<double>::inverse() const;
+template PEPS< complex<double> > PEPS< complex<double> >::inverse() const;
 
 template TArray<double,5> &PEPS<double>::operator()(int r,int c);
 template TArray<complex<double>,5> &PEPS< complex<double> >::operator()(int r,int c);
