@@ -8,6 +8,9 @@
 using std::ostream;
 using std::vector;
 
+template<typename T>
+class PEPS;
+
 /**
  * @author Brecht Verstichel
  * @data 02-05-2014\n\n

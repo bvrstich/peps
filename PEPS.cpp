@@ -605,6 +605,110 @@ void PEPS<double>::initialize_state_simple(int option,int D_in,double noise) {
 }
 
 /**
+ * initialize the peps to the direct sum of two antiferromagnetic D=1 structures
+ * @param f jastrow factor
+ */
+template<>
+void PEPS<double>::set_jastrow(double f) {
+
+   int Lx = Global::lat.gLx();
+   int Ly = Global::lat.gLy();
+   int d = Global::lat.gd();
+
+   enum {i,j,k,l,m,n,o,p,q,r,s};
+
+   D = 2;
+
+   //just a test
+  
+   //bottom left site
+   DArray<3> lu(D,d,D);
+   lu = 0.0;
+
+   lu(0,0,0) = 1.0;
+   lu(1,1,1) = 1.0;
+
+   //bottom middle site
+   DArray<4> mu(D,D,d,D);
+   mu = 0.0;
+
+   mu(0,0,0,0) = f;
+   mu(1,0,0,0) = 1.0;
+   mu(0,1,1,1) = 1.0;
+   mu(1,1,1,1) = f;
+
+   DArray<5> tmp5;
+   Contract(1.0,lu,shape(i,j,k),mu,shape(k,l,m,n),0.0,tmp5,shape(i,j,l,m,n));
+
+   //bottom right
+   DArray<3> ru(D,d,D);
+   ru = 0.0;
+
+   ru(0,0,0) = f;
+   ru(1,0,0) = 1.0;
+   ru(0,1,1) = 1.0;
+   ru(1,1,1) = f;
+
+   DArray<6> tmp6;
+   Contract(1.0,tmp5,shape(i,j,k,l,m),ru,shape(m,n,o),0.0,tmp6,shape(i,j,k,l,n,o));
+
+   //top left
+   DArray<3> lt(D,d,D);
+   lt = 0.0;
+
+   lt(0,0,0) = f;
+   lt(1,0,0) = 1.0;
+   lt(0,1,1) = 1.0;
+   lt(1,1,1) = f;
+
+   DArray<7> tmp7;
+   Contract(1.0,tmp6,shape(i,j,k,l,m,n),lt,shape(i,o,p),0.0,tmp7,shape(o,j,p,k,l,m,n));
+
+   //top middle
+   DArray<4> mt(D,d,D,D);
+   mt = 0.0;
+
+   mt(0,0,0,0) = f*f;
+   mt(0,0,1,0) = f;
+   mt(1,0,0,0) = f;
+   mt(1,0,1,0) = 1.0;
+
+   mt(0,1,0,1) = 1.0;
+   mt(0,1,1,1) = f;
+   mt(1,1,0,1) = f;
+   mt(1,1,1,1) = f*f;
+
+   DArray<7> tmp7bis;
+   Contract(1.0,tmp7,shape(i,j,k,l,m,n,o),mt,shape(k,p,l,q),0.0,tmp7bis,shape(i,j,p,m,q,n,o));
+
+   DArray<3> rt(D,d,D);
+   rt = 0.0;
+
+   rt(0,0,0) = f*f;
+   rt(0,0,1) = f;
+   rt(1,0,0) = f;
+   rt(1,0,1) = 1.0;
+
+   rt(0,1,0) = 1.0;
+   rt(0,1,1) = f;
+   rt(1,1,0) = f;
+   rt(1,1,1) = f*f;
+
+   tmp6.clear(); 
+   Contract(1.0,tmp7bis,shape(i,j,k,l,m,n,o),rt,shape(m,p,n),0.0,tmp6,shape(i,j,k,l,p,o));
+
+   for(int si = 0;si < 2;++si)
+      for(int sj = 0;sj < 2;++sj)
+         for(int sk = 0;sk < 2;++sk)
+            for(int sl = 0;sl < 2;++sl)
+               for(int sm = 0;sm < 2;++sm)
+                  for(int sn = 0;sn < 2;++sn)
+                     cout << "(" << si << "," << sj << "," << sk << "," << sl << "," << sm << "," << sn << ")\t" << tmp6(si,sj,sk,sl,sm,sn) << endl;
+
+
+}
+
+/**
  * initialize the peps to an antiferromagnetic D=1 structure, where one time step has been acted on, and compressed to dimension D if necessary
  * @param D compressed dimension of the state
  * @param noise level of noise added to the initial state
