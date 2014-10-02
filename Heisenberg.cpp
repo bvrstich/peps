@@ -440,7 +440,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
       Contract(1.0,I,shape(1,2),dlsm,shape(1,2),0.0,R[col - 1]);
 
       //contract with left S+
-      val += 0.5 * Dot(Lp,R[col - 1]);
+      val -= 0.5 * Dot(Lp,R[col - 1]);
 
       // 2) then construct Sp double layer
       Environment::construct_double_layer('H',peps(0,col),Sp,dlsp);
@@ -449,7 +449,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
       Contract(1.0,I,shape(1,2),dlsp,shape(1,2),0.0,R[col - 1]);
 
       //contract with left S-
-      val += 0.5 * Dot(Lm,R[col - 1]);
+      val -= 0.5 * Dot(Lm,R[col - 1]);
 
       // 3) then construct Sz double layer
       Environment::construct_double_layer('H',peps(0,col),Sz,dlsz);
@@ -494,7 +494,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
    //reshape tmp to a 2-index array
    R[Lx - 3] = tmp.reshape_clear(shape(Environment::t[0][Lx - 1].shape(0),dlsm.shape(0)));
 
-   val += 0.5 * Dot(Lp,R[Lx-3]);
+   val -= 0.5 * Dot(Lp,R[Lx-3]);
 
    //2) Sp to close down Lm
    Environment::construct_double_layer('H',peps(0,Lx-1),Sp,dlsp);
@@ -506,7 +506,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
    //reshape tmp to a 2-index array
    R[Lx - 3] = tmp.reshape_clear(shape(Environment::t[0][Lx - 1].shape(0),dlsp.shape(0)));
 
-   val += 0.5 * Dot(Lm,R[Lx-3]);
+   val -= 0.5 * Dot(Lm,R[Lx-3]);
 
    //3) Sz to close down Lz
    Environment::construct_double_layer('H',peps(0,Lx-1),Sz,dlsz);
@@ -654,7 +654,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
          Contract(1.0,I4bis,shape(2,3),Environment::b[row-1][col],shape(1,2),0.0,RO[col-1]);
 
          //expectation value:
-         val += 0.5 * Dot(LOp,RO[col-1]);
+         val -= 0.5 * Dot(LOp,RO[col-1]);
 
          //2) close down LOm with Sp
          Environment::construct_double_layer('H',peps(row,col),Sp,dlop);
@@ -666,7 +666,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
          Contract(1.0,I4bis,shape(2,3),Environment::b[row-1][col],shape(1,2),0.0,RO[col-1]);
 
          //expectation value:
-         val += 0.5 * Dot(LOm,RO[col-1]);
+         val -= 0.5 * Dot(LOm,RO[col-1]);
 
          //3) finally close down LOz with Sz
          Environment::construct_double_layer('H',peps(row,col),Sz,dloz);
@@ -734,7 +734,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
       RO[Lx - 3] = tmp6.reshape_clear(shape(Environment::t[row][Lx - 1].shape(0),dlom.shape(0),Environment::b[row-1][Lx - 1].shape(0)));
 
       //add to value
-      val += 0.5 * Dot(LOp,RO[Lx - 3]);
+      val -= 0.5 * Dot(LOp,RO[Lx - 3]);
 
       //2) then Lm with Sp
       Environment::construct_double_layer('H',peps(row,Lx-1),Sp,dlop);
@@ -751,7 +751,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
       RO[Lx - 3] = tmp6.reshape_clear(shape(Environment::t[row][Lx - 1].shape(0),dlop.shape(0),Environment::b[row-1][Lx - 1].shape(0)));
 
       //add to value
-      val += 0.5 * Dot(LOm,RO[Lx - 3]);
+      val -= 0.5 * Dot(LOm,RO[Lx - 3]);
 
       //3) then Lz with Sz
       Environment::construct_double_layer('H',peps(row,Lx-1),Sz,dloz);
@@ -841,7 +841,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
       Contract(1.0,dlsm,shape(1,2),I,shape(1,2),0.0,R[col - 1]);
 
       //contract with left S+
-      val += 0.5 * Dot(Lp,R[col - 1]);
+      val -= 0.5 * Dot(Lp,R[col - 1]);
 
       // 2) construct Sp double layer
       Environment::construct_double_layer('H',peps(Ly-1,col),Sp,dlsp);
@@ -850,7 +850,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
       Contract(1.0,dlsp,shape(1,2),I,shape(1,2),0.0,R[col - 1]);
 
       //contract with left S-
-      val += 0.5 * Dot(Lm,R[col - 1]);
+      val -= 0.5 * Dot(Lm,R[col - 1]);
 
       // 3) construct Sz double layer
       Environment::construct_double_layer('H',peps(Ly-1,col),Sz,dlsz);
@@ -895,7 +895,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
    //reshape tmp to a 2-index array
    R[Lx - 3] = tmp.reshape_clear(shape(dlsm.shape(0),Environment::b[Ly-2][Lx - 1].shape(0)));
 
-   val += 0.5 * Dot(Lp,R[Lx-3]);
+   val -= 0.5 * Dot(Lp,R[Lx-3]);
 
    //2) Sp to close down Lm
    Environment::construct_double_layer('H',peps(Ly-1,Lx-1),Sp,dlsp);
@@ -907,7 +907,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
    //reshape tmp to a 2-index array
    R[Lx - 3] = tmp.reshape_clear(shape(dlsp.shape(0),Environment::b[Ly-2][Lx - 1].shape(0)));
 
-   val += 0.5 * Dot(Lm,R[Lx-3]);
+   val -= 0.5 * Dot(Lm,R[Lx-3]);
 
    //3) Sz to close down Lz
    Environment::construct_double_layer('H',peps(Ly-1,Lx-1),Sz,dlsz);
@@ -995,7 +995,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
       Contract(1.0,I,shape(1,2),dlsm,shape(1,2),0.0,R[row - 1]);
 
       //contract with left S+
-      val += 0.5 * Dot(Lp,R[row - 1]);
+      val -= 0.5 * Dot(Lp,R[row - 1]);
 
       // 2) then construct Sp double layer
       Environment::construct_double_layer('V',peps(row,0),Sp,dlsp);
@@ -1004,7 +1004,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
       Contract(1.0,I,shape(1,2),dlsp,shape(1,2),0.0,R[row - 1]);
 
       //contract with left S-
-      val += 0.5 * Dot(Lm,R[row - 1]);
+      val -= 0.5 * Dot(Lm,R[row - 1]);
 
       // 3) then construct Sz double layer
       Environment::construct_double_layer('V',peps(row,0),Sz,dlsz);
@@ -1049,7 +1049,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
    //reshape tmp to a 2-index array
    R[Ly - 3] = tmp.reshape_clear(shape(Environment::r[0][Ly - 1].shape(0),dlsm.shape(0)));
 
-   val += 0.5 * Dot(Lp,R[Ly-3]);
+   val -= 0.5 * Dot(Lp,R[Ly-3]);
 
    //2) Sp to close down Lm
    Environment::construct_double_layer('V',peps(Ly-1,0),Sp,dlsp);
@@ -1061,7 +1061,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
    //reshape tmp to a 2-index array
    R[Ly - 3] = tmp.reshape_clear(shape(Environment::r[0][Ly - 1].shape(0),dlsp.shape(0)));
 
-   val += 0.5 * Dot(Lm,R[Ly-3]);
+   val -= 0.5 * Dot(Lm,R[Ly-3]);
 
    //3) Sz to close down Lz
    Environment::construct_double_layer('V',peps(Ly-1,0),Sz,dlsz);
@@ -1193,7 +1193,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
          Contract(1.0,I4bis,shape(2,3),Environment::l[col-1][row],shape(1,2),0.0,RO[row-1]);
 
          //expectation value:
-         val += 0.5 * Dot(LOp,RO[row-1]);
+         val -= 0.5 * Dot(LOp,RO[row-1]);
 
          //2) close down LOm with Sp
          Environment::construct_double_layer('V',peps(row,col),Sp,dlop);
@@ -1205,7 +1205,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
          Contract(1.0,I4bis,shape(2,3),Environment::l[col-1][row],shape(1,2),0.0,RO[row-1]);
 
          //expectation value:
-         val += 0.5 * Dot(LOm,RO[row-1]);
+         val -= 0.5 * Dot(LOm,RO[row-1]);
 
          //3) finally close down LOz with Sz
          Environment::construct_double_layer('V',peps(row,col),Sz,dloz);
@@ -1273,7 +1273,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
       RO[Ly - 3] = tmp6.reshape_clear(shape(Environment::r[col][Ly - 1].shape(0),dlom.shape(0),Environment::l[col-1][Ly - 1].shape(0)));
 
       //add to value
-      val += 0.5 * Dot(LOp,RO[Ly - 3]);
+      val -= 0.5 * Dot(LOp,RO[Ly - 3]);
 
       //2) then Lm with Sp
       Environment::construct_double_layer('V',peps(Ly-1,col),Sp,dlop);
@@ -1290,7 +1290,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
       RO[Ly - 3] = tmp6.reshape_clear(shape(Environment::r[col][Ly - 1].shape(0),dlop.shape(0),Environment::l[col-1][Ly - 1].shape(0)));
 
       //add to value
-      val += 0.5 * Dot(LOm,RO[Ly - 3]);
+      val -= 0.5 * Dot(LOm,RO[Ly - 3]);
 
       //3) then Lz with Sz
       Environment::construct_double_layer('V',peps(Ly-1,col),Sz,dloz);
@@ -1380,7 +1380,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
       Contract(1.0,dlsm,shape(1,2),I,shape(1,2),0.0,R[row - 1]);
 
       //contract with left S+
-      val += 0.5 * Dot(Lp,R[row - 1]);
+      val -= 0.5 * Dot(Lp,R[row - 1]);
 
       // 2) construct Sp double layer
       Environment::construct_double_layer('V',peps(row,Lx-1),Sp,dlsp);
@@ -1389,7 +1389,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
       Contract(1.0,dlsp,shape(1,2),I,shape(1,2),0.0,R[row - 1]);
 
       //contract with left S-
-      val += 0.5 * Dot(Lm,R[row - 1]);
+      val -= 0.5 * Dot(Lm,R[row - 1]);
 
       // 3) construct Sz double layer
       Environment::construct_double_layer('V',peps(row,Lx-1),Sz,dlsz);
@@ -1434,7 +1434,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
    //reshape tmp to a 2-index array
    R[Ly - 3] = tmp.reshape_clear(shape(dlsm.shape(0),Environment::l[Lx-2][Ly - 1].shape(0)));
 
-   val += 0.5 * Dot(Lp,R[Ly-3]);
+   val -= 0.5 * Dot(Lp,R[Ly-3]);
 
    //2) Sp to close down Lm
    Environment::construct_double_layer('V',peps(Ly-1,Lx-1),Sp,dlsp);
@@ -1446,7 +1446,7 @@ double Heisenberg::energy(const PEPS<double> &peps){
    //reshape tmp to a 2-index array
    R[Ly - 3] = tmp.reshape_clear(shape(dlsp.shape(0),Environment::l[Lx-2][Ly - 1].shape(0)));
 
-   val += 0.5 * Dot(Lm,R[Ly-3]);
+   val -= 0.5 * Dot(Lm,R[Ly-3]);
 
    //3) Sz to close down Lz
    Environment::construct_double_layer('V',peps(Ly-1,Lx-1),Sz,dlsz);

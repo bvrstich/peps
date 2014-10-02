@@ -4,6 +4,10 @@
 #include <iostream>
 #include <iomanip>
 
+#include <btas/common/blas_cxx_interface.h>
+#include <btas/common/TVector.h>
+#include <btas/DENSE/TArray.h>
+
 using namespace btas;
 
 namespace propagate {

@@ -5,11 +5,18 @@
 #include <fstream>
 #include <vector>
 
+#include <btas/common/blas_cxx_interface.h>
+#include <btas/common/TVector.h>
+#include <btas/DENSE/TArray.h>
+
 using std::ostream;
 using std::vector;
 
 template<typename T>
 class PEPS;
+
+template<typename T>
+class MPS;
 
 /**
  * @author Brecht Verstichel

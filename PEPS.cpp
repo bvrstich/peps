@@ -619,92 +619,123 @@ void PEPS<double>::set_jastrow(double f) {
 
    D = 2;
 
-   //just a test
-  
-   //bottom left site
-   DArray<3> lu(D,d,D);
-   lu = 0.0;
+   //bottom row, first site
+   (*this)[0].resize(1,D,d,1,D);
+   (*this)[0] = 0.0;
 
-   lu(0,0,0) = 1.0;
-   lu(1,1,1) = 1.0;
+   (*this)[0](0,0,0,0,0) = 1.0;
+   (*this)[0](0,1,1,0,1) = 1.0;
 
-   //bottom middle site
-   DArray<4> mu(D,D,d,D);
-   mu = 0.0;
+   //bottom row, middle sites
+   for(int col = 1;col < Lx - 1;++col){
 
-   mu(0,0,0,0) = f;
-   mu(1,0,0,0) = 1.0;
-   mu(0,1,1,1) = 1.0;
-   mu(1,1,1,1) = f;
+      (*this)[col].resize(D,D,d,1,D);
+      (*this)[col] = 0.0;
 
-   DArray<5> tmp5;
-   Contract(1.0,lu,shape(i,j,k),mu,shape(k,l,m,n),0.0,tmp5,shape(i,j,l,m,n));
+      (*this)[col](0,0,0,0,0) = f;
+      (*this)[col](1,0,0,0,0) = 1.0;
+      (*this)[col](0,1,1,0,1) = 1.0;
+      (*this)[col](1,1,1,0,1) = f;
 
-   //bottom right
-   DArray<3> ru(D,d,D);
-   ru = 0.0;
+   }
 
-   ru(0,0,0) = f;
-   ru(1,0,0) = 1.0;
-   ru(0,1,1) = 1.0;
-   ru(1,1,1) = f;
+   //bottom row, last site
+   (*this)[Lx-1].resize(D,D,d,1,1);
+   (*this)[Lx-1] = 0.0;
 
-   DArray<6> tmp6;
-   Contract(1.0,tmp5,shape(i,j,k,l,m),ru,shape(m,n,o),0.0,tmp6,shape(i,j,k,l,n,o));
+   (*this)[Lx-1](0,0,0,0,0) = f;
+   (*this)[Lx-1](1,0,0,0,0) = 1.0;
 
-   //top left
-   DArray<3> lt(D,d,D);
-   lt = 0.0;
+   (*this)[Lx-1](0,1,1,0,0) = 1.0;
+   (*this)[Lx-1](1,1,1,0,0) = f;
 
-   lt(0,0,0) = f;
-   lt(1,0,0) = 1.0;
-   lt(0,1,1) = 1.0;
-   lt(1,1,1) = f;
+   //middle sites
+   for(int row = 1;row < Ly - 1;++row){
 
-   DArray<7> tmp7;
-   Contract(1.0,tmp6,shape(i,j,k,l,m,n),lt,shape(i,o,p),0.0,tmp7,shape(o,j,p,k,l,m,n));
+      //leftmost middle site: col == 0
+      (*this)[row*Lx].resize(1,D,d,D,D);
+      (*this)[row*Lx] = 0.0;
 
-   //top middle
-   DArray<4> mt(D,d,D,D);
-   mt = 0.0;
+      (*this)[row*Lx](0,0,0,0,0) = f;
+      (*this)[row*Lx](0,0,0,1,0) = 1.0;
+      (*this)[row*Lx](0,1,1,0,1) = 1.0;
+      (*this)[row*Lx](0,1,1,1,1) = f;
 
-   mt(0,0,0,0) = f*f;
-   mt(0,0,1,0) = f;
-   mt(1,0,0,0) = f;
-   mt(1,0,1,0) = 1.0;
+      //middle sites on row 'row'
+      for(int col = 1;col < Lx - 1;++col){
 
-   mt(0,1,0,1) = 1.0;
-   mt(0,1,1,1) = f;
-   mt(1,1,0,1) = f;
-   mt(1,1,1,1) = f*f;
+         (*this)[row*Lx + col].resize(D,D,d,D,D);
+         (*this)[row*Lx + col] = 0.0;
 
-   DArray<7> tmp7bis;
-   Contract(1.0,tmp7,shape(i,j,k,l,m,n,o),mt,shape(k,p,l,q),0.0,tmp7bis,shape(i,j,p,m,q,n,o));
+         (*this)[row*Lx + col](0,0,0,0,0) = f*f;
+         (*this)[row*Lx + col](0,0,0,1,0) = f;
+         (*this)[row*Lx + col](1,0,0,0,0) = f;
+         (*this)[row*Lx + col](1,0,0,1,0) = 1.0;
 
-   DArray<3> rt(D,d,D);
-   rt = 0.0;
+         (*this)[row*Lx + col](0,1,1,0,1) = 1.0;
+         (*this)[row*Lx + col](0,1,1,1,1) = f;
+         (*this)[row*Lx + col](1,1,1,0,1) = f;
+         (*this)[row*Lx + col](1,1,1,1,1) = f*f;
 
-   rt(0,0,0) = f*f;
-   rt(0,0,1) = f;
-   rt(1,0,0) = f;
-   rt(1,0,1) = 1.0;
+      }
 
-   rt(0,1,0) = 1.0;
-   rt(0,1,1) = f;
-   rt(1,1,0) = f;
-   rt(1,1,1) = f*f;
+      //rightmost site on row 'row'
+      (*this)[row*Lx + Lx - 1].resize(D,D,d,D,1);
+      (*this)[row*Lx + Lx - 1] = 0.0;
 
-   tmp6.clear(); 
-   Contract(1.0,tmp7bis,shape(i,j,k,l,m,n,o),rt,shape(m,p,n),0.0,tmp6,shape(i,j,k,l,p,o));
+      (*this)[row*Lx + Lx - 1](0,0,0,0,0) = f*f;
+      (*this)[row*Lx + Lx - 1](0,0,0,1,0) = f;
+      (*this)[row*Lx + Lx - 1](1,0,0,0,0) = f;
+      (*this)[row*Lx + Lx - 1](1,0,0,1,0) = 1.0;
 
-   for(int si = 0;si < 2;++si)
-      for(int sj = 0;sj < 2;++sj)
-         for(int sk = 0;sk < 2;++sk)
-            for(int sl = 0;sl < 2;++sl)
-               for(int sm = 0;sm < 2;++sm)
-                  for(int sn = 0;sn < 2;++sn)
-                     cout << "(" << si << "," << sj << "," << sk << "," << sl << "," << sm << "," << sn << ")\t" << tmp6(si,sj,sk,sl,sm,sn) << endl;
+      (*this)[row*Lx + Lx - 1](0,1,1,0,0) = 1.0;
+      (*this)[row*Lx + Lx - 1](1,1,1,0,0) = f;
+      (*this)[row*Lx + Lx - 1](0,1,1,1,0) = f;
+      (*this)[row*Lx + Lx - 1](1,1,1,1,0) = f*f;
 
+   }
+
+   //top row
+   //leftmost site
+   (*this)[(Ly - 1)*Lx].resize(1,1,d,D,D);
+   (*this)[(Ly - 1)*Lx] = 0.0;
+
+   (*this)[(Ly - 1)*Lx](0,0,0,0,0) = f;
+   (*this)[(Ly - 1)*Lx](0,0,0,1,0) = 1.0;
+   (*this)[(Ly - 1)*Lx](0,0,1,0,1) = 1.0;
+   (*this)[(Ly - 1)*Lx](0,0,1,1,1) = f;
+
+   //top row, middle sites
+   for(int col = 1;col < Lx - 1;++col){
+
+      (*this)[(Ly - 1)*Lx + col].resize(D,1,d,D,D);
+      (*this)[(Ly - 1)*Lx + col] = 0.0;
+
+      (*this)[(Ly - 1)*Lx + col](0,0,0,0,0) = f*f;
+      (*this)[(Ly - 1)*Lx + col](0,0,0,1,0) = f;
+      (*this)[(Ly - 1)*Lx + col](1,0,0,0,0) = f;
+      (*this)[(Ly - 1)*Lx + col](1,0,0,1,0) = 1.0;
+
+      (*this)[(Ly - 1)*Lx + col](0,0,1,0,1) = 1.0;
+      (*this)[(Ly - 1)*Lx + col](0,0,1,1,1) = f;
+      (*this)[(Ly - 1)*Lx + col](1,0,1,0,1) = f;
+      (*this)[(Ly - 1)*Lx + col](1,0,1,1,1) = f*f;
+
+   }
+
+   //top row rightmost site
+   (*this)[(Ly - 1)*Lx + Lx - 1].resize(D,1,d,D,1);
+   (*this)[(Ly - 1)*Lx + Lx - 1] = 0.0;
+
+   (*this)[(Ly - 1)*Lx + Lx - 1](0,0,0,0,0) = f*f;
+   (*this)[(Ly - 1)*Lx + Lx - 1](0,0,0,1,0) = f;
+   (*this)[(Ly - 1)*Lx + Lx - 1](1,0,0,0,0) = f;
+   (*this)[(Ly - 1)*Lx + Lx - 1](1,0,0,1,0) = 1.0;
+
+   (*this)[(Ly - 1)*Lx + Lx - 1](0,0,1,0,0) = 1.0;
+   (*this)[(Ly - 1)*Lx + Lx - 1](0,0,1,1,0) = f;
+   (*this)[(Ly - 1)*Lx + Lx - 1](1,0,1,0,0) = f;
+   (*this)[(Ly - 1)*Lx + Lx - 1](1,0,1,1,0) = f*f;
 
 }
 
