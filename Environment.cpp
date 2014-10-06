@@ -12,6 +12,8 @@ using std::ofstream;
 
 #include "include.h"
 
+using namespace global;
+
 //statics
 vector< MPS<double> > Environment::l;
 vector< MPS<double> > Environment::r;
@@ -22,9 +24,6 @@ vector< MPS<double> > Environment::b;
  * constructor
  */
 void Environment::init(){
-
-   int Lx = Global::lat.gLx();
-   int Ly = Global::lat.gLy();
 
    t.resize(Ly - 1);
    b.resize(Ly - 1);
@@ -45,11 +44,6 @@ void Environment::init(){
  * @param D_aux dimension to which environment will be compressed
  */
 void Environment::calc_env(char option,const PEPS<double> &peps,int D_aux){
-
-   int Lx = Global::lat.gLx();
-   int Ly = Global::lat.gLy();
-
-   int d = Global::lat.gd();
 
    if(option == 'B' || option == 'A'){
 
@@ -162,9 +156,6 @@ void Environment::calc_env(char option,const PEPS<double> &peps,int D_aux){
  */
 void Environment::test_env(){
 
-   int Lx = Global::lat.gLx();
-   int Ly = Global::lat.gLy();
-
    cout << endl;
    cout << "FROM BOTTOM TO TOP" << endl;
    cout << endl;
@@ -192,11 +183,6 @@ void Environment::test_env(){
  * @param D_aux dimension to which environment will be compressed
  */
 void Environment::calc_env(char option,int rc,const PEPS<double> &peps,int D_aux){
-
-   int Lx = Global::lat.gLx();
-   int Ly = Global::lat.gLy();
-
-   int d = Global::lat.gd();
 
    if(option == 'B'){
 

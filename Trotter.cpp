@@ -12,10 +12,10 @@ using std::ofstream;
 
 #include "include.h"
 
+using namespace global;
+
 DArray<3> Trotter::LO;
-
 DArray<3> Trotter::RO;
-
 double Trotter::tau;
 
 /** 
@@ -25,8 +25,6 @@ double Trotter::tau;
 void Trotter::set(double tau_in) {
 
    tau = tau_in;
-
-   int d = Global::lat.gd();
 
    //first construct S_i.S_j on a d^2 x d^2 space
    DArray<2> Sij(d*d,d*d);

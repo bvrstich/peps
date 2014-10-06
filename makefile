@@ -9,13 +9,12 @@
 # -----------------------------------------------------------------------------
 BINNAME = peps
 CPPSRC	= main.cpp\
+           global.cpp\
            Random.cpp\
-           Lattice.cpp\
            PEPS.cpp\
            MPS.cpp\
            MPO.cpp\
            compress.cpp\
-           Global.cpp\
            Environment.cpp\
            Heisenberg.cpp\
            Trotter.cpp\

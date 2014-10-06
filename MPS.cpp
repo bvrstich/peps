@@ -12,6 +12,8 @@ using std::ofstream;
 
 #include "include.h"
 
+using namespace global;
+
 /** 
  * empty constructor: just sets the length of the vector
  */
@@ -35,8 +37,6 @@ template<typename T>
 MPS<T>::MPS(int L_in,int D_in) : vector< TArray<T,3> >(L_in) {
 
    D = D_in;
-
-   int d = Global::lat.gd();
 
    vector<int> vdim(L_in + 1);
 
@@ -67,7 +67,7 @@ MPS<T>::MPS(int L_in,int D_in) : vector< TArray<T,3> >(L_in) {
    for(int i = 0;i < this->size();++i){
 
       (*this)[i].resize(vdim[i],d,vdim[i+1]);
-      (*this)[i].generate(Global::rgen<T>);
+      (*this)[i].generate(rgen<T>);
 
    }
 
@@ -80,9 +80,6 @@ MPS<T>::MPS(int L_in,int D_in) : vector< TArray<T,3> >(L_in) {
  */
 template<typename T>
 MPS<T>::MPS(char option,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< TArray<T,3> >() {
-
-   int Lx = Global::lat.gLx();
-   int Ly = Global::lat.gLy();
 
    if(option == 'b'){
 

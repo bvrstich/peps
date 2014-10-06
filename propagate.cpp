@@ -12,6 +12,7 @@ using std::ofstream;
 #include "include.h"
 
 using namespace btas;
+using namespace global;
 
 namespace propagate {
 
@@ -22,10 +23,6 @@ namespace propagate {
     */
    void step(PEPS<double> &peps,int D_aux){
 
-      int Lx = Global::lat.gLx();
-      int Ly = Global::lat.gLy();
-
-      int d = Global::lat.gd();
       int D = peps.gD();
 
       enum {i,j,k,m,n,o,p,q};
@@ -895,9 +892,6 @@ namespace propagate {
     */
    void calc_N_eff(char option,int rc,const DArray<2> &L,const DArray<4> &QL,const DArray<2> &R, const DArray<4> &QR,DArray<4> &N_eff){
 
-      int Lx = Global::lat.gLx();
-      int Ly = Global::lat.gLy();
-
       if(option == 'b'){
 
          if(rc == 0){//left edge
@@ -1440,9 +1434,6 @@ namespace propagate {
     */
    void init_ro(char option,vector< DArray<2> > &R){
 
-      int Lx = Global::lat.gLx();
-      int Ly = Global::lat.gLy();
-
       if(option == 'b'){
 
          //first the rightmost operator
@@ -1549,9 +1540,6 @@ namespace propagate {
     */
    void update_L(char option,int rc,DArray<2> &L){
 
-      int Lx = Global::lat.gLx();
-      int Ly = Global::lat.gLy();
-
       if(option == 'b'){//bottom
 
          if(rc == 0){
@@ -1652,9 +1640,6 @@ namespace propagate {
     */
    void init_ro(char option,int rc,const PEPS<double> &peps,vector< DArray<3> > &RO){
 
-      int Lx = Global::lat.gLx();
-      int Ly = Global::lat.gLy();
-
       if(option == 'H'){
 
          //last site make double layer object from peps
@@ -1748,9 +1733,6 @@ namespace propagate {
     * @param N_eff output DArray<4> object containing the effective norm environment on exit
     */
    void calc_N_eff(char option,int li,int si,const DArray<3> &LO,const DArray<4> &QL,const DArray<3> &RO, const DArray<4> &QR,DArray<4> &N_eff){
-
-      int Lx = Global::lat.gLx();
-      int Ly = Global::lat.gLy();
 
       if(option == 'H'){
 
@@ -2017,9 +1999,6 @@ namespace propagate {
     */
    void update_L(char option,int li,int si,const PEPS<double> &peps,DArray<3> &LO){
 
-      int Lx = Global::lat.gLx();
-      int Ly = Global::lat.gLy();
-
       if(option == 'H'){
 
          if(si == 0){
@@ -2108,11 +2087,6 @@ namespace propagate {
     */
    void apply_stag_field(PEPS<double> &peps,double B){
 
-      int Lx = Global::lat.gLx();
-      int Ly = Global::lat.gLy();
-
-      int d = Global::lat.gd();
-
       DArray<2> Bp(d,d);
       DArray<2> Bm(d,d);
 
@@ -2163,10 +2137,6 @@ namespace propagate {
     */
    void step_no_env(PEPS<double> &peps,int D_aux){
 
-      int Lx = Global::lat.gLx();
-      int Ly = Global::lat.gLy();
-
-      int d = Global::lat.gd();
       int D = peps.gD();
 
       enum {i,j,k,m,n,o,p,q};

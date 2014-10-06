@@ -30,7 +30,7 @@ int main(int argc,char *argv[]){
    int D_aux = atoi(argv[4]);//auxiliary dimension for the contraction
 
    //initialize some statics dimensions
-   Global::lat.set(L,L,d);
+   global::init(d,L,L);
    Environment::init();
    Heisenberg::init();
 
@@ -38,7 +38,7 @@ int main(int argc,char *argv[]){
 
    PEPS<double> peps;
 
-   peps.set_jastrow(f);
+   peps.initialize_jastrow(f);
    peps.normalize(D_aux);
 
    Environment::calc_env('A',peps,D_aux);

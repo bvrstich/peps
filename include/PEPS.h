@@ -26,8 +26,8 @@ class PEPS : public vector< TArray<T,5> > {
 
       //empty
       PEPS();
-
-      //constructor
+      
+      //!construct with bond dimension
       PEPS(int);
 
       //copy constructor
@@ -36,17 +36,13 @@ class PEPS : public vector< TArray<T,5> > {
       //destructor
       virtual ~PEPS();
 
-      PEPS inverse() const;
-
       int gD() const;
 
       void sD(int);
 
-      void initialize_state_simple(int,int,double);
-
-      void initialize_state_sum(int,double);
-
       void grow_bond_dimension(int,double);
+
+      void initialize_jastrow(double);
 
       const TArray<T,5> &operator()(int,int) const;
 
@@ -62,8 +58,6 @@ class PEPS : public vector< TArray<T,5> > {
 
       void load(const char *);
 
-      void set_jastrow(double);
-
    private:
 
       //!cutoff virtual dimension
@@ -77,8 +71,8 @@ class PEPS : public vector< TArray<T,5> > {
 template<typename T>
 ostream &operator<<(ostream &output,const PEPS<T> &peps_p){
 
-   for(int r = 0;r < Global::lat.gLy();++r)
-      for(int c = 0;c < Global::lat.gLx();++c){
+   for(int r = 0;r < global::Ly;++r)
+      for(int c = 0;c < global::Lx;++c){
 
          output << std::endl;
          output << "Tensor on site (" << r << "," << c << ")\t" << std::endl;

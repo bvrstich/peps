@@ -29,7 +29,7 @@ class Environment {
 
       static void init();
 
-      static void calc_env(char,const PEPS<double> &,int D_aux);
+      static void calc_env(char,const PEPS<double> &,int);
 
       static void calc_env(char,int,const PEPS<double> &,int D_aux);
 

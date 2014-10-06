@@ -12,6 +12,8 @@ using std::ofstream;
 
 #include "include.h"
 
+using namespace global;
+
 /**
  * construct constructs a standard MPO object, by creating a double layer peps object
  * @param option 'V' == vertical stripe, 'H' == horizontal stripe
@@ -21,9 +23,6 @@ template<typename T>
 MPO<T>::MPO(char option,int rc,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< TArray<T,4> >() {
 
    D = peps_1.gD() * peps_2.gD();
-
-   int Lx = Global::lat.gLx();
-   int Ly = Global::lat.gLy();
 
    if(option == 'H'){//horizontal
 

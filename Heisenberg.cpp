@@ -12,6 +12,8 @@ using std::ofstream;
 
 #include "include.h"
 
+using namespace global;
+
 //!operators!
 DArray<2> Heisenberg::Sp;
 DArray<2> Heisenberg::Sm;
@@ -21,11 +23,6 @@ DArray<2> Heisenberg::Sz;
  * constructor
  */
 void Heisenberg::init(){
-
-   int Lx = Global::lat.gLx();
-   int Ly = Global::lat.gLy();
-
-   int d = Global::lat.gd();
 
    //init the operators
    Sp.resize(d,d);
@@ -52,9 +49,6 @@ void Heisenberg::init(){
  * beware, the environments have to be constructed beforehand!
  */
 double Heisenberg::local(const PEPS<double> &peps,const DArray<2> &O){
-
-   int Lx = Global::lat.gLx();
-   int Ly = Global::lat.gLy();
 
    //from bottom to top: contract in mps/mpo fashion
 
@@ -351,8 +345,6 @@ double Heisenberg::local(const PEPS<double> &peps,const DArray<2> &O){
 double Heisenberg::energy(const PEPS<double> &peps){
 
    // ---- || evaluate the energy in an MPO/MPS manner, first from bottom to top, then left to right || ----
-   int Lx = Global::lat.gLx();
-   int Ly = Global::lat.gLy();
 
    // #################################################################
    // ### ---- from bottom to top: contract in mps/mpo fashion ---- ### 
