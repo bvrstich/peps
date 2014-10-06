@@ -14,16 +14,10 @@ using std::ofstream;
 
 using namespace global;
 
-//statics
-vector< MPS<double> > Environment::l;
-vector< MPS<double> > Environment::r;
-vector< MPS<double> > Environment::t;
-vector< MPS<double> > Environment::b;
-
 /** 
- * constructor
+ * empty constructor
  */
-void Environment::init(){
+Environment::Environment(){
 
    t.resize(Ly - 1);
    b.resize(Ly - 1);
@@ -32,6 +26,46 @@ void Environment::init(){
    l.resize(Lx - 1);
 
 }
+
+/** 
+ * constructor with allocation
+ * @param D_in bond dimension of peps state
+ * @param D_aux_in contraction bond dimension
+ */
+Environment::Environment(int D_in,int D_aux_in){
+
+   t.resize(Ly - 1);
+   b.resize(Ly - 1);
+
+   r.resize(Lx - 1);
+   l.resize(Lx - 1);
+
+   D = D_in;
+   D_aux = D_aux_in;
+
+}
+
+/** 
+ * copy constructor with allocation
+ */
+Environment::Environment(const Environment &env){
+
+   t.resize(Ly - 1);
+   b.resize(Ly - 1);
+
+   r.resize(Lx - 1);
+   l.resize(Lx - 1);
+
+   D = env.gD();
+   D_aux = env.gD_aux();
+
+}
+
+
+/**
+ * empty destructor
+ */
+Environment::~Environment(){ }
 
 /**
  * construct the enviroment mps's for the input PEPS
@@ -43,7 +77,7 @@ void Environment::init(){
  * @param peps input PEPS<double>
  * @param D_aux dimension to which environment will be compressed
  */
-void Environment::calc_env(char option,const PEPS<double> &peps,int D_aux){
+void Environment::calc(char option,const PEPS<double> &peps,int D_aux){
 
    if(option == 'B' || option == 'A'){
 
@@ -154,7 +188,7 @@ void Environment::calc_env(char option,const PEPS<double> &peps,int D_aux){
 /**
  * test if the enviroment is correctly contracted
  */
-void Environment::test_env(){
+void Environment::test(){
 
    cout << endl;
    cout << "FROM BOTTOM TO TOP" << endl;
@@ -182,7 +216,7 @@ void Environment::test_env(){
  * @param peps input PEPS<double>
  * @param D_aux dimension to which environment will be compressed
  */
-void Environment::calc_env(char option,int rc,const PEPS<double> &peps,int D_aux){
+void Environment::calc(char option,int rc,const PEPS<double> &peps,int D_aux){
 
    if(option == 'B'){
 
@@ -458,5 +492,127 @@ void Environment::construct_double_layer(char option,const DArray<5> &peps,DArra
       dls = tmp.reshape_clear(shape(DL,d_phys,DR));
 
    }
+
+}
+
+/**
+ * const version
+ * @param col the column index
+ * @return the right 'MPS' environment on column col
+ */
+const MPS<double> &Environment::gr(int col) const {
+
+   return r[col];
+
+}
+
+/**
+ * @param col the column index: access version
+ * @return the right 'MPS' environment on column col
+ */
+MPS<double> &Environment::gr(int col) {
+
+   return r[col];
+
+}
+
+/**
+ * const version
+ * @param col the column index
+ * @return the left 'MPS' environment on column col
+ */
+const MPS<double> &Environment::gl(int col) const {
+
+   return l[col];
+
+}
+
+/**
+ * @param col the column index: access version
+ * @return the right 'MPS' environment on column col
+ */
+MPS<double> &Environment::gl(int col) {
+
+   return l[col];
+
+}
+
+/**
+ * const version
+ * @param row the row index
+ * @return the top 'MPS' environment on row 'row'
+ */
+const MPS<double> &Environment::gt(int row) const {
+
+   return t[row];
+
+}
+
+/**
+ * access version
+ * @param row the row index
+ * @return the top 'MPS' environment on row 'row'
+ */
+MPS<double> &Environment::gt(int row) {
+
+   return t[row];
+
+}
+
+/**
+ * const version
+ * @param row the row index
+ * @return the bottom 'MPS' environment on row 'row'
+ */
+const MPS<double> &Environment::gb(int row) const {
+
+   return b[row];
+
+}
+
+/**
+ * access version
+ * @param row the row index
+ * @return the bottom 'MPS' environment on row 'row'
+ */
+MPS<double> &Environment::gb(int row) {
+
+   return b[row];
+
+}
+
+/**
+ * @return the auxiliary bond dimension for the contraction
+ **/
+const int Environment::gD_aux() const {
+
+   return D_aux;
+
+}
+
+/**
+ * @return the auxiliary bond dimension for the contraction
+ **/
+const int Environment::gD() const {
+
+   return D;
+
+}
+
+/**
+ * set a new bond dimension
+ */
+void Environment::sD(int D_in) {
+
+   D = D_in;
+
+}
+
+/**
+ * set a new auxiliary bond dimension
+ */
+void Environment::sD_aux(int D_aux_in) {
+
+   D_aux = D_aux_in;
 
 }

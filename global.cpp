@@ -32,6 +32,8 @@ namespace global{
    DArray<2> iSy;
    DArray<2> Sz;
 
+   Environment env;
+
    /**
     * @param D_in virtual dimension of the trial
     * @param D_aux_in auxiliary dimension for peps contraction
@@ -39,7 +41,7 @@ namespace global{
     * @param Lx_in x dimension of the square lattice
     * @param Ly_in y dimension of the square lattice
     */
-   void init(int d_in,int Lx_in,int Ly_in){
+   void init(int D_in,int D_aux_in,int d_in,int Lx_in,int Ly_in){
 
       Lx = Lx_in;
       Ly = Ly_in;
@@ -71,6 +73,8 @@ namespace global{
 
       Sz(0,0) = -0.5;
       Sz(1,1) = 0.5;
+
+      env = Environment(D_in,D_aux_in);
 
    }
 

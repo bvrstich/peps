@@ -27,29 +27,61 @@ class Environment {
 
    public:
 
-      static void init();
+      Environment();
 
-      static void calc_env(char,const PEPS<double> &,int);
+      Environment(int,int);
 
-      static void calc_env(char,int,const PEPS<double> &,int D_aux);
+      //copy constructor
+      Environment(const Environment &);
 
-      static void test_env();
+      //destructor
+      virtual ~Environment();
 
-      static void construct_double_layer(char,const DArray<5> &peps,DArray<3> &dls);
+      void calc(char,const PEPS<double> &,int);
 
-      static void construct_double_layer(char,const DArray<5> &peps,const DArray<2> &O,DArray<3> &dls);
+      void calc(char,int,const PEPS<double> &,int D_aux);
 
-      static void construct_double_layer(char,const DArray<5> &peps,DArray<4> &dlo);
+      void test();
 
-      static void construct_double_layer(char,const DArray<5> &peps,const DArray<2> &O,DArray<4> &dlo);
+      void construct_double_layer(char,const DArray<5> &peps,DArray<3> &dls);
 
-      //!stores an array environment MPS's for l(eft) , r(ight), t(op) and b(ottom)
-      static vector< MPS<double> > l;
-      static vector< MPS<double> > r;
-      static vector< MPS<double> > t;
-      static vector< MPS<double> > b;
+      void construct_double_layer(char,const DArray<5> &peps,const DArray<2> &O,DArray<3> &dls);
+
+      void construct_double_layer(char,const DArray<5> &peps,DArray<4> &dlo);
+
+      void construct_double_layer(char,const DArray<5> &peps,const DArray<2> &O,DArray<4> &dlo);
+
+      const MPS<double> &gl(int) const;
+      MPS<double> &gl(int);
+
+      const MPS<double> &gr(int) const;
+      MPS<double> &gr(int);
+
+      const MPS<double> &gt(int) const;
+      MPS<double> &gt(int);
+
+      const MPS<double> &gb(int) const;
+      MPS<double> &gb(int);
+
+      const int gD() const;
+      const int gD_aux() const;
+
+      void sD(int);
+      void sD_aux(int);
 
    private:
+
+      //!stores an array environment MPS's for l(eft) , r(ight), t(op) and b(ottom)
+      vector< MPS<double> > l;
+      vector< MPS<double> > r;
+      vector< MPS<double> > t;
+      vector< MPS<double> > b;
+
+      //!regular bond dimension of peps
+      int D;
+
+      //!Auxiliary dimension, for the contraction
+      int D_aux;
 
 };
 

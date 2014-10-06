@@ -30,8 +30,7 @@ int main(int argc,char *argv[]){
    int D_aux = atoi(argv[4]);//auxiliary dimension for the contraction
 
    //initialize some statics dimensions
-   global::init(d,L,L);
-   Environment::init();
+   global::init(D,D_aux,d,L,L);
 
    double f = 0.74;
 
@@ -40,8 +39,8 @@ int main(int argc,char *argv[]){
    peps.initialize_jastrow(f);
    peps.normalize(D_aux);
 
-   Environment::calc_env('A',peps,D_aux);
-   Environment::test_env();
+   global::env.calc('A',peps,D_aux);
+   global::env.test();
    cout << endl;
 
    cout << f << "\t" << peps.energy()/(double)(L*L) << endl;

@@ -40,10 +40,10 @@ namespace propagate {
       // --------------------------------------//
 
       //construct the top environment:
-      Environment::calc_env('T',peps,D_aux);
+      env.calc('T',peps,D_aux);
 
       //construct the 'bottom environment' for the bottom row:
-      Environment::calc_env('B',0,peps,D_aux);
+      env.calc('B',0,peps,D_aux);
 
       //containers for the renormalized operators
       vector< DArray<2> > R(Lx - 2);
@@ -83,7 +83,7 @@ namespace propagate {
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(0,1),shape(i,o,j,m,n));
 
       //construct a double layer object for the newly updated bottom left site
-      Environment::construct_double_layer('H',peps(0,0),Environment::b[0][0]);
+      env.construct_double_layer('H',peps(0,0),env.gb(0)[0]);
 
       //update left renormalized operator for use on next site
       update_L('b',0,L);
@@ -112,7 +112,7 @@ namespace propagate {
          Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(0,col+1),shape(i,o,j,m,n));
 
          //first construct a double layer object for the newly updated bottom 
-         Environment::construct_double_layer('H',peps(0,col),Environment::b[0][col]);
+         env.construct_double_layer('H',peps(0,col),env.gb(0)[col]);
 
          update_L('b',col,L);
 
@@ -141,8 +141,8 @@ namespace propagate {
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(0,Lx-1),shape(i,o,j,m,n));
 
       //finally construct a double layer objects for the two new tensors on the bottom
-      Environment::construct_double_layer('H',peps(0,Lx-2),Environment::b[0][Lx-2]);
-      Environment::construct_double_layer('H',peps(0,Lx-1),Environment::b[0][Lx-1]);
+      env.construct_double_layer('H',peps(0,Lx-2),env.gb(0)[Lx-2]);
+      env.construct_double_layer('H',peps(0,Lx-1),env.gb(0)[Lx-1]);
 
       // ---------------------------------------------------//
       // --- !!! (2) the middle rows (1 -> Ly-2) (2) !!! ---// 
@@ -227,7 +227,7 @@ namespace propagate {
          Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(row,Lx-1),shape(i,o,j,m,n));
 
          //finally update the 'bottom' environment for the row
-         Environment::calc_env('B',row,peps,D_aux);
+         env.calc('B',row,peps,D_aux);
 
       }
 
@@ -257,7 +257,7 @@ namespace propagate {
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(Ly-1,1),shape(i,o,j,m,n));
 
       //construct a double layer object for the newly updated bottom left site
-      Environment::construct_double_layer('H',peps(Ly-1,0),Environment::t[Ly-2][0]);
+      env.construct_double_layer('H',peps(Ly-1,0),env.gt(Ly-2)[0]);
 
       //update left renormalized operator for use on next site
       update_L('t',0,L);
@@ -286,7 +286,7 @@ namespace propagate {
          Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(Ly-1,col+1),shape(i,o,j,m,n));
 
          //first construct a double layer object for the newly updated top 
-         Environment::construct_double_layer('H',peps(Ly-1,col),Environment::t[Ly-2][col]);
+         env.construct_double_layer('H',peps(Ly-1,col),env.gt(Ly-2)[col]);
 
          update_L('t',col,L);
 
@@ -315,8 +315,8 @@ namespace propagate {
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(Ly-1,Lx-1),shape(i,o,j,m,n));
 
       //for norm: update the top layer:
-      Environment::construct_double_layer('H',peps(Ly-1,Lx-2),Environment::t[Ly-2][Lx-2]);
-      Environment::construct_double_layer('H',peps(Ly-1,Lx-1),Environment::t[Ly-2][Lx-1]);
+      env.construct_double_layer('H',peps(Ly-1,Lx-2),env.gt(Ly-2)[Lx-2]);
+      env.construct_double_layer('H',peps(Ly-1,Lx-1),env.gt(Ly-2)[Lx-1]);
 
       //get the norm matrix
       update_L('t',Lx-2,L);
@@ -339,10 +339,10 @@ namespace propagate {
       // ---------------------------------------//
 
       //construct the 'right' environment:
-      Environment::calc_env('R',peps,D_aux);
+      env.calc('R',peps,D_aux);
 
       //construct the 'left environment' for the left row:
-      Environment::calc_env('L',0,peps,D_aux);
+      env.calc('L',0,peps,D_aux);
 
       //first construct the right renormalized operators
       R.resize(Ly - 2);
@@ -367,7 +367,7 @@ namespace propagate {
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(1,0),shape(n,o,j,i,m));
 
       //construct a double layer object for the newly updated bottom left site
-      Environment::construct_double_layer('V',peps(0,0),Environment::l[0][0]);
+      env.construct_double_layer('V',peps(0,0),env.gl(0)[0]);
 
       //update left renormalized operator for use on next site
       update_L('l',0,L);
@@ -396,7 +396,7 @@ namespace propagate {
          Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(row+1,0),shape(n,o,j,i,m));
 
          //first construct a double layer object for the newly updated bottom 
-         Environment::construct_double_layer('V',peps(row,0),Environment::l[0][row]);
+         env.construct_double_layer('V',peps(row,0),env.gl(0)[row]);
 
          update_L('l',row,L);
 
@@ -425,8 +425,8 @@ namespace propagate {
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(Ly-1,0),shape(n,o,j,i,m));
 
       //finally construct the double layer objects for the two new tensors on the left top
-      Environment::construct_double_layer('V',peps(Ly-2,0),Environment::l[0][Ly-2]);
-      Environment::construct_double_layer('V',peps(Ly-1,0),Environment::l[0][Ly-1]);
+      env.construct_double_layer('V',peps(Ly-2,0),env.gl(0)[Ly-2]);
+      env.construct_double_layer('V',peps(Ly-1,0),env.gl(0)[Ly-1]);
 
       // -----------------------------------------------------//
       // --- !!! (2) the middle colums (1 -> Lx-2) (2) !!! ---// 
@@ -510,7 +510,7 @@ namespace propagate {
          Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(Ly-1,col),shape(n,o,j,i,m));
 
          //finally update the 'bottom' environment for the row
-         Environment::calc_env('L',col,peps,D_aux);
+         env.calc('L',col,peps,D_aux);
 
       }
 
@@ -540,7 +540,7 @@ namespace propagate {
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(1,Lx-1),shape(n,o,j,i,m));
 
       //construct a double layer object for the newly updated bottom left site
-      Environment::construct_double_layer('V',peps(0,Lx-1),Environment::r[Lx-2][0]);
+      env.construct_double_layer('V',peps(0,Lx-1),env.gr(Lx-2)[0]);
 
       //update left renormalized operator for use on next site
       update_L('r',0,L);
@@ -569,7 +569,7 @@ namespace propagate {
          Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(row+1,Lx-1),shape(n,o,j,i,m));
 
          //first construct a double layer object for the newly updated top 
-         Environment::construct_double_layer('V',peps(row,Lx-1),Environment::r[Lx-2][row]);
+         env.construct_double_layer('V',peps(row,Lx-1),env.gr(Lx-2)[row]);
 
          update_L('r',row,L);
 
@@ -598,8 +598,8 @@ namespace propagate {
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(Ly-1,Lx-1),shape(n,o,j,i,m));
 
       //for norm: update the right layer:
-      Environment::construct_double_layer('V',peps(Ly-2,Lx-1),Environment::r[Lx-2][Ly-2]);
-      Environment::construct_double_layer('V',peps(Ly-1,Lx-1),Environment::r[Lx-2][Ly-1]);
+      env.construct_double_layer('V',peps(Ly-2,Lx-1),env.gr(Lx-2)[Ly-2]);
+      env.construct_double_layer('V',peps(Ly-1,Lx-1),env.gr(Lx-2)[Ly-1]);
 
       //get the norm matrix
       update_L('r',Ly-2,L);
@@ -902,17 +902,17 @@ namespace propagate {
 
             //for this one only top contraction is needed:
             DArray<6> tmp6;
-            Contract(1.0,Environment::t[0][0],shape(1),tmp5,shape(1),0.0,tmp6);
+            Contract(1.0,env.gt(0)[0],shape(1),tmp5,shape(1),0.0,tmp6);
 
             //construct the 'Left' eff environment
-            DArray<3> L_env = tmp6.reshape_clear(shape(Environment::t[0][0].shape(2),tmp5.shape(3),tmp5.shape(4)));
+            DArray<3> L_env = tmp6.reshape_clear(shape(env.gt(0)[0].shape(2),tmp5.shape(3),tmp5.shape(4)));
 
             //make a 'double layer' object out of Q for contraction with environment
             construct_double_layer('R',QR,tmp5);
 
             //contract with right renormalized operator:
             DArray<3> tmp3;
-            Contract(1.0,Environment::t[0][1],shape(2),R,shape(0),0.0,tmp3);
+            Contract(1.0,env.gt(0)[1],shape(2),R,shape(0),0.0,tmp3);
 
             //to construct the R_environment
             DArray<4> tmp4;
@@ -938,13 +938,13 @@ namespace propagate {
 
             //contraction with left renormalized operator
             DArray<3> tmp3;
-            Contract(1.0,L,shape(0),Environment::t[0][Lx-2],shape(0),0.0,tmp3);
+            Contract(1.0,L,shape(0),env.gt(0)[Lx-2],shape(0),0.0,tmp3);
 
             DArray<4> tmp4;
             Contract(1.0,tmp3,shape(0,1),tmp5,shape(0,1),0.0,tmp4);
 
             //construct the 'Left' eff environment
-            DArray<3> L_env = tmp4.reshape_clear(shape(Environment::t[0][Lx-2].shape(2),tmp5.shape(3),tmp5.shape(4)));
+            DArray<3> L_env = tmp4.reshape_clear(shape(env.gt(0)[Lx-2].shape(2),tmp5.shape(3),tmp5.shape(4)));
 
             //Right
 
@@ -953,9 +953,9 @@ namespace propagate {
 
             //only attach to top to construct R_env
             DArray<6> tmp6;
-            Contract(1.0,Environment::t[0][Lx-1],shape(1),tmp5,shape(2),0.0,tmp6);
+            Contract(1.0,env.gt(0)[Lx-1],shape(1),tmp5,shape(2),0.0,tmp6);
 
-            DArray<3> R_env = tmp6.reshape_clear(shape(Environment::t[0][Lx-1].shape(0),tmp5.shape(0),tmp5.shape(1)));
+            DArray<3> R_env = tmp6.reshape_clear(shape(env.gt(0)[Lx-1].shape(0),tmp5.shape(0),tmp5.shape(1)));
 
             //construct effective environment
             enum {i,j,k,m,n};
@@ -974,13 +974,13 @@ namespace propagate {
 
             //contraction with left renormalized operator
             DArray<3> tmp3;
-            Contract(1.0,L,shape(0),Environment::t[0][rc],shape(0),0.0,tmp3);
+            Contract(1.0,L,shape(0),env.gt(0)[rc],shape(0),0.0,tmp3);
 
             DArray<4> tmp4;
             Contract(1.0,tmp3,shape(0,1),tmp5,shape(0,1),0.0,tmp4);
 
             //construct the 'Left' eff environment
-            DArray<3> L_env = tmp4.reshape_clear(shape(Environment::t[0][rc].shape(2),tmp5.shape(3),tmp5.shape(4)));
+            DArray<3> L_env = tmp4.reshape_clear(shape(env.gt(0)[rc].shape(2),tmp5.shape(3),tmp5.shape(4)));
 
             //make a 'double layer' object out of Q for contraction with environment
             tmp5.clear();
@@ -988,7 +988,7 @@ namespace propagate {
 
             //contract with right renormalized operator:
             tmp3.clear();
-            Contract(1.0,Environment::t[0][rc+1],shape(2),R,shape(0),0.0,tmp3);
+            Contract(1.0,env.gt(0)[rc+1],shape(2),R,shape(0),0.0,tmp3);
 
             //to construct the R_environment
             Contract(1.0,tmp3,shape(1,2),tmp5,shape(2,4),0.0,tmp4);
@@ -1013,24 +1013,24 @@ namespace propagate {
 
             //for this one only bottom contraction is needed:
             DArray<6> tmp6;
-            Contract(1.0,tmp5,shape(2),Environment::b[Ly-2][0],shape(1),0.0,tmp6);
+            Contract(1.0,tmp5,shape(2),env.gb(Ly-2)[0],shape(1),0.0,tmp6);
 
             //construct the 'Left' eff environment
-            DArray<3> L_env = tmp6.reshape_clear(shape(tmp5.shape(3),tmp5.shape(4),Environment::b[Ly-2][0].shape(2)));
+            DArray<3> L_env = tmp6.reshape_clear(shape(tmp5.shape(3),tmp5.shape(4),env.gb(Ly-2)[0].shape(2)));
 
             //make a 'double layer' object out of Q for contraction with environment
             construct_double_layer('R',QR,tmp5);
 
             //contract with right renormalized operator:
             DArray<3> tmp3;
-            Contract(1.0,Environment::b[Ly-2][1],shape(2),R,shape(1),0.0,tmp3);
+            Contract(1.0,env.gb(Ly-2)[1],shape(2),R,shape(1),0.0,tmp3);
 
             //to construct the R_environment
             DArray<4> tmp4;
             Contract(1.0,tmp5,shape(3,4),tmp3,shape(1,2),0.0,tmp4);
 
             //construct the 'Right' eff environment
-            DArray<3> R_env = tmp4.reshape_clear(shape(tmp5.shape(0),tmp5.shape(1),Environment::b[Ly-2][1].shape(0)));
+            DArray<3> R_env = tmp4.reshape_clear(shape(tmp5.shape(0),tmp5.shape(1),env.gb(Ly-2)[1].shape(0)));
 
             //now contract left and right environment to form N_eff
             enum {i,j,k,m,n};
@@ -1049,13 +1049,13 @@ namespace propagate {
 
             //contraction with left renormalized operator
             DArray<3> tmp3;
-            Contract(1.0,L,shape(1),Environment::b[Ly-2][rc],shape(0),0.0,tmp3);
+            Contract(1.0,L,shape(1),env.gb(Ly-2)[rc],shape(0),0.0,tmp3);
 
             DArray<4> tmp4;
             Contract(1.0,tmp5,shape(0,2),tmp3,shape(0,1),0.0,tmp4);
 
             //construct the 'Left' eff environment
-            DArray<3> L_env = tmp4.reshape_clear(shape(tmp5.shape(3),tmp5.shape(4),Environment::b[Ly-2][rc].shape(2)));
+            DArray<3> L_env = tmp4.reshape_clear(shape(tmp5.shape(3),tmp5.shape(4),env.gb(Ly-2)[rc].shape(2)));
 
             //Right
 
@@ -1064,9 +1064,9 @@ namespace propagate {
 
             //only attach to bottom to construct R_env
             DArray<6> tmp6;
-            Contract(1.0,tmp5,shape(3),Environment::b[Ly-2][Lx-1],shape(1),0.0,tmp6);
+            Contract(1.0,tmp5,shape(3),env.gb(Ly-2)[Lx-1],shape(1),0.0,tmp6);
 
-            DArray<3> R_env = tmp6.reshape_clear(shape(tmp5.shape(0),tmp5.shape(1),Environment::b[Ly-2][Lx-1].shape(0)));
+            DArray<3> R_env = tmp6.reshape_clear(shape(tmp5.shape(0),tmp5.shape(1),env.gb(Ly-2)[Lx-1].shape(0)));
 
             //construct effective environment
             enum {i,j,k,m,n};
@@ -1085,13 +1085,13 @@ namespace propagate {
 
             //contraction with left renormalized operator
             DArray<3> tmp3;
-            Contract(1.0,L,shape(1),Environment::b[Ly-2][rc],shape(0),0.0,tmp3);
+            Contract(1.0,L,shape(1),env.gb(Ly-2)[rc],shape(0),0.0,tmp3);
 
             DArray<4> tmp4;
             Contract(1.0,tmp5,shape(0,2),tmp3,shape(0,1),0.0,tmp4);
 
             //construct the 'Left' eff environment
-            DArray<3> L_env = tmp4.reshape_clear(shape(tmp5.shape(3),tmp5.shape(4),Environment::b[Ly-2][rc].shape(2)));
+            DArray<3> L_env = tmp4.reshape_clear(shape(tmp5.shape(3),tmp5.shape(4),env.gb(Ly-2)[rc].shape(2)));
 
             //make a 'double layer' object out of Q for contraction with environment
             tmp5.clear();
@@ -1099,13 +1099,13 @@ namespace propagate {
 
             //contract with right renormalized operator:
             tmp3.clear();
-            Contract(1.0,Environment::b[Ly-2][rc+1],shape(2),R,shape(1),0.0,tmp3);
+            Contract(1.0,env.gb(Ly-2)[rc+1],shape(2),R,shape(1),0.0,tmp3);
 
             //to construct the R_environment
             Contract(1.0,tmp5,shape(3,4),tmp3,shape(1,2),0.0,tmp4);
 
             //construct the 'Right' eff environment
-            DArray<3> R_env = tmp4.reshape_clear(shape(tmp5.shape(0),tmp5.shape(1),Environment::b[Ly-2][rc+1].shape(0)));
+            DArray<3> R_env = tmp4.reshape_clear(shape(tmp5.shape(0),tmp5.shape(1),env.gb(Ly-2)[rc+1].shape(0)));
 
             //now contract left and right environment to form N_eff
             N_eff.clear();
@@ -1124,17 +1124,17 @@ namespace propagate {
 
             //for this one only right contraction is needed:
             DArray<6> tmp6;
-            Contract(1.0,Environment::r[0][0],shape(1),tmp5,shape(1),0.0,tmp6);
+            Contract(1.0,env.gr(0)[0],shape(1),tmp5,shape(1),0.0,tmp6);
 
             //construct the 'Left' eff environment
-            DArray<3> L_env = tmp6.reshape_clear(shape(Environment::r[0][0].shape(2),tmp5.shape(3),tmp5.shape(4)));
+            DArray<3> L_env = tmp6.reshape_clear(shape(env.gr(0)[0].shape(2),tmp5.shape(3),tmp5.shape(4)));
 
             //make a 'double layer' object out of Q for contraction with environment
             construct_double_layer('R',QR,tmp5);
 
             //contract with right renormalized operator:
             DArray<3> tmp3;
-            Contract(1.0,Environment::r[0][1],shape(2),R,shape(0),0.0,tmp3);
+            Contract(1.0,env.gr(0)[1],shape(2),R,shape(0),0.0,tmp3);
 
             //to construct the R_environment
             DArray<4> tmp4;
@@ -1160,13 +1160,13 @@ namespace propagate {
 
             //contraction with left renormalized operator
             DArray<3> tmp3;
-            Contract(1.0,L,shape(0),Environment::r[0][Ly-2],shape(0),0.0,tmp3);
+            Contract(1.0,L,shape(0),env.gr(0)[Ly-2],shape(0),0.0,tmp3);
 
             DArray<4> tmp4;
             Contract(1.0,tmp3,shape(0,1),tmp5,shape(0,1),0.0,tmp4);
 
             //construct the 'Left' eff environment
-            DArray<3> L_env = tmp4.reshape_clear(shape(Environment::r[0][Ly-2].shape(2),tmp5.shape(3),tmp5.shape(4)));
+            DArray<3> L_env = tmp4.reshape_clear(shape(env.gr(0)[Ly-2].shape(2),tmp5.shape(3),tmp5.shape(4)));
 
             //Right
 
@@ -1175,9 +1175,9 @@ namespace propagate {
 
             //only attach to top to construct R_env
             DArray<6> tmp6;
-            Contract(1.0,Environment::r[0][Ly-1],shape(1),tmp5,shape(2),0.0,tmp6);
+            Contract(1.0,env.gr(0)[Ly-1],shape(1),tmp5,shape(2),0.0,tmp6);
 
-            DArray<3> R_env = tmp6.reshape_clear(shape(Environment::r[0][Ly-1].shape(0),tmp5.shape(0),tmp5.shape(1)));
+            DArray<3> R_env = tmp6.reshape_clear(shape(env.gr(0)[Ly-1].shape(0),tmp5.shape(0),tmp5.shape(1)));
 
             //construct effective environment
             enum {i,j,k,m,n};
@@ -1196,13 +1196,13 @@ namespace propagate {
 
             //contraction with left renormalized operator
             DArray<3> tmp3;
-            Contract(1.0,L,shape(0),Environment::r[0][rc],shape(0),0.0,tmp3);
+            Contract(1.0,L,shape(0),env.gr(0)[rc],shape(0),0.0,tmp3);
 
             DArray<4> tmp4;
             Contract(1.0,tmp3,shape(0,1),tmp5,shape(0,1),0.0,tmp4);
 
             //construct the 'Left' eff environment
-            DArray<3> L_env = tmp4.reshape_clear(shape(Environment::r[0][rc].shape(2),tmp5.shape(3),tmp5.shape(4)));
+            DArray<3> L_env = tmp4.reshape_clear(shape(env.gr(0)[rc].shape(2),tmp5.shape(3),tmp5.shape(4)));
 
             //make a 'double layer' object out of Q for contraction with environment
             tmp5.clear();
@@ -1210,7 +1210,7 @@ namespace propagate {
 
             //contract with right renormalized operator:
             tmp3.clear();
-            Contract(1.0,Environment::r[0][rc+1],shape(2),R,shape(0),0.0,tmp3);
+            Contract(1.0,env.gr(0)[rc+1],shape(2),R,shape(0),0.0,tmp3);
 
             //to construct the R_environment
             Contract(1.0,tmp3,shape(1,2),tmp5,shape(2,4),0.0,tmp4);
@@ -1235,24 +1235,24 @@ namespace propagate {
 
             //for this one only left contraction is needed:
             DArray<6> tmp6;
-            Contract(1.0,tmp5,shape(2),Environment::l[Lx-2][0],shape(1),0.0,tmp6);
+            Contract(1.0,tmp5,shape(2),env.gl(Lx-2)[0],shape(1),0.0,tmp6);
 
             //construct the 'Left' eff environment
-            DArray<3> L_env = tmp6.reshape_clear(shape(tmp5.shape(3),tmp5.shape(4),Environment::l[Lx-2][0].shape(2)));
+            DArray<3> L_env = tmp6.reshape_clear(shape(tmp5.shape(3),tmp5.shape(4),env.gl(Lx-2)[0].shape(2)));
 
             //make a 'double layer' object out of Q for contraction with environment
             construct_double_layer('R',QR,tmp5);
 
             //contract with right renormalized operator:
             DArray<3> tmp3;
-            Contract(1.0,Environment::l[Lx-2][1],shape(2),R,shape(1),0.0,tmp3);
+            Contract(1.0,env.gl(Lx-2)[1],shape(2),R,shape(1),0.0,tmp3);
 
             //to construct the R_environment
             DArray<4> tmp4;
             Contract(1.0,tmp5,shape(3,4),tmp3,shape(1,2),0.0,tmp4);
 
             //construct the 'Right' eff environment
-            DArray<3> R_env = tmp4.reshape_clear(shape(tmp5.shape(0),tmp5.shape(1),Environment::l[Lx-2][1].shape(0)));
+            DArray<3> R_env = tmp4.reshape_clear(shape(tmp5.shape(0),tmp5.shape(1),env.gl(Lx-2)[1].shape(0)));
 
             //now contract left and right environment to form N_eff
             enum {i,j,k,m,n};
@@ -1271,13 +1271,13 @@ namespace propagate {
 
             //contraction with left renormalized operator
             DArray<3> tmp3;
-            Contract(1.0,L,shape(1),Environment::l[Lx-2][rc],shape(0),0.0,tmp3);
+            Contract(1.0,L,shape(1),env.gl(Lx-2)[rc],shape(0),0.0,tmp3);
 
             DArray<4> tmp4;
             Contract(1.0,tmp5,shape(0,2),tmp3,shape(0,1),0.0,tmp4);
 
             //construct the 'Left' eff environment
-            DArray<3> L_env = tmp4.reshape_clear(shape(tmp5.shape(3),tmp5.shape(4),Environment::l[Lx-2][rc].shape(2)));
+            DArray<3> L_env = tmp4.reshape_clear(shape(tmp5.shape(3),tmp5.shape(4),env.gl(Lx-2)[rc].shape(2)));
 
             //Right
 
@@ -1286,9 +1286,9 @@ namespace propagate {
 
             //only attach to left to construct R_env
             DArray<6> tmp6;
-            Contract(1.0,tmp5,shape(3),Environment::l[Lx-2][Ly-1],shape(1),0.0,tmp6);
+            Contract(1.0,tmp5,shape(3),env.gl(Lx-2)[Ly-1],shape(1),0.0,tmp6);
 
-            DArray<3> R_env = tmp6.reshape_clear(shape(tmp5.shape(0),tmp5.shape(1),Environment::l[Lx-2][Ly-1].shape(0)));
+            DArray<3> R_env = tmp6.reshape_clear(shape(tmp5.shape(0),tmp5.shape(1),env.gl(Lx-2)[Ly-1].shape(0)));
 
             //construct effective environment
             enum {i,j,k,m,n};
@@ -1307,13 +1307,13 @@ namespace propagate {
 
             //contraction with left renormalized operator
             DArray<3> tmp3;
-            Contract(1.0,L,shape(1),Environment::l[Lx-2][rc],shape(0),0.0,tmp3);
+            Contract(1.0,L,shape(1),env.gl(Lx-2)[rc],shape(0),0.0,tmp3);
 
             DArray<4> tmp4;
             Contract(1.0,tmp5,shape(0,2),tmp3,shape(0,1),0.0,tmp4);
 
             //construct the 'Left' eff environment
-            DArray<3> L_env = tmp4.reshape_clear(shape(tmp5.shape(3),tmp5.shape(4),Environment::l[Lx-2][rc].shape(2)));
+            DArray<3> L_env = tmp4.reshape_clear(shape(tmp5.shape(3),tmp5.shape(4),env.gl(Lx-2)[rc].shape(2)));
 
             //make a 'double layer' object out of Q for contraction with environment
             tmp5.clear();
@@ -1321,13 +1321,13 @@ namespace propagate {
 
             //contract with right renormalized operator:
             tmp3.clear();
-            Contract(1.0,Environment::l[Lx-2][rc+1],shape(2),R,shape(1),0.0,tmp3);
+            Contract(1.0,env.gl(Lx-2)[rc+1],shape(2),R,shape(1),0.0,tmp3);
 
             //to construct the R_environment
             Contract(1.0,tmp5,shape(3,4),tmp3,shape(1,2),0.0,tmp4);
 
             //construct the 'Right' eff environment
-            DArray<3> R_env = tmp4.reshape_clear(shape(tmp5.shape(0),tmp5.shape(1),Environment::l[Lx-2][rc+1].shape(0)));
+            DArray<3> R_env = tmp4.reshape_clear(shape(tmp5.shape(0),tmp5.shape(1),env.gl(Lx-2)[rc+1].shape(0)));
 
             //now contract left and right environment to form N_eff
             N_eff.clear();
@@ -1441,19 +1441,19 @@ namespace propagate {
          DArray<3> tmp3;
 
          //tmp comes out index (t,b)
-         Contract(1.0,Environment::t[0][Lx - 1],shape(1),Environment::b[0][Lx - 1],shape(1),0.0,tmp4);
+         Contract(1.0,env.gt(0)[Lx - 1],shape(1),env.gb(0)[Lx - 1],shape(1),0.0,tmp4);
 
          //reshape tmp to a 2-index array
-         R[Lx - 3] = tmp4.reshape_clear(shape(Environment::t[0][Lx - 1].shape(0),Environment::b[0][Lx - 1].shape(0)));
+         R[Lx - 3] = tmp4.reshape_clear(shape(env.gt(0)[Lx - 1].shape(0),env.gb(0)[Lx - 1].shape(0)));
 
          //now construct the rest
          for(int col = Lx - 2;col > 1;--col){
 
             tmp3.clear();
-            Contract(1.0,Environment::t[0][col],shape(2),R[col-1],shape(0),0.0,tmp3);
+            Contract(1.0,env.gt(0)[col],shape(2),R[col-1],shape(0),0.0,tmp3);
 
             R[col-2].clear();
-            Contract(1.0,tmp3,shape(1,2),Environment::b[0][col],shape(1,2),0.0,R[col-2]);
+            Contract(1.0,tmp3,shape(1,2),env.gb(0)[col],shape(1,2),0.0,R[col-2]);
 
          }
 
@@ -1465,19 +1465,19 @@ namespace propagate {
          DArray<3> tmp3;
 
          //tmp comes out index (t,b)
-         Contract(1.0,Environment::t[Ly-2][Lx - 1],shape(1),Environment::b[Ly-2][Lx - 1],shape(1),0.0,tmp4);
+         Contract(1.0,env.gt(Ly-2)[Lx - 1],shape(1),env.gb(Ly-2)[Lx - 1],shape(1),0.0,tmp4);
 
          //reshape tmp to a 2-index array
-         R[Lx - 3] = tmp4.reshape_clear(shape(Environment::t[Ly-2][Lx - 1].shape(0),Environment::b[Ly-2][Lx - 1].shape(0)));
+         R[Lx - 3] = tmp4.reshape_clear(shape(env.gt(Ly-2)[Lx - 1].shape(0),env.gb(Ly-2)[Lx - 1].shape(0)));
 
          //now construct the rest
          for(int col = Lx - 2;col > 1;--col){
 
             tmp3.clear();
-            Contract(1.0,Environment::t[Ly-2][col],shape(2),R[col-1],shape(0),0.0,tmp3);
+            Contract(1.0,env.gt(Ly-2)[col],shape(2),R[col-1],shape(0),0.0,tmp3);
 
             R[col-2].clear();
-            Contract(1.0,tmp3,shape(1,2),Environment::b[Ly-2][col],shape(1,2),0.0,R[col-2]);
+            Contract(1.0,tmp3,shape(1,2),env.gb(Ly-2)[col],shape(1,2),0.0,R[col-2]);
 
          }
 
@@ -1489,19 +1489,19 @@ namespace propagate {
          DArray<3> tmp3;
 
          //tmp comes out index (r,l)
-         Contract(1.0,Environment::r[0][Ly - 1],shape(1),Environment::l[0][Ly - 1],shape(1),0.0,tmp4);
+         Contract(1.0,env.gr(0)[Ly - 1],shape(1),env.gl(0)[Ly - 1],shape(1),0.0,tmp4);
 
          //reshape tmp to a 2-index array
-         R[Ly - 3] = tmp4.reshape_clear(shape(Environment::r[0][Ly - 1].shape(0),Environment::l[0][Ly - 1].shape(0)));
+         R[Ly - 3] = tmp4.reshape_clear(shape(env.gr(0)[Ly - 1].shape(0),env.gl(0)[Ly - 1].shape(0)));
 
          //now construct the rest
          for(int row = Ly - 2;row > 1;--row){
 
             tmp3.clear();
-            Contract(1.0,Environment::r[0][row],shape(2),R[row-1],shape(0),0.0,tmp3);
+            Contract(1.0,env.gr(0)[row],shape(2),R[row-1],shape(0),0.0,tmp3);
 
             R[row-2].clear();
-            Contract(1.0,tmp3,shape(1,2),Environment::l[0][row],shape(1,2),0.0,R[row-2]);
+            Contract(1.0,tmp3,shape(1,2),env.gl(0)[row],shape(1,2),0.0,R[row-2]);
 
          }
 
@@ -1513,19 +1513,19 @@ namespace propagate {
          DArray<3> tmp3;
 
          //tmp comes out index (r,l)
-         Contract(1.0,Environment::r[Lx-2][Ly - 1],shape(1),Environment::l[Lx-2][Ly - 1],shape(1),0.0,tmp4);
+         Contract(1.0,env.gr(Lx-2)[Ly - 1],shape(1),env.gl(Lx-2)[Ly - 1],shape(1),0.0,tmp4);
 
          //reshape tmp to a 2-index array
-         R[Lx - 3] = tmp4.reshape_clear(shape(Environment::r[Lx-2][Ly - 1].shape(0),Environment::l[Lx-2][Ly - 1].shape(0)));
+         R[Lx - 3] = tmp4.reshape_clear(shape(env.gr(Lx-2)[Ly - 1].shape(0),env.gl(Lx-2)[Ly - 1].shape(0)));
 
          //now construct the rest
          for(int row = Ly - 2;row > 1;--row){
 
             tmp3.clear();
-            Contract(1.0,Environment::r[Lx-2][row],shape(2),R[row-1],shape(0),0.0,tmp3);
+            Contract(1.0,env.gr(Lx-2)[row],shape(2),R[row-1],shape(0),0.0,tmp3);
 
             R[row-2].clear();
-            Contract(1.0,tmp3,shape(1,2),Environment::l[Lx-2][row],shape(1,2),0.0,R[row-2]);
+            Contract(1.0,tmp3,shape(1,2),env.gl(Lx-2)[row],shape(1,2),0.0,R[row-2]);
 
          }
 
@@ -1545,19 +1545,19 @@ namespace propagate {
          if(rc == 0){
 
             DArray<4> tmp4;
-            Contract(1.0,Environment::t[0][0],shape(1),Environment::b[0][0],shape(1),0.0,tmp4);
+            Contract(1.0,env.gt(0)[0],shape(1),env.gb(0)[0],shape(1),0.0,tmp4);
 
-            L = tmp4.reshape_clear(shape(Environment::t[0][0].shape(2),Environment::b[0][0].shape(2)));
+            L = tmp4.reshape_clear(shape(env.gt(0)[0].shape(2),env.gb(0)[0].shape(2)));
 
          }
          else{
 
             //update the left renormalized operator:
             DArray<3> tmp3;
-            Contract(1.0,L,shape(0),Environment::t[0][rc],shape(0),0.0,tmp3);
+            Contract(1.0,L,shape(0),env.gt(0)[rc],shape(0),0.0,tmp3);
 
             L.clear();
-            Contract(1.0,tmp3,shape(0,1),Environment::b[0][rc],shape(0,1),0.0,L);
+            Contract(1.0,tmp3,shape(0,1),env.gb(0)[rc],shape(0,1),0.0,L);
 
          }
 
@@ -1567,19 +1567,19 @@ namespace propagate {
          if(rc == 0){
 
             DArray<4> tmp4;
-            Contract(1.0,Environment::t[Ly-2][0],shape(1),Environment::b[Ly-2][0],shape(1),0.0,tmp4);
+            Contract(1.0,env.gt(Ly-2)[0],shape(1),env.gb(Ly-2)[0],shape(1),0.0,tmp4);
 
-            L = tmp4.reshape_clear(shape(Environment::t[Ly-2][0].shape(2),Environment::b[Ly-2][0].shape(2)));
+            L = tmp4.reshape_clear(shape(env.gt(Ly-2)[0].shape(2),env.gb(Ly-2)[0].shape(2)));
 
          }
          else{
 
             //update the left renormalized operator:
             DArray<3> tmp3;
-            Contract(1.0,L,shape(0),Environment::t[Ly-2][rc],shape(0),0.0,tmp3);
+            Contract(1.0,L,shape(0),env.gt(Ly-2)[rc],shape(0),0.0,tmp3);
 
             L.clear();
-            Contract(1.0,tmp3,shape(0,1),Environment::b[Ly-2][rc],shape(0,1),0.0,L);
+            Contract(1.0,tmp3,shape(0,1),env.gb(Ly-2)[rc],shape(0,1),0.0,L);
 
          }
 
@@ -1589,19 +1589,19 @@ namespace propagate {
          if(rc == 0){
 
             DArray<4> tmp4;
-            Contract(1.0,Environment::r[0][0],shape(1),Environment::l[0][0],shape(1),0.0,tmp4);
+            Contract(1.0,env.gr(0)[0],shape(1),env.gl(0)[0],shape(1),0.0,tmp4);
 
-            L = tmp4.reshape_clear(shape(Environment::r[0][0].shape(2),Environment::l[0][0].shape(2)));
+            L = tmp4.reshape_clear(shape(env.gr(0)[0].shape(2),env.gl(0)[0].shape(2)));
 
          }
          else{
 
             //update the left renormalized operator:
             DArray<3> tmp3;
-            Contract(1.0,L,shape(0),Environment::r[0][rc],shape(0),0.0,tmp3);
+            Contract(1.0,L,shape(0),env.gr(0)[rc],shape(0),0.0,tmp3);
 
             L.clear();
-            Contract(1.0,tmp3,shape(0,1),Environment::l[0][rc],shape(0,1),0.0,L);
+            Contract(1.0,tmp3,shape(0,1),env.gl(0)[rc],shape(0,1),0.0,L);
 
          }
 
@@ -1611,19 +1611,19 @@ namespace propagate {
          if(rc == 0){
 
             DArray<4> tmp4;
-            Contract(1.0,Environment::r[Lx-2][0],shape(1),Environment::l[Lx-2][0],shape(1),0.0,tmp4);
+            Contract(1.0,env.gr(Lx-2)[0],shape(1),env.gl(Lx-2)[0],shape(1),0.0,tmp4);
 
-            L = tmp4.reshape_clear(shape(Environment::r[Lx-2][0].shape(2),Environment::l[Lx-2][0].shape(2)));
+            L = tmp4.reshape_clear(shape(env.gr(Lx-2)[0].shape(2),env.gl(Lx-2)[0].shape(2)));
 
          }
          else{
 
             //update the left renormalized operator:
             DArray<3> tmp3;
-            Contract(1.0,L,shape(0),Environment::r[Lx-2][rc],shape(0),0.0,tmp3);
+            Contract(1.0,L,shape(0),env.gr(Lx-2)[rc],shape(0),0.0,tmp3);
 
             L.clear();
-            Contract(1.0,tmp3,shape(0,1),Environment::l[Lx-2][rc],shape(0,1),0.0,L);
+            Contract(1.0,tmp3,shape(0,1),env.gl(Lx-2)[rc],shape(0,1),0.0,L);
 
          }
 
@@ -1644,18 +1644,18 @@ namespace propagate {
 
          //last site make double layer object from peps
          DArray<4> dlo;
-         Environment::construct_double_layer('H',peps(rc,Lx-1),dlo);
+         env.construct_double_layer('H',peps(rc,Lx-1),dlo);
 
          //paste top environment on
          DArray<5> tmp5;
-         Contract(1.0,Environment::t[rc][Lx - 1],shape(1),dlo,shape(1),0.0,tmp5);
+         Contract(1.0,env.gt(rc)[Lx - 1],shape(1),dlo,shape(1),0.0,tmp5);
 
          //then bottom enviroment
          DArray<6> tmp6;
-         Contract(1.0,tmp5,shape(3),Environment::b[rc-1][Lx-1],shape(1),0.0,tmp6);
+         Contract(1.0,tmp5,shape(3),env.gb(rc-1)[Lx-1],shape(1),0.0,tmp6);
 
          //move to a DArray<3> object
-         RO[Lx - 3] = tmp6.reshape_clear(shape(Environment::t[rc][Lx - 1].shape(0),dlo.shape(0),Environment::b[rc-1][Lx - 1].shape(0)));
+         RO[Lx - 3] = tmp6.reshape_clear(shape(env.gt(rc)[Lx - 1].shape(0),dlo.shape(0),env.gb(rc-1)[Lx - 1].shape(0)));
 
          DArray<4> I4;
          DArray<4> I4bis;
@@ -1664,17 +1664,17 @@ namespace propagate {
          for(int col = Lx-2;col > 1;--col){
 
             I4.clear();
-            Contract(1.0,Environment::t[rc][col],shape(2),RO[col-1],shape(0),0.0,I4);
+            Contract(1.0,env.gt(rc)[col],shape(2),RO[col-1],shape(0),0.0,I4);
 
             enum {i,j,k,o,m,n};
 
-            Environment::construct_double_layer('H',peps(rc,col),dlo);
+            env.construct_double_layer('H',peps(rc,col),dlo);
 
             I4bis.clear();
             Contract(1.0,I4,shape(i,j,k,o),dlo,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
 
             RO[col-2].clear();
-            Contract(1.0,I4bis,shape(2,3),Environment::b[rc-1][col],shape(1,2),0.0,RO[col-2]);
+            Contract(1.0,I4bis,shape(2,3),env.gb(rc-1)[col],shape(1,2),0.0,RO[col-2]);
 
          }
 
@@ -1683,18 +1683,18 @@ namespace propagate {
 
          //last site make double layer object from peps
          DArray<4> dlo;
-         Environment::construct_double_layer('V',peps(Ly-1,rc),dlo);
+         env.construct_double_layer('V',peps(Ly-1,rc),dlo);
 
          //paste right environment on
          DArray<5> tmp5;
-         Contract(1.0,Environment::r[rc][Ly - 1],shape(1),dlo,shape(1),0.0,tmp5);
+         Contract(1.0,env.gr(rc)[Ly - 1],shape(1),dlo,shape(1),0.0,tmp5);
 
          //then left enviroment
          DArray<6> tmp6;
-         Contract(1.0,tmp5,shape(3),Environment::l[rc-1][Ly-1],shape(1),0.0,tmp6);
+         Contract(1.0,tmp5,shape(3),env.gl(rc-1)[Ly-1],shape(1),0.0,tmp6);
 
          //move to a DArray<3> object
-         RO[Ly - 3] = tmp6.reshape_clear(shape(Environment::r[rc][Ly - 1].shape(0),dlo.shape(0),Environment::l[rc-1][Lx - 1].shape(0)));
+         RO[Ly - 3] = tmp6.reshape_clear(shape(env.gr(rc)[Ly - 1].shape(0),dlo.shape(0),env.gl(rc-1)[Lx - 1].shape(0)));
 
          DArray<4> I4;
          DArray<4> I4bis;
@@ -1703,17 +1703,17 @@ namespace propagate {
          for(int row = Ly-2;row > 1;--row){
 
             I4.clear();
-            Contract(1.0,Environment::r[rc][row],shape(2),RO[row-1],shape(0),0.0,I4);
+            Contract(1.0,env.gr(rc)[row],shape(2),RO[row-1],shape(0),0.0,I4);
 
             enum {i,j,k,o,m,n};
 
-            Environment::construct_double_layer('V',peps(row,rc),dlo);
+            env.construct_double_layer('V',peps(row,rc),dlo);
 
             I4bis.clear();
             Contract(1.0,I4,shape(i,j,k,o),dlo,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
 
             RO[row-2].clear();
-            Contract(1.0,I4bis,shape(2,3),Environment::l[rc-1][row],shape(1,2),0.0,RO[row-2]);
+            Contract(1.0,I4bis,shape(2,3),env.gl(rc-1)[row],shape(1,2),0.0,RO[row-2]);
 
          }
 
@@ -1748,12 +1748,12 @@ namespace propagate {
 
             //construct the 'Left' eff environment
             DArray<6> tmp6;
-            Contract(1.0,Environment::t[li][0],shape(1),tmp5,shape(1),0.0,tmp6);
+            Contract(1.0,env.gt(li)[0],shape(1),tmp5,shape(1),0.0,tmp6);
 
             DArray<7> tmp7;
-            Contract(1.0,tmp6,shape(3),Environment::b[li-1][0],shape(1),0.0,tmp7);
+            Contract(1.0,tmp6,shape(3),env.gb(li-1)[0],shape(1),0.0,tmp7);
 
-            DArray<4> LO_env = tmp7.reshape_clear(shape(Environment::t[li][0].shape(2),tmp5.shape(3),tmp5.shape(4),Environment::b[li-1][0].shape(2)));
+            DArray<4> LO_env = tmp7.reshape_clear(shape(env.gt(li)[0].shape(2),tmp5.shape(3),tmp5.shape(4),env.gb(li-1)[0].shape(2)));
 
             //Right
 
@@ -1762,7 +1762,7 @@ namespace propagate {
 
             //contract with right renormalized operator:
             DArray<4> tmp4;
-            Contract(1.0,Environment::t[li][1],shape(2),RO,shape(0),0.0,tmp4);
+            Contract(1.0,env.gt(li)[1],shape(2),RO,shape(0),0.0,tmp4);
 
             //to construct the R_environment
             DArray<5> tmp5bis;
@@ -1770,7 +1770,7 @@ namespace propagate {
 
             //construct the 'Right' eff environment
             DArray<4> RO_env;
-            Contract(1.0,tmp5bis,shape(i,j,k,m,n),Environment::b[li-1][1],shape(p,m,n),0.0,RO_env,shape(i,j,k,p));
+            Contract(1.0,tmp5bis,shape(i,j,k,m,n),env.gb(li-1)[1],shape(p,m,n),0.0,RO_env,shape(i,j,k,p));
 
             //construct effective environment
             N_eff.clear();
@@ -1785,7 +1785,7 @@ namespace propagate {
 
             //first attach top to left unity
             DArray<4> tmp4;
-            Contract(1.0,Environment::t[li][si],shape(0),LO,shape(0),0.0,tmp4);
+            Contract(1.0,env.gt(li)[si],shape(0),LO,shape(0),0.0,tmp4);
 
             //make a 'double layer' object out of Q for contraction with environment
             DArray<5> tmp5;
@@ -1795,7 +1795,7 @@ namespace propagate {
             Contract(1.0,tmp4,shape(i,j,k,o),tmp5,shape(k,i,m,n,p),0.0,tmp5bis,shape(j,n,p,o,m));
 
             DArray<4> LO_env;
-            Contract(1.0,tmp5bis,shape(j,n,p,o,m),Environment::b[li-1][si],shape(o,m,q),0.0,LO_env,shape(j,n,p,q));
+            Contract(1.0,tmp5bis,shape(j,n,p,o,m),env.gb(li-1)[si],shape(o,m,q),0.0,LO_env,shape(j,n,p,q));
 
             //Right
 
@@ -1804,12 +1804,12 @@ namespace propagate {
 
             //construct the 'Right' eff environment
             DArray<6> tmp6;
-            Contract(1.0,Environment::t[li][Lx-1],shape(1),tmp5,shape(2),0.0,tmp6);
+            Contract(1.0,env.gt(li)[Lx-1],shape(1),tmp5,shape(2),0.0,tmp6);
 
             DArray<7> tmp7;
-            Contract(1.0,tmp6,shape(4),Environment::b[li-1][Lx-1],shape(1),0.0,tmp7);
+            Contract(1.0,tmp6,shape(4),env.gb(li-1)[Lx-1],shape(1),0.0,tmp7);
 
-            DArray<4> RO_env = tmp7.reshape_clear(shape(Environment::t[li][Lx-1].shape(0),tmp5.shape(0),tmp5.shape(1),Environment::b[li-1][Lx-1].shape(0)));
+            DArray<4> RO_env = tmp7.reshape_clear(shape(env.gt(li)[Lx-1].shape(0),tmp5.shape(0),tmp5.shape(1),env.gb(li-1)[Lx-1].shape(0)));
 
             //construct effective environment
             N_eff.clear();
@@ -1825,7 +1825,7 @@ namespace propagate {
             //make a 'double layer' object out of Q for contraction with environment
             //first attach top to left unity
             DArray<4> tmp4;
-            Contract(1.0,Environment::t[li][si],shape(0),LO,shape(0),0.0,tmp4);
+            Contract(1.0,env.gt(li)[si],shape(0),LO,shape(0),0.0,tmp4);
 
             DArray<5> tmp5;
             construct_double_layer('L',QL,tmp5);
@@ -1834,7 +1834,7 @@ namespace propagate {
             Contract(1.0,tmp4,shape(i,j,k,o),tmp5,shape(k,i,m,n,p),0.0,tmp5bis,shape(j,n,p,m,o));
 
             DArray<4> LO_env;
-            Contract(1.0,tmp5bis,shape(j,n,p,m,o),Environment::b[li-1][si],shape(o,m,q),0.0,LO_env,shape(j,n,p,q));
+            Contract(1.0,tmp5bis,shape(j,n,p,m,o),env.gb(li-1)[si],shape(o,m,q),0.0,LO_env,shape(j,n,p,q));
 
             //Right
 
@@ -1843,7 +1843,7 @@ namespace propagate {
 
             //contract with right renormalized operator:
             tmp4.clear();
-            Contract(1.0,Environment::t[li][si+1],shape(2),RO,shape(0),0.0,tmp4);
+            Contract(1.0,env.gt(li)[si+1],shape(2),RO,shape(0),0.0,tmp4);
 
             //to construct the R_environment
             tmp5bis.clear();
@@ -1851,7 +1851,7 @@ namespace propagate {
 
             //construct the 'Right' eff environment
             DArray<4> RO_env;
-            Contract(1.0,tmp5bis,shape(i,j,k,m,n),Environment::b[li-1][si+1],shape(p,m,n),0.0,RO_env,shape(i,j,k,p));
+            Contract(1.0,tmp5bis,shape(i,j,k,m,n),env.gb(li-1)[si+1],shape(p,m,n),0.0,RO_env,shape(i,j,k,p));
 
             //construct effective environment
             N_eff.clear();
@@ -1874,12 +1874,12 @@ namespace propagate {
 
             //construct the 'Left' eff environment
             DArray<6> tmp6;
-            Contract(1.0,Environment::r[li][0],shape(1),tmp5,shape(1),0.0,tmp6);
+            Contract(1.0,env.gr(li)[0],shape(1),tmp5,shape(1),0.0,tmp6);
 
             DArray<7> tmp7;
-            Contract(1.0,tmp6,shape(3),Environment::l[li-1][0],shape(1),0.0,tmp7);
+            Contract(1.0,tmp6,shape(3),env.gl(li-1)[0],shape(1),0.0,tmp7);
 
-            DArray<4> LO_env = tmp7.reshape_clear(shape(Environment::r[li][0].shape(2),tmp5.shape(3),tmp5.shape(4),Environment::l[li-1][0].shape(2)));
+            DArray<4> LO_env = tmp7.reshape_clear(shape(env.gr(li)[0].shape(2),tmp5.shape(3),tmp5.shape(4),env.gl(li-1)[0].shape(2)));
 
             //Right
 
@@ -1888,7 +1888,7 @@ namespace propagate {
 
             //contract with right renormalized operator:
             DArray<4> tmp4;
-            Contract(1.0,Environment::r[li][1],shape(2),RO,shape(0),0.0,tmp4);
+            Contract(1.0,env.gr(li)[1],shape(2),RO,shape(0),0.0,tmp4);
 
             //to construct the R_environment
             DArray<5> tmp5bis;
@@ -1896,7 +1896,7 @@ namespace propagate {
 
             //construct the 'Right' eff environment
             DArray<4> RO_env;
-            Contract(1.0,tmp5bis,shape(i,j,k,m,n),Environment::l[li-1][1],shape(p,m,n),0.0,RO_env,shape(i,j,k,p));
+            Contract(1.0,tmp5bis,shape(i,j,k,m,n),env.gl(li-1)[1],shape(p,m,n),0.0,RO_env,shape(i,j,k,p));
 
             //construct effective environment
             N_eff.clear();
@@ -1912,7 +1912,7 @@ namespace propagate {
             //make a 'double layer' object out of Q for contraction with environment
             //first attach top to left unity
             DArray<4> tmp4;
-            Contract(1.0,Environment::r[li][si],shape(0),LO,shape(0),0.0,tmp4);
+            Contract(1.0,env.gr(li)[si],shape(0),LO,shape(0),0.0,tmp4);
 
             DArray<5> tmp5;
             construct_double_layer('L',QL,tmp5);
@@ -1921,7 +1921,7 @@ namespace propagate {
             Contract(1.0,tmp4,shape(i,j,k,o),tmp5,shape(k,i,m,n,p),0.0,tmp5bis,shape(j,n,p,m,o));
 
             DArray<4> LO_env;
-            Contract(1.0,tmp5bis,shape(j,n,p,m,o),Environment::l[li-1][si],shape(o,m,q),0.0,LO_env,shape(j,n,p,q));
+            Contract(1.0,tmp5bis,shape(j,n,p,m,o),env.gl(li-1)[si],shape(o,m,q),0.0,LO_env,shape(j,n,p,q));
 
             //Right
 
@@ -1930,12 +1930,12 @@ namespace propagate {
 
             //construct the 'Right' eff environment
             DArray<6> tmp6;
-            Contract(1.0,Environment::r[li][Lx-1],shape(1),tmp5,shape(2),0.0,tmp6);
+            Contract(1.0,env.gr(li)[Lx-1],shape(1),tmp5,shape(2),0.0,tmp6);
 
             DArray<7> tmp7;
-            Contract(1.0,tmp6,shape(4),Environment::l[li-1][Lx-1],shape(1),0.0,tmp7);
+            Contract(1.0,tmp6,shape(4),env.gl(li-1)[Lx-1],shape(1),0.0,tmp7);
 
-            DArray<4> RO_env = tmp7.reshape_clear(shape(Environment::r[li][Lx-1].shape(0),tmp5.shape(0),tmp5.shape(1),Environment::l[li-1][Lx-1].shape(0)));
+            DArray<4> RO_env = tmp7.reshape_clear(shape(env.gr(li)[Lx-1].shape(0),tmp5.shape(0),tmp5.shape(1),env.gl(li-1)[Lx-1].shape(0)));
 
             //construct effective environment
             N_eff.clear();
@@ -1951,7 +1951,7 @@ namespace propagate {
             //make a 'double layer' object out of Q for contraction with environment
             //first attach top to left unity
             DArray<4> tmp4;
-            Contract(1.0,Environment::r[li][si],shape(0),LO,shape(0),0.0,tmp4);
+            Contract(1.0,env.gr(li)[si],shape(0),LO,shape(0),0.0,tmp4);
 
             DArray<5> tmp5;
             construct_double_layer('L',QL,tmp5);
@@ -1960,7 +1960,7 @@ namespace propagate {
             Contract(1.0,tmp4,shape(i,j,k,o),tmp5,shape(k,i,m,n,p),0.0,tmp5bis,shape(j,n,p,m,o));
 
             DArray<4> LO_env;
-            Contract(1.0,tmp5bis,shape(j,n,p,m,o),Environment::l[li-1][si],shape(o,m,q),0.0,LO_env,shape(j,n,p,q));
+            Contract(1.0,tmp5bis,shape(j,n,p,m,o),env.gl(li-1)[si],shape(o,m,q),0.0,LO_env,shape(j,n,p,q));
 
             //Right
 
@@ -1969,7 +1969,7 @@ namespace propagate {
 
             //contract with right renormalized operator:
             tmp4.clear();
-            Contract(1.0,Environment::r[li][si+1],shape(2),RO,shape(0),0.0,tmp4);
+            Contract(1.0,env.gr(li)[si+1],shape(2),RO,shape(0),0.0,tmp4);
 
             //to construct the R_environment
             tmp5bis.clear();
@@ -1977,7 +1977,7 @@ namespace propagate {
 
             //construct the 'Right' eff environment
             DArray<4> RO_env;
-            Contract(1.0,tmp5bis,shape(i,j,k,m,n),Environment::l[li-1][si+1],shape(p,m,n),0.0,RO_env,shape(i,j,k,p));
+            Contract(1.0,tmp5bis,shape(i,j,k,m,n),env.gl(li-1)[si+1],shape(p,m,n),0.0,RO_env,shape(i,j,k,p));
 
             //construct effective environment
             N_eff.clear();
@@ -2004,18 +2004,18 @@ namespace propagate {
          if(si == 0){
 
             DArray<4> tmp4;
-            Environment::construct_double_layer('H',peps(li,0),tmp4);
+            env.construct_double_layer('H',peps(li,0),tmp4);
 
             //paste top environment on
             DArray<5> tmp5;
-            Contract(1.0,Environment::t[li][0],shape(1),tmp4,shape(1),0.0,tmp5);
+            Contract(1.0,env.gt(li)[0],shape(1),tmp4,shape(1),0.0,tmp5);
 
             //then bottom enviroment
             DArray<6> tmp6;
-            Contract(1.0,tmp5,shape(3),Environment::b[li-1][0],shape(1),0.0,tmp6);
+            Contract(1.0,tmp5,shape(3),env.gb(li-1)[0],shape(1),0.0,tmp6);
 
             //move to a DArray<3> object: order (top-env,peps-row,bottom-env)
-            LO = tmp6.reshape_clear(shape(Environment::t[li][0].shape(2),tmp4.shape(3),Environment::b[li-1][0].shape(2)));
+            LO = tmp6.reshape_clear(shape(env.gt(li)[0].shape(2),tmp4.shape(3),env.gb(li-1)[0].shape(2)));
 
          }
          else{
@@ -2024,16 +2024,16 @@ namespace propagate {
 
             //first attach top to left unity
             DArray<4> I4;
-            Contract(1.0,Environment::t[li][si],shape(0),LO,shape(0),0.0,I4);
+            Contract(1.0,env.gt(li)[si],shape(0),LO,shape(0),0.0,I4);
 
             DArray<4> tmp4;
-            Environment::construct_double_layer('H',peps(li,si),tmp4);
+            env.construct_double_layer('H',peps(li,si),tmp4);
 
             DArray<4> I4bis;
             Contract(1.0,I4,shape(i,j,k,o),tmp4,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
 
             LO.clear();
-            Contract(1.0,I4bis,shape(2,3),Environment::b[li-1][si],shape(0,1),0.0,LO);
+            Contract(1.0,I4bis,shape(2,3),env.gb(li-1)[si],shape(0,1),0.0,LO);
 
          }
 
@@ -2043,18 +2043,18 @@ namespace propagate {
          if(si == 0){
 
             DArray<4> tmp4;
-            Environment::construct_double_layer('V',peps(0,li),tmp4);
+            env.construct_double_layer('V',peps(0,li),tmp4);
 
             //paste top environment on
             DArray<5> tmp5;
-            Contract(1.0,Environment::r[li][0],shape(1),tmp4,shape(1),0.0,tmp5);
+            Contract(1.0,env.gr(li)[0],shape(1),tmp4,shape(1),0.0,tmp5);
 
             //then bottom enviroment
             DArray<6> tmp6;
-            Contract(1.0,tmp5,shape(3),Environment::l[li-1][0],shape(1),0.0,tmp6);
+            Contract(1.0,tmp5,shape(3),env.gl(li-1)[0],shape(1),0.0,tmp6);
 
             //move to a DArray<3> object: order (top-env,peps-row,bottom-env)
-            LO = tmp6.reshape_clear(shape(Environment::r[li][0].shape(2),tmp4.shape(3),Environment::l[li-1][0].shape(2)));
+            LO = tmp6.reshape_clear(shape(env.gr(li)[0].shape(2),tmp4.shape(3),env.gl(li-1)[0].shape(2)));
 
          }
          else{
@@ -2063,16 +2063,16 @@ namespace propagate {
 
             //first attach top to left unity
             DArray<4> I4;
-            Contract(1.0,Environment::r[li][si],shape(0),LO,shape(0),0.0,I4);
+            Contract(1.0,env.gr(li)[si],shape(0),LO,shape(0),0.0,I4);
 
             DArray<4> tmp4;
-            Environment::construct_double_layer('V',peps(si,li),tmp4);
+            env.construct_double_layer('V',peps(si,li),tmp4);
 
             DArray<4> I4bis;
             Contract(1.0,I4,shape(i,j,k,o),tmp4,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
 
             LO.clear();
-            Contract(1.0,I4bis,shape(2,3),Environment::l[li-1][si],shape(0,1),0.0,LO);
+            Contract(1.0,I4bis,shape(2,3),env.gl(li-1)[si],shape(0,1),0.0,LO);
 
          }
 

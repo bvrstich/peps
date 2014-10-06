@@ -16,6 +16,8 @@ using std::complex;
 
 using namespace btas;
 
+class Environment;
+
 namespace global {
 
    //!random number generator
@@ -37,7 +39,9 @@ namespace global {
    extern DArray<2> iSy;
    extern DArray<2> Sz;
 
-   void init(int,int,int);
+   extern Environment env;
+
+   void init(int,int,int,int,int);
 
    template<typename T>
       T rgen();
