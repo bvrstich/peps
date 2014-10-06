@@ -36,13 +36,13 @@ int main(int argc,char *argv[]){
 
    PEPS<double> peps;
 
-   peps.initialize_jastrow(f);
-   peps.normalize(D_aux);
+   //peps.initialize_jastrow(f);
+  // peps.normalize(D_aux);
 
-   global::env.calc('A',peps,D_aux);
-   global::env.test();
+ //  global::env.calc('A',peps,D_aux);
+ //  global::env.test();
 
-   cout << f << "\t" << peps.energy()/(double)(L*L) << endl;
+//   cout << f << "\t" << peps.energy()/(double)(L*L) << endl;
 
    return 0;
 }

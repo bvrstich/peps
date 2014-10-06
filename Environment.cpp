@@ -42,11 +42,11 @@ Environment::Environment(int D_in,int D_aux_in){
  */
 Environment::Environment(const Environment &env_copy){
 
-   t.resize(Ly - 1);
-   b.resize(Ly - 1);
+   t = env_copy.gt();
+   b = env_copy.gb();
 
-   r.resize(Lx - 1);
-   l.resize(Lx - 1);
+   r = env_copy.gr();
+   l = env_copy.gl();
 
    D = env_copy.gD();
    D_aux = env_copy.gD_aux();
@@ -71,7 +71,7 @@ Environment::~Environment(){ }
 void Environment::calc(char option,const PEPS<double> &peps,int D_aux){
 
    if(option == 'B' || option == 'A'){
-
+/*
       //construct bottom layer
       b[0] = MPS<double>('b',peps,peps);
 
@@ -93,9 +93,9 @@ void Environment::calc(char option,const PEPS<double> &peps,int D_aux){
          b[i].compress(D_aux,tmp,5);
 
       }
-
+*/
    }
-
+/*
    if(option == 'T' || option == 'A'){
 
       //then construct top layer
@@ -173,7 +173,7 @@ void Environment::calc(char option,const PEPS<double> &peps,int D_aux){
       }
 
    }
-
+*/
 }
 
 /**
@@ -208,7 +208,7 @@ void Environment::test(){
  * @param D_aux dimension to which environment will be compressed
  */
 void Environment::calc(char option,int rc,const PEPS<double> &peps,int D_aux){
-
+/* 
    if(option == 'B'){
 
       //construct bottom layer
@@ -309,7 +309,7 @@ void Environment::calc(char option,int rc,const PEPS<double> &peps,int D_aux){
       }
 
    }
-
+*/
 }
 
 /**
@@ -489,9 +489,9 @@ void Environment::construct_double_layer(char option,const DArray<5> &peps,DArra
 /**
  * const version
  * @param col the column index
- * @return the right 'MPS' environment on column col
+ * @return the right boundary 'MPO' environment on column col
  */
-const MPS<double> &Environment::gr(int col) const {
+const MPO<double> &Environment::gr(int col) const {
 
    return r[col];
 
@@ -499,9 +499,9 @@ const MPS<double> &Environment::gr(int col) const {
 
 /**
  * @param col the column index: access version
- * @return the right 'MPS' environment on column col
+ * @return the right boundary 'MPO' environment on column col
  */
-MPS<double> &Environment::gr(int col) {
+MPO<double> &Environment::gr(int col) {
 
    return r[col];
 
@@ -510,9 +510,9 @@ MPS<double> &Environment::gr(int col) {
 /**
  * const version
  * @param col the column index
- * @return the left 'MPS' environment on column col
+ * @return the left boundary 'MPO' environment on column col
  */
-const MPS<double> &Environment::gl(int col) const {
+const MPO<double> &Environment::gl(int col) const {
 
    return l[col];
 
@@ -520,9 +520,9 @@ const MPS<double> &Environment::gl(int col) const {
 
 /**
  * @param col the column index: access version
- * @return the right 'MPS' environment on column col
+ * @return the left boundary 'MPO' environment on column col
  */
-MPS<double> &Environment::gl(int col) {
+MPO<double> &Environment::gl(int col) {
 
    return l[col];
 
@@ -531,9 +531,9 @@ MPS<double> &Environment::gl(int col) {
 /**
  * const version
  * @param row the row index
- * @return the top 'MPS' environment on row 'row'
+ * @return the top boundary 'MPO' environment on row 'row'
  */
-const MPS<double> &Environment::gt(int row) const {
+const MPO<double> &Environment::gt(int row) const {
 
    return t[row];
 
@@ -542,9 +542,9 @@ const MPS<double> &Environment::gt(int row) const {
 /**
  * access version
  * @param row the row index
- * @return the top 'MPS' environment on row 'row'
+ * @return the top boundary 'MPO' environment on row 'row'
  */
-MPS<double> &Environment::gt(int row) {
+MPO<double> &Environment::gt(int row) {
 
    return t[row];
 
@@ -553,9 +553,9 @@ MPS<double> &Environment::gt(int row) {
 /**
  * const version
  * @param row the row index
- * @return the bottom 'MPS' environment on row 'row'
+ * @return the bottom boundary 'MPO' environment on row 'row'
  */
-const MPS<double> &Environment::gb(int row) const {
+const MPO<double> &Environment::gb(int row) const {
 
    return b[row];
 
@@ -564,9 +564,9 @@ const MPS<double> &Environment::gb(int row) const {
 /**
  * access version
  * @param row the row index
- * @return the bottom 'MPS' environment on row 'row'
+ * @return the bottom boundary 'MPO' environment on row 'row'
  */
-MPS<double> &Environment::gb(int row) {
+MPO<double> &Environment::gb(int row) {
 
    return b[row];
 
@@ -605,5 +605,41 @@ void Environment::sD(int D_in) {
 void Environment::sD_aux(int D_aux_in) {
 
    D_aux = D_aux_in;
+
+}
+
+/**
+ * @return the full bottom boundary 'MPO'
+ */
+const vector< MPO<double> > &Environment::gb() const {
+
+   return b;
+
+}
+
+/**
+ * @return the full top boundary 'MPO'
+ */
+const vector< MPO<double> > &Environment::gt() const {
+
+   return t;
+
+}
+
+/**
+ * @return the full left boundary 'MPO'
+ */
+const vector< MPO<double> > &Environment::gl() const {
+
+   return l;
+
+}
+
+/**
+ * @return the full right boundary 'MPO'
+ */
+const vector< MPO<double> > &Environment::gr() const {
+
+   return r;
 
 }

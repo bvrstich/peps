@@ -640,6 +640,7 @@ void PEPS<T>::load(const char *filename){
  */
 template<>
 double PEPS<double>::local(const DArray<2> &O){
+   /*
 
    //from bottom to top: contract in mps/mpo fashion
 
@@ -925,7 +926,8 @@ double PEPS<double>::local(const DArray<2> &O){
    val += Dot(L,R[Lx-2]);
 
    return val;
-
+*/
+   return 0.0;
 }
 
 /**
@@ -935,7 +937,7 @@ double PEPS<double>::local(const DArray<2> &O){
  */
 template<>
 double PEPS<double>::energy(){
-
+/*
    // ---- || evaluate the energy in an MPO/MPS manner, first from bottom to top, then left to right || ----
 
    // #################################################################
@@ -2045,7 +2047,8 @@ double PEPS<double>::energy(){
    val += Dot(Lz,R[Ly-3]);
 
    return val;
-
+*/
+   return 0.0;
 }
 
 //forward declarations for types to be used!

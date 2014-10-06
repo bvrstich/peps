@@ -16,7 +16,7 @@ template<typename T>
 class PEPS;
 
 template<typename T>
-class MPS;
+class MPO;
 
 /**
  * @author Brecht Verstichel
@@ -51,17 +51,22 @@ class Environment {
 
       void construct_double_layer(char,const DArray<5> &peps,const DArray<2> &O,DArray<4> &dlo);
 
-      const MPS<double> &gl(int) const;
-      MPS<double> &gl(int);
+      const MPO<double> &gl(int) const;
+      MPO<double> &gl(int);
 
-      const MPS<double> &gr(int) const;
-      MPS<double> &gr(int);
+      const MPO<double> &gr(int) const;
+      MPO<double> &gr(int);
 
-      const MPS<double> &gt(int) const;
-      MPS<double> &gt(int);
+      const MPO<double> &gt(int) const;
+      MPO<double> &gt(int);
 
-      const MPS<double> &gb(int) const;
-      MPS<double> &gb(int);
+      const MPO<double> &gb(int) const;
+      MPO<double> &gb(int);
+
+      const vector< MPO<double> > &gl() const;
+      const vector< MPO<double> > &gr() const;
+      const vector< MPO<double> > &gt() const;
+      const vector< MPO<double> > &gb() const;
 
       const int gD() const;
       const int gD_aux() const;
@@ -71,11 +76,11 @@ class Environment {
 
    private:
 
-      //!stores an array environment MPS's for l(eft) , r(ight), t(op) and b(ottom)
-      vector< MPS<double> > l;
-      vector< MPS<double> > r;
-      vector< MPS<double> > t;
-      vector< MPS<double> > b;
+      //!stores an array environment MPO's for l(eft) , r(ight), t(op) and b(ottom)
+      vector< MPO<double> > l;
+      vector< MPO<double> > r;
+      vector< MPO<double> > t;
+      vector< MPO<double> > b;
 
       //!regular bond dimension of peps
       int D;

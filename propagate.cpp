@@ -22,7 +22,7 @@ namespace propagate {
     * @param D_aux auxiliary dimension for the contractions. Determines the accuracy of the effective environment.
     */
    void step(PEPS<double> &peps,int D_aux){
-
+/*
       int D = peps.gD();
 
       enum {i,j,k,m,n,o,p,q};
@@ -607,7 +607,7 @@ namespace propagate {
 
       //scale the peps
       peps.scal(1.0/sqrt(L(0,0)));
-
+*/
    }
 
    /**
@@ -616,7 +616,7 @@ namespace propagate {
     * @param L == left, R == right
     */
    void construct_reduced_tensor(char hv,char option,const DArray<5> &peps,DArray<4> &Q,DArray<3> &red){
-
+/*
       if(hv == 'H'){
 
          if(option == 'L'){
@@ -777,7 +777,7 @@ namespace propagate {
          }
 
       }
-
+*/
    }
 
    /**
@@ -788,7 +788,7 @@ namespace propagate {
     * @param dlQ output object
     */
    void construct_double_layer(char option,const DArray<4> &Q,DArray<5> &dlQ){
-
+/*
       //first outer product of Q
       DArray<8> tmp;
       Ger(1.0,Q,Q,tmp);
@@ -823,7 +823,7 @@ namespace propagate {
          dlQ = reorder.reshape_clear(shape(d0,d1,d2,d3,d4));
 
       }
-
+  */
    }
 
    /**
@@ -832,7 +832,7 @@ namespace propagate {
     * @param X output DArray<3> is X
     */
    void get_X(DArray<4> &N_eff,DArray<3> &X){
-
+/*
       int matdim = N_eff.shape(0)*N_eff.shape(1);
 
       //symmetrize
@@ -861,7 +861,7 @@ namespace propagate {
                      X(iL,kL*N_eff.shape(1) + kR,iR) = sqrt( eig(kL*N_eff.shape(1) + kR) ) * N_eff(iL,iR,kL,kR);
 
                }
-
+*/
    }
 
    /** 
@@ -869,7 +869,7 @@ namespace propagate {
     * @param A both input as output matrix: on input A, on output A^{-1}
     */
    void invert(DArray<2> &A){
-
+/*
       int *ipiv = new int [A.shape(0)];
 
       lapack::getrf(CblasRowMajor,A.shape(0),A.shape(1), A.data(), A.shape(1), ipiv);
@@ -877,7 +877,7 @@ namespace propagate {
       lapack::getri(CblasRowMajor,A.shape(0), A.data(), A.shape(1), ipiv);
 
       delete [] ipiv;
-
+*/
    }
 
    /**
@@ -891,7 +891,7 @@ namespace propagate {
     * @param N_eff output DArray<4> object containing the effective norm environment on exit
     */
    void calc_N_eff(char option,int rc,const DArray<2> &L,const DArray<4> &QL,const DArray<2> &R, const DArray<4> &QR,DArray<4> &N_eff){
-
+/*
       if(option == 'b'){
 
          if(rc == 0){//left edge
@@ -1336,7 +1336,7 @@ namespace propagate {
          }
 
       }
-
+*/
    }
 
    /**
@@ -1348,7 +1348,7 @@ namespace propagate {
     * @param QR unitary part of the right tensor reduction, will be multiplied with the inverse of the R of the environment
     */
    void canonicalize(DArray<3> &X,DArray<3> &a_L,DArray<4> &QL,DArray<3> &a_R,DArray<4> &QR){
-
+/*
       //now QR and LQ the X matrix and paste it on the aR and aL
       DArray<3> X_copy(X);
 
@@ -1386,7 +1386,7 @@ namespace propagate {
       Contract(1.0,QL,shape(3),tmp2,shape(1),0.0,tmp4);
 
       QL = std::move(tmp4);
-
+  */
    }
 
    /**
@@ -1394,7 +1394,7 @@ namespace propagate {
     * after which a svd is performed over the bond and the dimensions are set back to D
     */
    void update(int D,DArray<3> &a_L,DArray<3> &a_R){
-
+/*
       enum {i,j,k,m,n};
 
       //left
@@ -1424,7 +1424,7 @@ namespace propagate {
       //and multiply it left and right to the tensors
       Dimm(S,a_R);
       Dimm(a_L,S);
-
+*/
    }
 
    /** 
@@ -1433,7 +1433,7 @@ namespace propagate {
     * @param R vector containing the right operators on exit
     */
    void init_ro(char option,vector< DArray<2> > &R){
-
+/*
       if(option == 'b'){
 
          //first the rightmost operator
@@ -1530,7 +1530,7 @@ namespace propagate {
          }
 
       }
-
+*/
    }
 
    /**
@@ -1539,7 +1539,7 @@ namespace propagate {
     * @param rc is row or column index, col for t,b row for r,l
     */
    void update_L(char option,int rc,DArray<2> &L){
-
+/*
       if(option == 'b'){//bottom
 
          if(rc == 0){
@@ -1628,7 +1628,7 @@ namespace propagate {
          }
 
       }
-
+*/
    }
 
    /** 
@@ -1639,7 +1639,7 @@ namespace propagate {
     * @param R vector containing the right operators on exit
     */
    void init_ro(char option,int rc,const PEPS<double> &peps,vector< DArray<3> > &RO){
-
+/*
       if(option == 'H'){
 
          //last site make double layer object from peps
@@ -1718,7 +1718,7 @@ namespace propagate {
          }
 
       }
-
+*/
    }
 
    /**
@@ -1733,7 +1733,7 @@ namespace propagate {
     * @param N_eff output DArray<4> object containing the effective norm environment on exit
     */
    void calc_N_eff(char option,int li,int si,const DArray<3> &LO,const DArray<4> &QL,const DArray<3> &RO, const DArray<4> &QR,DArray<4> &N_eff){
-
+/*
       if(option == 'H'){
 
          if(si == 0){//left edge
@@ -1986,7 +1986,7 @@ namespace propagate {
          }
 
       }
-
+  */
    }
 
    /**
@@ -1998,7 +1998,7 @@ namespace propagate {
     * @param LO input old left renormalized operator, output new left renormalized operator
     */
    void update_L(char option,int li,int si,const PEPS<double> &peps,DArray<3> &LO){
-
+/*
       if(option == 'H'){
 
          if(si == 0){
@@ -2077,7 +2077,7 @@ namespace propagate {
          }
 
       }
-
+  */
    }
 
    /**
@@ -2086,7 +2086,7 @@ namespace propagate {
     * @param B magnetic field strength
     */
    void apply_stag_field(PEPS<double> &peps,double B){
-
+/*
       DArray<2> Bp(d,d);
       DArray<2> Bm(d,d);
 
@@ -2127,7 +2127,7 @@ namespace propagate {
             }
 
          }
-
+*/
    }
 
    /**
@@ -2136,7 +2136,7 @@ namespace propagate {
     * @param D_aux auxiliary dimension for the contractions. Determines the accuracy of the effective environment.
     */
    void step_no_env(PEPS<double> &peps,int D_aux){
-
+/*
       int D = peps.gD();
 
       enum {i,j,k,m,n,o,p,q};
@@ -2434,7 +2434,7 @@ namespace propagate {
       //and expand back to the full tensors
       Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(Ly-2,Lx-1),shape(k,o,n,i,j));
       Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(Ly-1,Lx-1),shape(n,o,j,i,m));
-
+*/
    }
 
 }

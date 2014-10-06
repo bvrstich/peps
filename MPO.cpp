@@ -14,6 +14,12 @@ using std::ofstream;
 
 using namespace global;
 
+/** 
+ * empty constructor
+ */
+template<typename T>
+MPO<T>::MPO() : vector< TArray<T,4> >() { }
+
 /**
  * construct constructs a standard MPO object, by creating a double layer peps object
  * @param option 'V' == vertical stripe, 'H' == horizontal stripe
@@ -97,6 +103,39 @@ int MPO<T>::gD() const {
 
 }
 
+/**
+ * @param bra the bra of the inner product
+ * @return the inner product of two MPS's, with *this being the ket
+ */
+template<typename T>
+T MPO<T>::dot(const MPO<T> &bra) const {
+/*
+   TArray<T,2> E;
+
+   Contract((T)1.0,bra[0],shape(0,1),(*this)[0],shape(0,1),(T)0.0,E);
+
+   TArray<T,3> I;
+
+   for(int i = 1;i < this->size();++i){
+
+      I.clear();
+
+      Contract((T)1.0,bra[i],shape(0),E,shape(0),(T)0.0,I);
+
+      E.clear();
+
+      Contract((T)1.0,I,shape(2,0),(*this)[i],shape(0,1),(T)0.0,E);
+
+   }
+
+   return E(0,0);
+*/
+   return (T) 0.0;
+}
+
+template MPO<double>::MPO();
+template MPO< complex<double> >::MPO();
+
 template MPO<double>::MPO(char,int,const PEPS<double> &,const PEPS<double> &);
 template MPO< complex<double> >::MPO(char,int,const PEPS< complex<double> > &,const PEPS< complex<double> > &);
 
@@ -108,3 +147,6 @@ template MPO< complex<double> >::~MPO();
 
 template int MPO<double>::gD() const;
 template int MPO< complex<double> >::gD() const;
+
+template double MPO<double>::dot(const MPO<double> &bra) const;
+template  complex<double>  MPO< complex<double> >::dot(const MPO< complex<double> > &bra) const;
