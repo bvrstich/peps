@@ -24,6 +24,13 @@ namespace global{
    int d;
 
    Random RN;
+   
+   //! spin operators
+   DArray<2> Sp;
+   DArray<2> Sm;
+   DArray<2> Sx;
+   DArray<2> iSy;
+   DArray<2> Sz;
 
    /**
     * @param D_in virtual dimension of the trial
@@ -38,6 +45,32 @@ namespace global{
       Ly = Ly_in;
 
       d = d_in;
+
+      //set the spin operators
+      Sp.resize(d,d);
+      Sm.resize(d,d);
+      Sx.resize(d,d);
+      iSy.resize(d,d);
+      Sz.resize(d,d);
+
+      Sp = 0.0;
+      Sm = 0.0;
+      Sx = 0.0;
+      iSy = 0.0;
+      Sz = 0.0;
+
+      Sp(1,0) = 1.0;
+
+      Sm(0,1) = 1.0;
+
+      Sx(0,1) = 0.5;
+      Sx(1,0) = 0.5;
+
+      iSy(0,1) = -0.5;
+      iSy(1,0) = 0.5;
+
+      Sz(0,0) = -0.5;
+      Sz(1,1) = 0.5;
 
    }
 

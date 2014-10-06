@@ -16,7 +16,6 @@ CPPSRC	= main.cpp\
            MPO.cpp\
            compress.cpp\
            Environment.cpp\
-           Heisenberg.cpp\
            Trotter.cpp\
            propagate.cpp\
            btas_defs.cpp

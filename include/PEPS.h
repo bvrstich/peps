@@ -58,6 +58,12 @@ class PEPS : public vector< TArray<T,5> > {
 
       void load(const char *);
 
+      //local operator expectation value
+      double local(const DArray<2> &);
+
+      //heisenberg energy expectation value
+      double energy();
+
    private:
 
       //!cutoff virtual dimension

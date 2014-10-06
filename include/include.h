@@ -13,7 +13,6 @@
 
 #include "compress.h"
 #include "Environment.h"
-#include "Heisenberg.h"
 
 #include "Trotter.h"
 #include "propagate.h"

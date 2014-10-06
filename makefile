@@ -16,7 +16,6 @@ CPPSRC	= main.cpp\
            MPO.cpp\
            compress.cpp\
            Environment.cpp\
-           Heisenberg.cpp\
            Trotter.cpp\
            propagate.cpp\
            btas_defs.cpp
@@ -36,8 +35,8 @@ INCLUDE = ./include
 #LIBS= -lpthread -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core
 LIBS= -lblas -llapacke
 
-CC	= gcc
-CXX	= g++
+CC	= clang
+CXX	= clang++
 
 # -----------------------------------------------------------------------------
 #   Compiler & Linker flags

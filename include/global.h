@@ -30,6 +30,13 @@ namespace global {
    //!physical dimension of sites
    extern int d;
 
+   //!operators!
+   extern DArray<2> Sp;
+   extern DArray<2> Sm;
+   extern DArray<2> Sx;
+   extern DArray<2> iSy;
+   extern DArray<2> Sz;
+
    void init(int,int,int);
 
    template<typename T>

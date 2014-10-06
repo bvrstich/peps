@@ -32,7 +32,6 @@ int main(int argc,char *argv[]){
    //initialize some statics dimensions
    global::init(d,L,L);
    Environment::init();
-   Heisenberg::init();
 
    double f = 0.74;
 
@@ -45,6 +44,6 @@ int main(int argc,char *argv[]){
    Environment::test_env();
    cout << endl;
 
-   cout << f << "\t" << Heisenberg::energy(peps)/(double)(L*L) << endl;
+   cout << f << "\t" << peps.energy()/(double)(L*L) << endl;
 
 }
