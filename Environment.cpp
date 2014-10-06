@@ -17,15 +17,7 @@ using namespace global;
 /** 
  * empty constructor
  */
-Environment::Environment(){
-
-   t.resize(Ly - 1);
-   b.resize(Ly - 1);
-
-   r.resize(Lx - 1);
-   l.resize(Lx - 1);
-
-}
+Environment::Environment(){ }
 
 /** 
  * constructor with allocation
@@ -48,7 +40,7 @@ Environment::Environment(int D_in,int D_aux_in){
 /** 
  * copy constructor with allocation
  */
-Environment::Environment(const Environment &env){
+Environment::Environment(const Environment &env_copy){
 
    t.resize(Ly - 1);
    b.resize(Ly - 1);
@@ -56,11 +48,10 @@ Environment::Environment(const Environment &env){
    r.resize(Lx - 1);
    l.resize(Lx - 1);
 
-   D = env.gD();
-   D_aux = env.gD_aux();
+   D = env_copy.gD();
+   D_aux = env_copy.gD_aux();
 
 }
-
 
 /**
  * empty destructor

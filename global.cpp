@@ -24,7 +24,7 @@ namespace global{
    int d;
 
    Random RN;
-   
+ 
    //! spin operators
    DArray<2> Sp;
    DArray<2> Sm;
