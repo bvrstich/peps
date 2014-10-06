@@ -34,19 +34,17 @@ int main(int argc,char *argv[]){
    Environment::init();
    Heisenberg::init();
 
-   for(int f_i = 7000;f_i < 8000;++f_i){
+   double f = 0.74;
 
-      double f = f_i / 10000.0;
+   PEPS<double> peps;
 
-      PEPS<double> peps;
+   peps.set_jastrow(f);
+   peps.normalize(D_aux);
 
-      peps.set_jastrow(f);
-      peps.normalize(D_aux);
+   Environment::calc_env('A',peps,D_aux);
+   Environment::test_env();
+   cout << endl;
 
-      Environment::calc_env('A',peps,D_aux);
-
-      cout << f << "\t" << Heisenberg::energy(peps)/(double)(L*L) << endl;
-
-   }
+   cout << f << "\t" << Heisenberg::energy(peps)/(double)(L*L) << endl;
 
 }
