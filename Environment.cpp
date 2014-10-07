@@ -35,6 +35,64 @@ Environment::Environment(int D_in,int D_aux_in){
    D = D_in;
    D_aux = D_aux_in;
 
+   //allocate the memory
+   
+   //bottom
+   int tmp = D*D;
+
+   for(int i = 0;i < Ly - 1;++i){
+
+      if(tmp < D_aux)
+         b[i] = MPO<double>(Lx,D,tmp);
+      else
+         b[i] = MPO<double>(Lx,D,D_aux);
+
+      tmp *= D*D;
+
+   }
+   
+   //top
+   tmp = D*D;
+
+   for(int i = Ly - 2;i >= 0;--i){
+
+      if(tmp < D_aux)
+         t[i] = MPO<double>(Lx,D,tmp);
+      else
+         t[i] = MPO<double>(Lx,D,D_aux);
+
+      tmp *= D*D;
+
+   }
+
+   //left
+   tmp = D*D;
+
+   for(int i = 0;i < Lx - 1;++i){
+
+      if(tmp < D_aux)
+         l[i] = MPO<double>(Ly,D,tmp);
+      else
+         l[i] = MPO<double>(Ly,D,D_aux);
+
+      tmp *= D*D;
+
+   }
+   
+   //finally right
+   tmp = D*D;
+
+   for(int i = Lx - 2;i >= 0;--i){
+
+      if(tmp < D_aux)
+         r[i] = MPO<double>(Ly,D,tmp);
+      else
+         r[i] = MPO<double>(Ly,D,D_aux);
+
+      tmp *= D*D;
+
+   }
+
 }
 
 /** 
@@ -68,13 +126,13 @@ Environment::~Environment(){ }
  * @param peps input PEPS<double>
  * @param D_aux dimension to which environment will be compressed
  */
-void Environment::calc(char option,const PEPS<double> &peps,int D_aux){
+void Environment::calc(char option,const PEPS<double> &peps){
 
    if(option == 'B' || option == 'A'){
-/*
-      //construct bottom layer
-      b[0] = MPS<double>('b',peps,peps);
 
+      //construct bottom layer
+      b[0].fill('b',peps);
+/*
       for(int i = 1;i < Ly - 1;++i){
 
          //i'th row as MPO

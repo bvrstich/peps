@@ -29,8 +29,9 @@ class MPO : public vector< TArray<T,4> > {
 
       MPO();
 
-      //constructor
-      MPO(char,int,const PEPS<T> &,const PEPS<T> &);
+      MPO(int);
+
+      MPO(int,int,int);
 
       //copy constructor
       MPO(const MPO &);
@@ -42,10 +43,17 @@ class MPO : public vector< TArray<T,4> > {
 
       int gD() const;
 
+      int gd_phys() const;
+
+      void fill(const char,const PEPS<double> &);
+
    private:
 
       //!dimension of the bonds
       int D;
+
+      //!physical dimension
+      int d_phys;
 
 
 };

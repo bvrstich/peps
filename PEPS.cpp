@@ -472,7 +472,7 @@ void PEPS<double>::grow_bond_dimension(int D_in,double noise) {
  */
 template<typename T>
 T PEPS<T>::dot(const PEPS<T> &peps_i,int D_aux) const {
-
+/*
    //start from bottom
    MPS<T> mps_b('b',*this,peps_i);
 
@@ -524,7 +524,8 @@ T PEPS<T>::dot(const PEPS<T> &peps_i,int D_aux) const {
    }
 
    return mps_b.dot(mps_t);
-
+*/
+   return 0.0;
 }
 
 /** 

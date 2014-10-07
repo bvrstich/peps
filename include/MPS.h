@@ -31,10 +31,7 @@ class MPS : public vector< TArray<T,3> > {
 
       MPS(int L);
 
-      MPS(int L,int D);
-
-      //constructor
-      MPS(char,const PEPS<T> &,const PEPS<T> &);
+      MPS(int,int,int);
 
       //copy constructor
       MPS(const MPS &);
@@ -43,6 +40,8 @@ class MPS : public vector< TArray<T,3> > {
       virtual ~MPS();
 
       int gD() const;
+
+      int gd_phys() const;
 
       void gemv(char , const MPO<T> &);
 
@@ -64,6 +63,9 @@ class MPS : public vector< TArray<T,3> > {
 
       //!dimension of the bonds
       int D;
+
+      //!physical dimension
+      int d_phys;
 };
 
 /**

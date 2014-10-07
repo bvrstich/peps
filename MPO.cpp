@@ -20,60 +20,54 @@ using namespace global;
 template<typename T>
 MPO<T>::MPO() : vector< TArray<T,4> >() { }
 
-/**
- * construct constructs a standard MPO object, by creating a double layer peps object
- * @param option 'V' == vertical stripe, 'H' == horizontal stripe
- * @param rc row or column index
+/** 
+ * constructor: just sets the length of the vector, nothing is allocates or initialized
+ * @param L_in length of the chain
  */
 template<typename T>
-MPO<T>::MPO(char option,int rc,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< TArray<T,4> >() {
+MPO<T>::MPO(int L_in) : vector< TArray<T,4> >(L_in) { }
 
-   D = peps_1.gD() * peps_2.gD();
+/** 
+ * standard constructor:
+ * @param L_in length of the chain
+ * @param d_phys_in physical dimension
+ * @param D_in virtual max bond dimension
+ * allocates the tensors with correct dimensions
+ */
+template<typename T>
+MPO<T>::MPO(int L_in,int d_phys_in,int D_in) : vector< TArray<T,4> >(L_in) {
 
-   if(option == 'H'){//horizontal
+   D = D_in;
+   d_phys = d_phys_in;
 
-      this->resize(Lx);
+   vector<int> vdim(L_in + 1);
 
-      enum {i,j,k,l,m,n,o,p,q};
+   vdim[0] = 1;
 
-      TArray<T,8> tmp;
+   for(int i = 1;i < L_in;++i){
 
-      for(int c = 0;c < Lx;++c){
+      int tmp = vdim[i - 1] * d_phys * d_phys;
 
-         int DL = peps_1(rc,c).shape(0) * peps_2(rc,c).shape(0);
-         int DU = peps_1(rc,c).shape(1) * peps_2(rc,c).shape(1);
-         int DD = peps_1(rc,c).shape(3) * peps_2(rc,c).shape(3);
-         int DR = peps_1(rc,c).shape(4) * peps_2(rc,c).shape(4);
-
-         Contract((T)1.0,peps_1(rc,c),shape(i,j,k,l,m),peps_2(rc,c),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
-
-         (*this)[c] = tmp.reshape_clear(shape(DL,DU,DD,DR));
-
-      }
-
-   }
-   else{//vertical!
-
-      this->resize(Ly);
-
-      enum {i,j,k,l,m,n,o,p,q};
-
-      TArray<T,8> tmp;
-
-      for(int r = 0;r < Ly;++r){
-
-         int DL = peps_1(r,rc).shape(3) * peps_2(r,rc).shape(3);
-         int DU = peps_1(r,rc).shape(4) * peps_2(r,rc).shape(4);
-         int DD = peps_1(r,rc).shape(0) * peps_2(r,rc).shape(0);
-         int DR = peps_1(r,rc).shape(1) * peps_2(r,rc).shape(1);
-
-         Contract((T)1.0,peps_1(r,rc),shape(i,j,k,l,m),peps_2(r,rc),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,m,q,i,n,j,o));
-
-         (*this)[r] = tmp.reshape_clear(shape(DL,DU,DD,DR));
-
-      }
+      if(tmp < D)
+         vdim[i] = tmp;
+      else 
+         vdim[i] = D;
 
    }
+
+   vdim[L_in] = 1;
+
+   for(int i = L_in - 1;i > 0;--i){
+
+      int tmp = vdim[i + 1] * d_phys * d_phys;
+
+      if(tmp < vdim[i])
+         vdim[i] = tmp;
+
+   }
+
+   for(int i = 0;i < this->size();++i)
+      (*this)[i].resize(vdim[i],d_phys,d_phys,vdim[i+1]);
 
 }
 
@@ -81,9 +75,10 @@ MPO<T>::MPO(char option,int rc,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : ve
  * copy constructor
  */
 template<typename T>
-MPO<T>::MPO(const MPO<T> &mps_copy) : vector< TArray<T,4> >(mps_copy) {
+MPO<T>::MPO(const MPO<T> &mpo_copy) : vector< TArray<T,4> >(mpo_copy) {
 
-   D = mps_copy.gD();
+   D = mpo_copy.gD();
+   d_phys = mpo_copy.gd_phys();
 
 }
 
@@ -100,6 +95,16 @@ template<typename T>
 int MPO<T>::gD() const {
 
    return D;
+
+}
+
+/**
+ * @return physical dimension of the MPO
+ */
+template<typename T>
+int MPO<T>::gd_phys() const {
+
+   return d_phys;
 
 }
 
@@ -133,11 +138,52 @@ T MPO<T>::dot(const MPO<T> &bra) const {
    return (T) 0.0;
 }
 
+/**
+ * Fill the MPO by contracting a the physical dimensions of a peps object
+ * @param option 'b'ottom, 't'op, 'l'eft or 'r'ight
+ * @param peps input PEPS<double> object
+ */
+template<>
+void MPO<double>::fill(const char option,const PEPS<double> &peps){
+
+   if(option == 'b'){
+
+      enum {i,j,k,l,m,n,o,p,q};
+
+      DArray<8> tmp;
+
+      //share the pointer
+      for(int col = 0;col < Lx;col++){
+
+         tmp.share_mem( (*this)[col] );
+
+         Contract(1.0,peps(0,col),shape(i,j,k,l,m),peps(0,col),shape(n,o,k,p,q),0.0,tmp,shape(i,n,j,o,l,p,m,q));
+
+      }
+
+   }
+   else if(option == 't'){
+
+
+   }
+   else if(option == 'l'){
+
+
+   }
+   else{
+
+   }
+
+}
+
 template MPO<double>::MPO();
 template MPO< complex<double> >::MPO();
 
-template MPO<double>::MPO(char,int,const PEPS<double> &,const PEPS<double> &);
-template MPO< complex<double> >::MPO(char,int,const PEPS< complex<double> > &,const PEPS< complex<double> > &);
+template MPO<double>::MPO(int);
+template MPO< complex<double> >::MPO(int);
+
+template MPO<double>::MPO(int,int,int);
+template MPO< complex<double> >::MPO(int,int,int);
 
 template MPO<double>::MPO(const MPO<double> &);
 template MPO< complex<double> >::MPO(const MPO< complex<double> > &);

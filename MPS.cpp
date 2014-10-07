@@ -12,10 +12,8 @@ using std::ofstream;
 
 #include "include.h"
 
-using namespace global;
-
 /** 
- * empty constructor: just sets the length of the vector
+ * empty constructor
  */
 template<typename T>
 MPS<T>::MPS() : vector< TArray<T,3> >() { }
@@ -28,15 +26,17 @@ template<typename T>
 MPS<T>::MPS(int L_in) : vector< TArray<T,3> >(L_in) { }
 
 /** 
- * standard constructor: just takes in
+ * standard constructor:
  * @param L_in length of the chain
+ * @param d_phys_in physical dimension
  * @param D_in virtual max bond dimension
  * allocates the tensors and fills them randomly
  */
 template<typename T>
-MPS<T>::MPS(int L_in,int D_in) : vector< TArray<T,3> >(L_in) {
+MPS<T>::MPS(int L_in,int d_phys_in,int D_in) : vector< TArray<T,3> >(L_in) {
 
    D = D_in;
+   d_phys = d_phys_in;
 
    vector<int> vdim(L_in + 1);
 
@@ -44,7 +44,7 @@ MPS<T>::MPS(int L_in,int D_in) : vector< TArray<T,3> >(L_in) {
 
    for(int i = 1;i < L_in;++i){
 
-      int tmp = vdim[i - 1] * d;
+      int tmp = vdim[i - 1] * d_phys;
 
       if(tmp < D)
          vdim[i] = tmp;
@@ -57,7 +57,7 @@ MPS<T>::MPS(int L_in,int D_in) : vector< TArray<T,3> >(L_in) {
 
    for(int i = L_in - 1;i > 0;--i){
 
-      int tmp = vdim[i + 1] * d;
+      int tmp = vdim[i + 1] * d_phys;
 
       if(tmp < vdim[i])
          vdim[i] = tmp;
@@ -66,111 +66,8 @@ MPS<T>::MPS(int L_in,int D_in) : vector< TArray<T,3> >(L_in) {
 
    for(int i = 0;i < this->size();++i){
 
-      (*this)[i].resize(vdim[i],d,vdim[i+1]);
-      (*this)[i].generate(rgen<T>);
-
-   }
-
-}
-
-/**
- * construct constructs a standard MPS object, by creating a double layer peps object
- * @param option construct mps from bottom layer (r == 0) if option == 'b', from top layer (r = Ly-1) if option == 't'
- * from left 'l' c = 0, or right 'r' c = Lx-1
- */
-template<typename T>
-MPS<T>::MPS(char option,const PEPS<T> &peps_1,const PEPS<T> &peps_2) : vector< TArray<T,3> >() {
-
-   if(option == 'b'){
-
-      this->resize(Lx);
-
-      D = peps_1.gD() * peps_2.gD();
-
-      enum {i,j,k,l,m,n,o,p,q};
-
-      TArray<T,8> tmp;
- 
-      for(int c = 0;c < Lx;++c){
-
-         Contract((T)1.0,peps_1(0,c),shape(i,j,k,l,m),peps_2(0,c),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
-
-         int DL = peps_1(0,c).shape(0) * peps_2(0,c).shape(0);
-         int phys_d = peps_1(0,c).shape(1) * peps_2(0,c).shape(1);
-         int DR = peps_1(0,c).shape(4) * peps_2(0,c).shape(4);
-
-         (*this)[c] = tmp.reshape_clear(shape(DL,phys_d,DR));
-
-      }
-
-   }
-   else if(option == 't'){//top
-
-      this->resize(Lx);
-
-      D = peps_1.gD() * peps_2.gD();
-
-      enum {i,j,k,l,m,n,o,p,q};
-
-      TArray<T,8> tmp;
-
-      for(int c = 0;c < Lx;++c){
-
-         int DL = peps_1(Ly-1,c).shape(0) * peps_2(Ly-1,c).shape(0);
-         int phys_d = peps_1(Ly-1,c).shape(3) * peps_2(Ly-1,c).shape(3);
-         int DR = peps_1(Ly-1,c).shape(4) * peps_2(Ly-1,c).shape(4);
-
-         Contract((T)1.0,peps_1(Ly-1,c),shape(i,j,k,l,m),peps_2(Ly-1,c),shape(n,o,k,p,q),(T)0.0,tmp,shape(i,n,j,o,l,p,m,q));
-
-         (*this)[c] = tmp.reshape_clear(shape(DL,phys_d,DR));
-
-      }
-
-   }
-   else if(option == 'l'){//left
-
-      this->resize(Ly);
-
-      D = peps_1.gD() * peps_2.gD();
-
-      enum {i,j,k,l,m,n,o,p,q};
-
-      TArray<T,8> tmp;
-
-      for(int r = 0;r < Ly;++r){
-
-         int DL = peps_1(r,0).shape(3) * peps_2(r,0).shape(3);
-         int phys_d = peps_1(r,0).shape(4) * peps_2(r,0).shape(4);
-         int DR = peps_1(r,0).shape(1) * peps_2(r,0).shape(1);
-
-         Contract((T)1.0,peps_1(r,0),shape(i,j,k,l,m),peps_2(r,0),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,m,q,i,n,j,o));
-
-         (*this)[r] = tmp.reshape_clear(shape(DL,phys_d,DR));
-
-      }
-
-   }
-   else{//finally right
-
-      this->resize(Ly);
-
-      D = peps_1.gD() * peps_2.gD();
-
-      enum {i,j,k,l,m,n,o,p,q};
-
-      TArray<T,8> tmp;
-
-      for(int r = 0;r < Ly;++r){
-
-         int DL = peps_1(r,Lx-1).shape(3) * peps_2(r,Lx-1).shape(3);
-         int phys_d = peps_1(r,Lx-1).shape(0) * peps_2(r,Lx-1).shape(0);
-         int DR = peps_1(r,Lx-1).shape(1) * peps_2(r,Lx-1).shape(1);
-
-         Contract((T)1.0,peps_1(r,Lx-1),shape(i,j,k,l,m),peps_2(r,Lx-1),shape(n,o,k,p,q),(T)0.0,tmp,shape(l,p,i,n,m,q,j,o));
-
-         (*this)[r] = tmp.reshape_clear(shape(DL,phys_d,DR));
-
-      }
+      (*this)[i].resize(vdim[i],d_phys,vdim[i+1]);
+      (*this)[i].generate(global::rgen<T>);
 
    }
 
@@ -183,6 +80,7 @@ template<typename T>
 MPS<T>::MPS(const MPS<T> &mps_copy) : vector< TArray<T,3> >(mps_copy) {
 
    this->D = mps_copy.gD();
+   this->d_phys = mps_copy.gd_phys();
 
 }
 
@@ -201,6 +99,17 @@ int MPS<T>::gD() const {
    return D;
 
 }
+
+/**
+ * @return virtual dimension of the MPS
+ */
+template<typename T>
+int MPS<T>::gd_phys() const {
+
+   return d_phys;
+
+}
+
 
 /**
  * act with an MPO on this MPS, resulting MPS is returned as *this object
@@ -222,7 +131,6 @@ void MPS<T>::gemv(char uplo,const MPO<T> &mpo){
       enum {i,j,k,l,m,n,o,p,q};
 
       //dimensions of the new MPS
-      int d_phys = (*this)[0].shape(1);
       int DL = 1;
       int DR = (*this)[0].shape(2) * mpo[0].shape(3);
 
@@ -258,7 +166,6 @@ void MPS<T>::gemv(char uplo,const MPO<T> &mpo){
       enum {i,j,k,l,m,n,o,p,q};
 
       //dimensions of the new MPS
-      int d_phys = (*this)[0].shape(1);
       int DL = 1;
       int DR = (*this)[0].shape(2) * mpo[0].shape(3);
 
@@ -756,11 +663,8 @@ void MPS<T>::cut_edges() {
 
 }
 
-template MPS<double>::MPS(char,const PEPS<double> &,const PEPS<double> &);
-template MPS< complex<double> >::MPS(char,const PEPS< complex<double> > &,const PEPS< complex<double> > &);
-
-template MPS<double>::MPS(int,int);
-template MPS< complex<double> >::MPS(int,int);
+template MPS<double>::MPS(int,int,int);
+template MPS< complex<double> >::MPS(int,int,int);
 
 template MPS<double>::MPS(int);
 template MPS< complex<double> >::MPS(int);

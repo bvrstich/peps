@@ -37,7 +37,7 @@ class Environment {
       //destructor
       virtual ~Environment();
 
-      void calc(char,const PEPS<double> &,int);
+      void calc(char,const PEPS<double> &);
 
       void calc(char,int,const PEPS<double> &,int D_aux);
 
