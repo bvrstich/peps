@@ -38,7 +38,7 @@ int main(int argc,char *argv[]){
 
    peps.initialize_jastrow(f);
 
-   global::env.calc('A',peps);
+   global::env.calc('B',peps);
    /*
    global::env.test();
 
