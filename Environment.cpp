@@ -698,6 +698,7 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps){
    if(option == 'b'){
 
       b[rc].fill_Random();
+      cout << b[rc].dot(b[rc-1]) << endl;
 
       vector< DArray<4> > R(Lx - 1);
 
@@ -758,8 +759,7 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps){
       R[0] = tmp8bis.reshape_clear(shape(tmp8bis.shape(1),tmp8bis.shape(3),tmp8bis.shape(5),tmp8bis.shape(7)));
  
       //now for the rest of the rightgoing sweep.
-      //for(int i = 1;i < Lx - 1;++i){
-      int i = 1;
+      for(int i = 1;i < Lx-1;++i){
 
          tmp6.clear();
          Contract(1.0,b[rc - 1][i],shape(3),R[i],shape(0),0.0,tmp6);
@@ -773,9 +773,89 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps){
          DArray<6> tmp6bis;
          Permute(tmp6,shape(0,2,4,3,5,1),tmp6bis);
 
-         Gemm(CblasTrans,CblasNoTrans,1.0,R[0],tmp6bis,0.0,b[rc][i]);
+         Gemm(CblasTrans,CblasNoTrans,1.0,R[i - 1],tmp6bis,0.0,b[rc][i]);
 
-               //}
+         //QR
+         tmp2.clear();
+         Geqrf(b[rc][i],tmp2);
+
+         //construct left operator
+
+         tmp6.clear();
+         Contract(1.0,R[i - 1],shape(0),b[rc - 1][i],shape(0),0.0,tmp6);
+
+         tmp7.clear();
+         Contract(1.0,tmp6,shape(0,3),peps(rc,i),shape(0,1),0.0,tmp7);
+
+         tmp6.clear();
+         Contract(1.0,tmp7,shape(0,2,4),peps(rc,i),shape(0,1,2),0.0,tmp6);
+
+         Contract(1.0,tmp6,shape(0,2,4),b[rc][i],shape(0,1,2),0.0,R[i]);
+
+      }
+
+      //rightmost site
+      tmp6.clear();
+      Contract(1.0,R[Lx - 2],shape(0),b[rc - 1][Lx - 1],shape(0),0.0,tmp6);
+
+      tmp7.clear();
+      Contract(1.0,tmp6,shape(0,3),peps(rc,Lx - 1),shape(0,1),0.0,tmp7);
+
+      tmp6.clear();
+      Contract(1.0,tmp7,shape(0,2,4),peps(rc,Lx - 1),shape(0,1,2),0.0,tmp6);
+
+      b[rc][Lx - 1] = tmp6.reshape_clear(shape(tmp6.shape(0),D,D,1));
+      
+      //LQ
+      tmp2.clear();
+      Gelqf(tmp2,b[rc][Lx - 1]);
+
+      //construct new right operator
+      tmp7.clear();
+      Contract(1.0,b[rc - 1][Lx - 1],shape(1),peps(rc,Lx - 1),shape(1),0.0,tmp7);
+
+      tmp8.clear();
+      Contract(1.0,tmp7,shape(1,4),peps(rc,Lx - 1),shape(1,2),0.0,tmp8);
+
+      tmp8bis.clear();
+      Contract(1.0,tmp8,shape(3,6),b[rc][Lx - 1],shape(1,2),0.0,tmp8bis);
+
+      R[Lx - 2] = tmp8bis.reshape_clear(shape(tmp8bis.shape(0),tmp8bis.shape(2),tmp8bis.shape(4),tmp8bis.shape(6)));
+      
+      //back to the beginning with a leftgoing sweep
+      for(int i = Lx-2;i > 0;--i){
+
+         tmp6.clear();
+         Contract(1.0,b[rc - 1][i],shape(3),R[i],shape(0),0.0,tmp6);
+
+         tmp7.clear();
+         Contract(1.0,tmp6,shape(1,3),peps(rc,i),shape(1,4),0.0,tmp7);
+
+         tmp6.clear();
+         Contract(1.0,tmp7,shape(1,5,2),peps(rc,i),shape(1,2,4),0.0,tmp6);
+
+         DArray<6> tmp6bis;
+         Permute(tmp6,shape(0,2,4,3,5,1),tmp6bis);
+
+         Gemm(CblasTrans,CblasNoTrans,1.0,R[i - 1],tmp6bis,0.0,b[rc][i]);
+
+         //LQ
+         tmp2.clear();
+         Gelqf(tmp2,b[rc][i]);
+
+         //construct right operator
+         tmp6.clear();
+         Contract(1.0,b[rc - 1][i],shape(3),R[i],shape(0),0.0,tmp6);
+
+         tmp7.clear();
+         Contract(1.0,tmp6,shape(1,3),peps(rc,i),shape(1,4),0.0,tmp7);
+
+         tmp6.clear();
+         Contract(1.0,tmp7,shape(1,2,5),peps(rc,i),shape(1,2,4),0.0,tmp6);
+
+         Contract(1.0,tmp6,shape(3,5,1),b[rc][i],shape(1,2,3),0.0,R[i - 1]);
+
+      }
 
    }
    else if(option == 't'){
@@ -788,4 +868,4 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps){
 
    }
 
-   }
+}

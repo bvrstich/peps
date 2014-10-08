@@ -41,6 +41,8 @@ class MPO : public vector< TArray<T,4> > {
 
       T dot(const MPO<T> &bra) const;
 
+      T expect(const char,int,const PEPS<T> &) const;
+
       int gD() const;
 
       int gd_phys() const;
