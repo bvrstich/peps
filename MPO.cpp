@@ -150,31 +150,31 @@ T MPO<T>::expect(const char option,int rc,const PEPS<T> &peps) const {
 
    if(option == 'H'){
 
-      DArray<7> tmp7;
-      Contract(1.0,(*this)[0],shape(1),peps(rc,0),shape(1),0.0,tmp7);
+      TArray<T,7> tmp7;
+      Contract((T)1.0,(*this)[0],shape(1),peps(rc,0),shape(1),(T)0.0,tmp7);
 
-      DArray<8> tmp8;
-      Contract(1.0,tmp7,shape(1,4),peps(rc,0),shape(1,2),0.0,tmp8);
+      TArray<T,8> tmp8;
+      Contract((T)1.0,tmp7,shape(1,4),peps(rc,0),shape(1,2),(T)0.0,tmp8);
 
-      DArray<8> tmp8bis;
-      Contract(1.0,tmp8,shape(3,6),(*this)[0],shape(1,2),0.0,tmp8bis);
+      TArray<T,8> tmp8bis;
+      Contract((T)1.0,tmp8,shape(3,6),(*this)[0],shape(1,2),(T)0.0,tmp8bis);
 
       E = tmp8bis.reshape_clear(shape(tmp8bis.shape(1),tmp8bis.shape(3),tmp8bis.shape(5),tmp8bis.shape(7)));
 
       //now for the rest of the rightgoing sweep.
       for(int i = 1;i < Lx;++i){
 
-         DArray<6> tmp6;
-         Contract(1.0,E,shape(0),(*this)[i],shape(0),0.0,tmp6);
+         TArray<T,6> tmp6;
+         Contract((T)1.0,E,shape(0),(*this)[i],shape(0),(T)0.0,tmp6);
 
          tmp7.clear();
-         Contract(1.0,tmp6,shape(0,3),peps(rc,i),shape(0,1),0.0,tmp7);
+         Contract((T)1.0,tmp6,shape(0,3),peps(rc,i),shape(0,1),(T)0.0,tmp7);
 
          tmp6.clear();
-         Contract(1.0,tmp7,shape(0,2,4),peps(rc,i),shape(0,1,2),0.0,tmp6);
+         Contract((T)1.0,tmp7,shape(0,2,4),peps(rc,i),shape(0,1,2),(T)0.0,tmp6);
 
          E.clear();
-         Contract(1.0,tmp6,shape(0,2,4)(*this)[i],shape(0,1,2),0.0,E);
+         Contract((T)1.0,tmp6,shape(0,2,4),(*this)[i],shape(0,1,2),(T)0.0,E);
 
       }
 
@@ -262,5 +262,8 @@ template int MPO< complex<double> >::gD() const;
 
 template double MPO<double>::dot(const MPO<double> &bra) const;
 template  complex<double>  MPO< complex<double> >::dot(const MPO< complex<double> > &bra) const;
+
+template double MPO<double>::expect(const char,int,const PEPS<double> &) const;
+template  complex<double>  MPO< complex<double> >::expect(const char,int,const PEPS<complex< double> > &) const;
 
 template void MPO<double>::fill_Random();

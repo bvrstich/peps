@@ -39,7 +39,7 @@ class Environment {
 
       void calc(const char,const PEPS<double> &);
 
-      void add_layer(const char,int,const PEPS<double> &);
+      void add_layer(const char,int,const PEPS<double> &,int);
 
       void calc(char,int,const PEPS<double> &,int D_aux);
 
