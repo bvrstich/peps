@@ -126,32 +126,17 @@ Environment::~Environment(){ }
  * @param peps input PEPS<double>
  * @param D_aux dimension to which environment will be compressed
  */
-void Environment::calc(char option,const PEPS<double> &peps){
+void Environment::calc(const char option,const PEPS<double> &peps){
 
    if(option == 'B' || option == 'A'){
 
       //construct bottom layer
       b[0].fill('b',peps);
-/*
-      for(int i = 1;i < Ly - 1;++i){
 
-         //i'th row as MPO
-         MPO<double> mpo('H',i,peps,peps);
+ //     for(int i = 1;i < Ly - 1;++i)
+      int i = 1;
+         this->add_layer('b',i,peps);
 
-         MPS<double> tmp(b[i - 1]);
-
-         //apply to form MPS with bond dimension D^4
-         tmp.gemv('L',mpo);
-
-         //reduce the dimensions of the edge states using thin svd
-         tmp.cut_edges();
-
-         //compress in sweeping fashion
-         b[i].resize(Lx);
-         b[i].compress(D_aux,tmp,5);
-
-      }
-*/
    }
 /*
    if(option == 'T' || option == 'A'){
@@ -701,3 +686,106 @@ const vector< MPO<double> > &Environment::gr() const {
    return r;
 
 }
+
+/**
+ * construct the (t,b,l or r) environment on row/col 'rc' by adding a the appropriate peps row/col and compressing the boundary MPO
+ * @param option 't'op, 'b'ottom, 'l'eft or 'r'ight environment
+ * @param rc row or column index
+ * @param peps the input PEPS<double> object 
+ */
+void Environment::add_layer(const char option,int rc,const PEPS<double> &peps){
+
+   if(option == 'b'){
+
+      b[rc].fill_Random();
+
+      vector< DArray<4> > R(Lx - 1);
+
+      //first construct rightmost operator
+      DArray<7> tmp7;
+      Contract(1.0,b[rc - 1][Lx - 1],shape(1),peps(rc,Lx - 1),shape(1),0.0,tmp7);
+
+      DArray<8> tmp8;
+      Contract(1.0,tmp7,shape(1,4),peps(rc,Lx - 1),shape(1,2),0.0,tmp8);
+
+      DArray<8> tmp8bis;
+      Contract(1.0,tmp8,shape(3,6),b[rc][Lx - 1],shape(1,2),0.0,tmp8bis);
+
+      R[Lx - 2] = tmp8bis.reshape_clear(shape(tmp8bis.shape(0),tmp8bis.shape(2),tmp8bis.shape(4),tmp8bis.shape(6)));
+
+      //now move from right to left to construct the rest
+      for(int i = Lx - 2;i > 0;--i){
+
+         DArray<6> tmp6;
+         Contract(1.0,b[rc - 1][i],shape(3),R[i],shape(0),0.0,tmp6);
+
+         tmp7.clear();
+         Contract(1.0,tmp6,shape(1,3),peps(rc,i),shape(1,4),0.0,tmp7);
+
+         tmp6.clear();
+         Contract(1.0,tmp7,shape(1,2,5),peps(rc,i),shape(1,2,4),0.0,tmp6);
+
+         Contract(1.0,tmp6,shape(3,5,1),b[rc][i],shape(1,2,3),0.0,R[i - 1]);
+
+      }
+
+      //now start sweeping to get the compressed boundary MPO
+      DArray<6> tmp6;
+      Contract(1.0,b[rc - 1][0],shape(3),R[0],shape(0),0.0,tmp6);
+
+      tmp7.clear();
+      Contract(1.0,peps(rc,0),shape(1,4),tmp6,shape(1,3),0.0,tmp7);
+
+      tmp6.clear();
+      Contract(1.0,peps(rc,0),shape(1,2,4),tmp7,shape(4,1,5),0.0,tmp6);
+
+      b[rc][0] = tmp6.reshape_clear(shape(1,D,D,tmp6.shape(5)));
+
+      //QR
+      DArray<2> tmp2;
+      Geqrf(b[rc][0],tmp2);
+
+      //construct new left operator
+      tmp7.clear();
+      Contract(1.0,b[rc-1][0],shape(1),peps(rc,0),shape(1),0.0,tmp7);
+
+      tmp8.clear();
+      Contract(1.0,tmp7,shape(1,4),peps(rc,0),shape(1,2),0.0,tmp8);
+
+      tmp8bis.clear();
+      Contract(1.0,tmp8,shape(3,6),b[rc][0],shape(1,2),0.0,tmp8bis);
+
+      R[0] = tmp8bis.reshape_clear(shape(tmp8bis.shape(1),tmp8bis.shape(3),tmp8bis.shape(5),tmp8bis.shape(7)));
+ 
+      //now for the rest of the rightgoing sweep.
+      //for(int i = 1;i < Lx - 1;++i){
+      int i = 1;
+
+         tmp6.clear();
+         Contract(1.0,b[rc - 1][i],shape(3),R[i],shape(0),0.0,tmp6);
+
+         tmp7.clear();
+         Contract(1.0,tmp6,shape(1,3),peps(rc,i),shape(1,4),0.0,tmp7);
+
+         tmp6.clear();
+         Contract(1.0,tmp7,shape(1,5,2),peps(rc,i),shape(1,2,4),0.0,tmp6);
+
+         DArray<6> tmp6bis;
+         Permute(tmp6,shape(0,2,4,3,5,1),tmp6bis);
+
+         Gemm(CblasTrans,CblasNoTrans,1.0,R[0],tmp6bis,0.0,b[rc][i]);
+
+               //}
+
+   }
+   else if(option == 't'){
+
+   }
+   else if(option == 'l'){
+
+   }
+   else{
+
+   }
+
+   }

@@ -47,6 +47,8 @@ class MPO : public vector< TArray<T,4> > {
 
       void fill(const char,const PEPS<double> &);
 
+      void fill_Random();
+
    private:
 
       //!dimension of the bonds

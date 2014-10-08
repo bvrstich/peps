@@ -175,6 +175,16 @@ void MPO<double>::fill(const char option,const PEPS<double> &peps){
    }
 
 }
+/**
+ * Fill the MPO with random entries
+ */
+template<typename T>
+void MPO<T>::fill_Random() {
+
+   for(int i = 0;i < this->size();++i)
+      (*this)[i].generate(rgen<T>);
+
+}
 
 template MPO<double>::MPO();
 template MPO< complex<double> >::MPO();
@@ -196,3 +206,6 @@ template int MPO< complex<double> >::gD() const;
 
 template double MPO<double>::dot(const MPO<double> &bra) const;
 template  complex<double>  MPO< complex<double> >::dot(const MPO< complex<double> > &bra) const;
+
+template void MPO<double>::fill_Random();
+template void MPO< complex<double> >::fill_Random();
