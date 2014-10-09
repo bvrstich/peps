@@ -130,7 +130,6 @@ void Environment::calc(const char option,const PEPS<double> &peps){
 
    if(option == 'B' || option == 'A'){
 
-      //construct bottom layer
       b[0].fill('b',peps);
 
       for(int i = 1;i < Ly - 1;++i)
@@ -149,40 +148,24 @@ void Environment::calc(const char option,const PEPS<double> &peps){
 
    if(option == 'R' || option == 'A'){
 
-      //then left layer
       r[Lx - 2].fill('r',peps);
 
       for(int i = Lx - 3;i >= 0;--i)
          this->add_layer('r',i,peps,5);
 
    }
-/*
-   if(option == 'R' || option == 'A'){
 
-      //finally construct right layer
-      r[Lx - 2] = MPS<double>('r',peps,peps);
+   if(option == 'L' || option == 'A'){
 
-      for(int i = Lx - 2;i > 0;--i){
+      l[0].fill('l',peps);
 
-         //i'th row as MPO
-         MPO<double> mpo('V',i,peps,peps);
+      //for(int i = 1;i < Lx - 1;++i)
+      int i = 1;
+      this->add_layer('l',i,peps,5);
 
-         //apply to form MPS with bond dimension D^4
-         MPS<double> tmp(r[i]);
-
-         tmp.gemv('U',mpo);
-
-         //reduce the dimensions of the edge states using thin svd
-         tmp.cut_edges();
-
-         //compress in sweeping fashion
-         r[i - 1].resize(Ly);
-         r[i - 1].compress(D_aux,tmp,5);
-
-      }
 
    }
-   */
+
 }
 
 /**
@@ -195,14 +178,14 @@ void Environment::test(){
    cout << endl;
    for(int i = 0;i < Ly - 1;++i)
       cout << i << "\t" << b[i].dot(t[i]) << endl;
-/*
-   cout << endl;
-   cout << "FROM LEFT TO RIGHT" << endl;
-   cout << endl;
-   for(int i = 0;i < Lx - 1;++i)
+   /*
+      cout << endl;
+      cout << "FROM LEFT TO RIGHT" << endl;
+      cout << endl;
+      for(int i = 0;i < Lx - 1;++i)
       cout << i << "\t" << r[i].dot(l[i]) << endl;
-   cout << endl;
-*/
+      cout << endl;
+      */
 }
 
 /**
@@ -1018,7 +1001,7 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
       r[rc].fill_Random();
 
       vector< DArray<4> > R(Ly - 1);
-      
+
       //first construct rightmost operator
       DArray<7> tmp7;
       Contract(1.0,r[rc + 1][Ly - 1],shape(1),peps(Ly - 1,rc+1),shape(4),0.0,tmp7);
@@ -1188,7 +1171,170 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
       }
 
    }
-   else{
+   else{//left
+
+      l[rc].fill_Random();
+
+      vector< DArray<4> > R(Ly - 1);
+
+      //first construct rightmost operator
+      DArray<7> tmp7;
+      Contract(1.0,l[rc - 1][Ly - 1],shape(1),peps(Ly-1,rc),shape(0),0.0,tmp7);
+
+      DArray<8> tmp8;
+      Contract(1.0,tmp7,shape(1,4),peps(Ly - 1,rc),shape(0,2),0.0,tmp8);
+
+      DArray<8> tmp8bis;
+      Contract(1.0,tmp8,shape(4,7),l[rc][Ly - 1],shape(1,2),0.0,tmp8bis);
+
+      R[Ly - 2] = tmp8bis.reshape_clear(shape(tmp8bis.shape(0),tmp8bis.shape(3),tmp8bis.shape(5),tmp8bis.shape(6)));
+ 
+      //now move from right to left to construct the rest
+      for(int i = Ly - 2;i > 0;--i){
+
+         DArray<6> tmp6;
+         Contract(1.0,l[rc - 1][i],shape(3),R[i],shape(0),0.0,tmp6);
+
+         tmp7.clear();
+         Contract(1.0,tmp6,shape(1,3),peps(i,rc),shape(0,1),0.0,tmp7);
+
+         tmp6.clear();
+         Contract(1.0,tmp7,shape(1,2,4),peps(i,rc),shape(0,1,2),0.0,tmp6);
+
+         Contract(1.0,tmp6,shape(3,5,1),l[rc][i],shape(1,2,3),0.0,R[i - 1]);
+
+      }
+
+      int iter = 0;
+
+      while(iter < n_iter){
+
+         //now start sweeping to get the compressed boundary MPO
+         DArray<6> tmp6;
+         Contract(1.0,l[rc - 1][0],shape(3),R[0],shape(0),0.0,tmp6);
+
+         tmp7.clear();
+         Contract(1.0,peps(0,rc),shape(0,1),tmp6,shape(2,4),0.0,tmp7);
+
+         tmp6.clear();
+         Contract(1.0,peps(0,rc),shape(0,1,2),tmp7,shape(4,5,0),0.0,tmp6);
+
+         l[rc][0] = tmp6.reshape_clear(shape(1,D,D,tmp6.shape(5)));
+
+         //QR
+         DArray<2> tmp2;
+         Geqrf(l[rc][0],tmp2);
+
+         //construct new left operator
+         tmp7.clear();
+         Contract(1.0,l[rc-1][0],shape(1),peps(0,rc),shape(0),0.0,tmp7);
+
+         tmp8.clear();
+         Contract(1.0,tmp7,shape(1,4),peps(0,rc),shape(0,2),0.0,tmp8);
+
+         tmp8bis.clear();
+         Contract(1.0,tmp8,shape(4,7),l[rc][0],shape(1,2),0.0,tmp8bis);
+
+         R[0] = tmp8bis.reshape_clear(shape(tmp8bis.shape(1),tmp8bis.shape(2),tmp8bis.shape(4),tmp8bis.shape(7)));
+
+         //now for the rest of the rightgoing sweep.
+         for(int i = 1;i < Lx-1;++i){
+
+            tmp6.clear();
+            Contract(1.0,l[rc - 1][i],shape(3),R[i],shape(0),0.0,tmp6);
+
+            tmp7.clear();
+            Contract(1.0,tmp6,shape(1,3),peps(i,rc),shape(0,1),0.0,tmp7);
+
+            tmp6.clear();
+            Contract(1.0,tmp7,shape(1,2,4),peps(i,rc),shape(0,1,2),0.0,tmp6);
+
+            DArray<6> tmp6bis;
+            Permute(tmp6,shape(0,2,4,3,5,1),tmp6bis);
+
+            Gemm(CblasTrans,CblasNoTrans,1.0,R[i - 1],tmp6bis,0.0,l[rc][i]);
+
+            //QR
+            tmp2.clear();
+            Geqrf(l[rc][i],tmp2);
+
+            //construct left operator
+            tmp6.clear();
+            Contract(1.0,R[i - 1],shape(0),l[rc - 1][i],shape(0),0.0,tmp6);
+
+            tmp7.clear();
+            Contract(1.0,tmp6,shape(0,3),peps(i,rc),shape(3,0),0.0,tmp7);
+
+            tmp6.clear();
+            Contract(1.0,tmp7,shape(0,2,5),peps(i,rc),shape(3,0,2),0.0,tmp6);
+
+            Contract(1.0,tmp6,shape(0,3,5),l[rc][i],shape(0,1,2),0.0,R[i]);
+
+         }
+
+         //rightmost site
+         tmp6.clear();
+         Contract(1.0,R[Ly - 2],shape(0),l[rc - 1][Ly - 1],shape(0),0.0,tmp6);
+
+         tmp7.clear();
+         Contract(1.0,tmp6,shape(0,3),peps(Ly - 1,rc),shape(3,0),0.0,tmp7);
+
+         tmp6.clear();
+         Contract(1.0,tmp7,shape(0,2,5),peps(Ly - 1,rc),shape(3,0,2),0.0,tmp6);
+
+         l[rc][Ly - 1] = tmp6.reshape_clear(shape(tmp6.shape(0),D,D,1));
+
+         //LQ
+         tmp2.clear();
+         Gelqf(tmp2,l[rc][Ly - 1]);
+
+         //construct new right operator
+         tmp7.clear();
+         Contract(1.0,l[rc - 1][Ly - 1],shape(1),peps(Ly - 1,rc),shape(0),0.0,tmp7);
+
+         tmp8.clear();
+         Contract(1.0,tmp7,shape(1,4),peps(Ly - 1,rc),shape(0,2),0.0,tmp8);
+
+         tmp8bis.clear();
+         Contract(1.0,tmp8,shape(4,7),l[rc][Ly - 1],shape(1,2),0.0,tmp8bis);
+
+         R[Ly - 2] = tmp8bis.reshape_clear(shape(tmp8bis.shape(0),tmp8bis.shape(3),tmp8bis.shape(5),tmp8bis.shape(6)));
+
+         //back to the beginning with a leftgoing sweep
+         for(int i = Ly-2;i > 0;--i){
+
+            tmp6.clear();
+            Contract(1.0,l[rc - 1][i],shape(3),R[i],shape(0),0.0,tmp6);
+
+            tmp7.clear();
+            Contract(1.0,tmp6,shape(1,3),peps(i,rc),shape(0,1),0.0,tmp7);
+
+            tmp6.clear();
+            Contract(1.0,tmp7,shape(1,2,4),peps(i,rc),shape(0,1,2),0.0,tmp6);
+
+            DArray<6> tmp6bis;
+            Permute(tmp6,shape(0,2,4,3,5,1),tmp6bis);
+
+            Gemm(CblasTrans,CblasNoTrans,1.0,R[i - 1],tmp6bis,0.0,l[rc][i]);
+
+            //LQ
+            tmp2.clear();
+            Gelqf(tmp2,l[rc][i]);
+
+            //construct right operator
+            Gemm(CblasNoTrans,CblasTrans,1.0,tmp6bis,l[rc][i],0.0,R[i - 1]);
+
+         }
+
+         //multiply the last L matrix with the first matrix:
+         DArray<4> tmp4;
+         Gemm(CblasNoTrans,CblasNoTrans,1.0,b[rc][0],tmp2,0.0,tmp4);
+
+         b[rc][0] = std::move(tmp4);
+
+         ++iter;
+
+      }
 
    }
 

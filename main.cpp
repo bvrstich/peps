@@ -39,7 +39,7 @@ int main(int argc,char *argv[]){
    peps.initialize_jastrow(f);
    //peps.normalize();
 
-   global::env.calc('R',peps);
+   global::env.calc('L',peps);
    //global::env.test();
 /*
    cout << f << "\t" << peps.energy()/(double)(L*L) << endl;
