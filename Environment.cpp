@@ -133,8 +133,7 @@ void Environment::calc(const char option,const PEPS<double> &peps){
       //construct bottom layer
       b[0].fill('b',peps);
 
-      //for(int i = 1;i < Ly - 1;++i)
-      int i = 1;
+      for(int i = 1;i < Ly - 1;++i)
          this->add_layer('b',i,peps,5);
 
    }
@@ -212,14 +211,14 @@ void Environment::test(){
    cout << endl;
    for(int i = 0;i < Ly - 1;++i)
       cout << i << "\t" << b[i].dot(t[i]) << endl;
-
+/*
    cout << endl;
    cout << "FROM LEFT TO RIGHT" << endl;
    cout << endl;
    for(int i = 0;i < Lx - 1;++i)
       cout << i << "\t" << r[i].dot(l[i]) << endl;
    cout << endl;
-
+*/
 }
 
 /**
@@ -712,7 +711,7 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
          Contract(1.0,tmp6,shape(3,5,1),b[rc][i],shape(1,2,3),0.0,R[i - 1]);
 
       }
-/*
+
       int iter = 0;
 
       while(iter < n_iter){
@@ -722,10 +721,10 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
          Contract(1.0,b[rc - 1][0],shape(3),R[0],shape(0),0.0,tmp6);
 
          tmp7.clear();
-         Contract(1.0,peps(rc,0),shape(1,4),tmp6,shape(1,3),0.0,tmp7);
+         Contract(1.0,peps(rc,0),shape(3,4),tmp6,shape(1,3),0.0,tmp7);
 
          tmp6.clear();
-         Contract(1.0,peps(rc,0),shape(1,2,4),tmp7,shape(4,1,5),0.0,tmp6);
+         Contract(1.0,peps(rc,0),shape(2,3,4),tmp7,shape(2,4,5),0.0,tmp6);
 
          b[rc][0] = tmp6.reshape_clear(shape(1,D,D,tmp6.shape(5)));
 
@@ -735,10 +734,10 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
 
          //construct new left operator
          tmp7.clear();
-         Contract(1.0,b[rc-1][0],shape(1),peps(rc,0),shape(1),0.0,tmp7);
+         Contract(1.0,b[rc-1][0],shape(1),peps(rc,0),shape(3),0.0,tmp7);
 
          tmp8.clear();
-         Contract(1.0,tmp7,shape(1,4),peps(rc,0),shape(1,2),0.0,tmp8);
+         Contract(1.0,tmp7,shape(1,5),peps(rc,0),shape(3,2),0.0,tmp8);
 
          tmp8bis.clear();
          Contract(1.0,tmp8,shape(3,6),b[rc][0],shape(1,2),0.0,tmp8bis);
@@ -752,10 +751,10 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
             Contract(1.0,b[rc - 1][i],shape(3),R[i],shape(0),0.0,tmp6);
 
             tmp7.clear();
-            Contract(1.0,tmp6,shape(1,3),peps(rc,i),shape(1,4),0.0,tmp7);
+            Contract(1.0,tmp6,shape(1,3),peps(rc,i),shape(3,4),0.0,tmp7);
 
             tmp6.clear();
-            Contract(1.0,tmp7,shape(1,5,2),peps(rc,i),shape(1,2,4),0.0,tmp6);
+            Contract(1.0,tmp7,shape(6,1,2),peps(rc,i),shape(2,3,4),0.0,tmp6);
 
             DArray<6> tmp6bis;
             Permute(tmp6,shape(0,2,4,3,5,1),tmp6bis);
@@ -767,15 +766,14 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
             Geqrf(b[rc][i],tmp2);
 
             //construct left operator
-
             tmp6.clear();
             Contract(1.0,R[i - 1],shape(0),b[rc - 1][i],shape(0),0.0,tmp6);
 
             tmp7.clear();
-            Contract(1.0,tmp6,shape(0,3),peps(rc,i),shape(0,1),0.0,tmp7);
+            Contract(1.0,tmp6,shape(0,3),peps(rc,i),shape(0,3),0.0,tmp7);
 
             tmp6.clear();
-            Contract(1.0,tmp7,shape(0,2,4),peps(rc,i),shape(0,1,2),0.0,tmp6);
+            Contract(1.0,tmp7,shape(0,2,5),peps(rc,i),shape(0,3,2),0.0,tmp6);
 
             Contract(1.0,tmp6,shape(0,2,4),b[rc][i],shape(0,1,2),0.0,R[i]);
 
@@ -786,10 +784,10 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
          Contract(1.0,R[Lx - 2],shape(0),b[rc - 1][Lx - 1],shape(0),0.0,tmp6);
 
          tmp7.clear();
-         Contract(1.0,tmp6,shape(0,3),peps(rc,Lx - 1),shape(0,1),0.0,tmp7);
+         Contract(1.0,tmp6,shape(0,3),peps(rc,Lx - 1),shape(0,3),0.0,tmp7);
 
          tmp6.clear();
-         Contract(1.0,tmp7,shape(0,2,4),peps(rc,Lx - 1),shape(0,1,2),0.0,tmp6);
+         Contract(1.0,tmp7,shape(0,2,5),peps(rc,Lx - 1),shape(0,3,2),0.0,tmp6);
 
          b[rc][Lx - 1] = tmp6.reshape_clear(shape(tmp6.shape(0),D,D,1));
 
@@ -799,10 +797,10 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
 
          //construct new right operator
          tmp7.clear();
-         Contract(1.0,b[rc - 1][Lx - 1],shape(1),peps(rc,Lx - 1),shape(1),0.0,tmp7);
+         Contract(1.0,b[rc - 1][Lx - 1],shape(1),peps(rc,Lx - 1),shape(3),0.0,tmp7);
 
          tmp8.clear();
-         Contract(1.0,tmp7,shape(1,4),peps(rc,Lx - 1),shape(1,2),0.0,tmp8);
+         Contract(1.0,tmp7,shape(1,5),peps(rc,Lx - 1),shape(3,2),0.0,tmp8);
 
          tmp8bis.clear();
          Contract(1.0,tmp8,shape(3,6),b[rc][Lx - 1],shape(1,2),0.0,tmp8bis);
@@ -816,10 +814,10 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
             Contract(1.0,b[rc - 1][i],shape(3),R[i],shape(0),0.0,tmp6);
 
             tmp7.clear();
-            Contract(1.0,tmp6,shape(1,3),peps(rc,i),shape(1,4),0.0,tmp7);
+            Contract(1.0,tmp6,shape(1,3),peps(rc,i),shape(3,4),0.0,tmp7);
 
             tmp6.clear();
-            Contract(1.0,tmp7,shape(1,5,2),peps(rc,i),shape(1,2,4),0.0,tmp6);
+            Contract(1.0,tmp7,shape(1,2,6),peps(rc,i),shape(3,4,2),0.0,tmp6);
 
             DArray<6> tmp6bis;
             Permute(tmp6,shape(0,2,4,3,5,1),tmp6bis);
@@ -835,10 +833,10 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
             Contract(1.0,b[rc - 1][i],shape(3),R[i],shape(0),0.0,tmp6);
 
             tmp7.clear();
-            Contract(1.0,tmp6,shape(1,3),peps(rc,i),shape(1,4),0.0,tmp7);
+            Contract(1.0,tmp6,shape(1,3),peps(rc,i),shape(3,4),0.0,tmp7);
 
             tmp6.clear();
-            Contract(1.0,tmp7,shape(1,2,5),peps(rc,i),shape(1,2,4),0.0,tmp6);
+            Contract(1.0,tmp7,shape(1,6,2),peps(rc,i),shape(3,2,4),0.0,tmp6);
 
             Contract(1.0,tmp6,shape(3,5,1),b[rc][i],shape(1,2,3),0.0,R[i - 1]);
 
@@ -853,7 +851,7 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
          ++iter;
 
       }
-*/
+
    }
    else if(option == 't'){
 
