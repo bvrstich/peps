@@ -228,8 +228,20 @@ void MPO<double>::fill(const char option,const PEPS<double> &peps){
       }
 
    }
-   else if(option == 'l'){
+   else if(option == 'r'){
 
+      enum {i,j,k,l,m,n,o,p,q};
+
+      DArray<8> tmp;
+
+      //share the pointer
+      for(int row = 0;row < Ly;row++){
+
+         tmp.share_mem( (*this)[row] );
+
+         Contract(1.0,peps(row,Lx - 1),shape(i,j,k,l,m),peps(row,Lx - 1),shape(n,o,k,p,q),0.0,tmp,shape(i,n,j,o,l,p,m,q));
+
+      }
 
    }
    else{
