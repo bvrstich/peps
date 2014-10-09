@@ -48,9 +48,9 @@ class PEPS : public vector< TArray<T,5> > {
 
       TArray<T,5> &operator()(int,int);
 
-      T dot(const PEPS &,int D_aux) const;
+      T dot(const PEPS &) const;
 
-      void normalize(int);
+      void normalize();
 
       void scal(T );
 
