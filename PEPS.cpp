@@ -795,7 +795,8 @@ double PEPS<double>::energy(){
    DArray<4> LOz;
    DArray<4> LOu;
 
-   for(int row = 1;row < Ly - 1;++row){
+   //for(int row = 1;row < Ly - 1;++row){
+   int row = 1;
 
       //first create right renormalized operator
 
@@ -1018,7 +1019,7 @@ double PEPS<double>::energy(){
 
       val += blas::dot(tmp6.size(), tmp6.data(), 1, env.gb(row-1)[Lx-1].data(), 1);
 
-   }
+ //  }
 /*
    // -- (3) -- || top row = Ly-1: again similar to overlap calculation
 
