@@ -208,7 +208,6 @@ void MPO<double>::fill(const char option,const PEPS<double> &peps){
          tmp.share_mem( (*this)[col] );
 
          Contract(1.0,peps(0,col),shape(i,j,k,l,m),peps(0,col),shape(n,o,k,p,q),0.0,tmp,shape(i,n,j,o,l,p,m,q));
-
       }
 
    }
@@ -239,7 +238,7 @@ void MPO<double>::fill(const char option,const PEPS<double> &peps){
 
          tmp.share_mem( (*this)[row] );
 
-         Contract(1.0,peps(row,Lx - 1),shape(i,j,k,l,m),peps(row,Lx - 1),shape(n,o,k,p,q),0.0,tmp,shape(i,n,j,o,l,p,m,q));
+         Contract(1.0,peps(row,Lx - 1),shape(i,j,k,l,m),peps(row,Lx - 1),shape(n,o,k,p,q),0.0,tmp,shape(l,p,i,n,m,q,j,o));
 
       }
 
@@ -255,7 +254,7 @@ void MPO<double>::fill(const char option,const PEPS<double> &peps){
 
          tmp.share_mem( (*this)[row] );
 
-         Contract(1.0,peps(row,0),shape(i,j,k,l,m),peps(row,0),shape(n,o,k,p,q),0.0,tmp,shape(i,n,j,o,l,p,m,q));
+         Contract(1.0,peps(row,0),shape(i,j,k,l,m),peps(row,0),shape(n,o,k,p,q),0.0,tmp,shape(l,p,i,n,m,q,j,o));
 
       }
 
