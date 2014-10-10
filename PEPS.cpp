@@ -631,19 +631,18 @@ double PEPS<double>::energy(){
       Gemm(CblasNoTrans,CblasTrans,1.0,tmp4,env.gb(0)[col],0.0,R[col-2]);
 
    }
-  /*
+  
    //4 left going operators: S+, S-, Sz, and 1
    DArray<2> Lp;
    DArray<2> Lm;
    DArray<2> Lz;
    DArray<2> Lu;
 
-   DArray<3> dlsm;
-   DArray<3> dlsp;
-   DArray<3> dlsz;
+   DArray<7> tmp7;
+/*
+   //construct the left operator with two open physical bonds
+   Contract(1.0,env.gt(0)[0],shape(1),(*this)(0,0),shape(1),0.0,tmp7);
 
-   //first S+
-   env.construct_double_layer('H',(*this)(0,0),Sp,dlsp);
 
    //tmp comes out index (t,b)
    Contract(1.0,env.gt(0)[0],shape(1),dlsp,shape(1),0.0,tmp);

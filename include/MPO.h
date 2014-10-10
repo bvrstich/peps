@@ -51,6 +51,8 @@ class MPO : public vector< TArray<T,4> > {
 
       void fill_Random();
 
+      void scal(T );
+
    private:
 
       //!dimension of the bonds

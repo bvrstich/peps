@@ -508,6 +508,15 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
 
       }
 
+      //redistribute the norm over the chain
+      double nrm =  Nrm2(b[rc][0]);
+
+      //rescale the first site
+      Scal((1.0/nrm), b[rc][0]);
+
+      //then multiply the norm over the whole chain
+      b[rc].scal(nrm);
+
    }
    else if(option == 't'){
 
@@ -665,6 +674,14 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
 
       }
 
+      //redistribute the norm over the chain
+      double nrm =  Nrm2(t[rc][0]);
+
+      //rescale the first site
+      Scal((1.0/nrm), t[rc][0]);
+
+      //then multiply the norm over the whole chain
+      t[rc].scal(nrm);
 
    }
    else if(option == 'r'){
@@ -823,6 +840,15 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
 
       }
 
+      //redistribute the norm over the chain
+      double nrm =  Nrm2(r[rc][0]);
+
+      //rescale the first site
+      Scal((1.0/nrm), r[rc][0]);
+
+      //then multiply the norm over the whole chain
+      r[rc].scal(nrm);
+
    }
    else{//left
 
@@ -979,6 +1005,15 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
          ++iter;
 
       }
+
+      //redistribute the norm over the chain
+      double nrm =  Nrm2(l[rc][0]);
+
+      //rescale the first site
+      Scal((1.0/nrm), l[rc][0]);
+
+      //then multiply the norm over the whole chain
+      l[rc].scal(nrm);
 
    }
 
