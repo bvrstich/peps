@@ -38,6 +38,7 @@ namespace global {
    extern DArray<2> Sx;
    extern DArray<2> iSy;
    extern DArray<2> Sz;
+   extern DArray<2> I;
 
    extern Environment env;
 

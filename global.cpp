@@ -32,6 +32,8 @@ namespace global{
    DArray<2> iSy;
    DArray<2> Sz;
 
+   DArray<2> I;
+
    Environment env;
 
    /**
@@ -55,11 +57,15 @@ namespace global{
       iSy.resize(d,d);
       Sz.resize(d,d);
 
+      I.resize(d,d);
+
       Sp = 0.0;
       Sm = 0.0;
       Sx = 0.0;
       iSy = 0.0;
       Sz = 0.0;
+
+      I = 0.0;
 
       Sp(1,0) = 1.0;
 
@@ -73,6 +79,9 @@ namespace global{
 
       Sz(0,0) = -0.5;
       Sz(1,1) = 0.5;
+
+      I(0,0) = 1.0;
+      I(1,1) = 1.0;
 
       env = Environment(D_in,D_aux_in);
 

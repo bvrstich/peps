@@ -611,103 +611,125 @@ double PEPS<double>::energy(){
    // -- (1) -- || bottom row: similar to overlap calculation
 
    //first construct the right renormalized operators
-   vector< DArray<2> > R(Lx - 2);
+   vector< DArray<3> > R(Lx - 2);
 
    //first the rightmost operator
    DArray<4> tmp4;
+   DArray<5> tmp5;
 
    //tmp comes out index (t,b)
    Contract(1.0,env.gt(0)[Lx - 1],shape(1,2),env.gb(0)[Lx - 1],shape(1,2),0.0,tmp4);
 
    //reshape tmp to a 2-index array
-   R[Lx - 3] = tmp4.reshape_clear(shape(env.gt(0)[Lx - 1].shape(0),env.gb(0)[Lx - 1].shape(0)));
+   R[Lx - 3] = tmp4.reshape_clear(shape(env.gt(0)[Lx - 1].shape(0),(*this)(0,Lx-1).shape(0),(*this)(0,Lx-1).shape(0)));
 
    //now construct the rest
    for(int col = Lx - 2;col > 1;--col){
 
-      tmp4.clear();
-      Contract(1.0,env.gt(0)[col],shape(3),R[col-1],shape(0),0.0,tmp4);
+      tmp5.clear();
+      Contract(1.0,env.gt(0)[col],shape(3),R[col-1],shape(0),0.0,tmp5);
 
-      Gemm(CblasNoTrans,CblasTrans,1.0,tmp4,env.gb(0)[col],0.0,R[col-2]);
+      R[col - 2].resize(env.gt(0)[col].shape(0),(*this)(0,col).shape(0),(*this)(0,col).shape(0));
+
+      int m = tmp5.shape(0);//rows of op(A)
+      int n = env.gb(0)[col].shape(0);//col of op(B)
+      int k = tmp5.shape(1) * tmp5.shape(2) * tmp5.shape(3) * tmp5.shape(4);
+
+      blas::gemm(CblasRowMajor, CblasNoTrans, CblasTrans,m,n,k,1.0, tmp5.data(),k, env.gb(0)[col].data(), k,0.0, R[col - 2].data(), n);
 
    }
-  
-   //4 left going operators: S+, S-, Sz, and 1
-   DArray<2> Lp;
-   DArray<2> Lm;
-   DArray<2> Lz;
-   DArray<2> Lu;
 
+   //4 left going operators: S+, S-, Sz, and 1
+   DArray<3> Lp;
+   DArray<3> Lm;
+   DArray<3> Lz;
+   DArray<3> Lu;
+
+   DArray<6> tmp6;
+   DArray<6> tmp6bis;
    DArray<7> tmp7;
-/*
+   DArray<10> tmp10;
+
    //construct the left operator with two open physical bonds
    Contract(1.0,env.gt(0)[0],shape(1),(*this)(0,0),shape(1),0.0,tmp7);
 
+   Contract(1.0,tmp7,shape(1),(*this)(0,0),shape(1),0.0,tmp10);
 
-   //tmp comes out index (t,b)
-   Contract(1.0,env.gt(0)[0],shape(1),dlsp,shape(1),0.0,tmp);
+   DArray<10> tmp10bis;
+   Permute(tmp10,shape(0,2,6,4,8,1,5,9,3,7),tmp10bis);
 
-   Lp = tmp.reshape_clear(shape(env.gt(0)[0].shape(2),dlsp.shape(2)));
+   //S+
+   Lp.resize(shape(tmp10.shape(1),tmp10.shape(5),tmp10.shape(9)));
 
-   //then S-
-   env.construct_double_layer('H',(*this)(0,0),Sm,dlsm);
+   int m = tmp10.shape(1) * tmp10.shape(5) * tmp10.shape(9);
+   int n = tmp10.shape(3) * tmp10.shape(7);
 
-   //tmp comes out index (t,b)
-   Contract(1.0,env.gt(0)[0],shape(1),dlsm,shape(1),0.0,tmp);
-
-   Lm = tmp.reshape_clear(shape(env.gt(0)[0].shape(2),dlsm.shape(2)));
+   blas::gemv(CblasRowMajor,CblasNoTrans, m, n, 1.0, tmp10bis.data(), n, Sp.data(), 1, 0.0, Lp.data(), 1);
+   
+   //S-
+   Lm.resize(shape(tmp10.shape(1),tmp10.shape(5),tmp10.shape(9)));
+   blas::gemv(CblasRowMajor,CblasNoTrans, m, n, 1.0, tmp10bis.data(), n, Sm.data(), 1, 0.0, Lm.data(), 1);
 
    //then Sz 
-   env.construct_double_layer('H',(*this)(0,0),Sz,dlsz);
-
-   //tmp comes out index (t,b)
-   Contract(1.0,env.gt(0)[0],shape(1),dlsz,shape(1),0.0,tmp);
-
-   Lz = tmp.reshape_clear(shape(env.gt(0)[0].shape(2),dlsz.shape(2)));
+   Lz.resize(shape(tmp10.shape(1),tmp10.shape(5),tmp10.shape(9)));
+   blas::gemv(CblasRowMajor,CblasNoTrans, m, n, 1.0, tmp10bis.data(), n, Sz.data(), 1, 0.0, Lz.data(), 1);
 
    //and finally unity
-   Contract(1.0,env.gt(0)[0],shape(1),env.gb(0)[0],shape(1),0.0,tmp);
-
-   Lu = tmp.reshape_clear(shape(env.gt(0)[0].shape(2),env.gb(0)[0].shape(2)));
+   Lu.resize(shape(tmp10.shape(1),tmp10.shape(5),tmp10.shape(9)));
+   blas::gemv(CblasRowMajor,CblasNoTrans, m, n, 1.0, tmp10bis.data(), n, I.data(), 1, 0.0, Lu.data(), 1);
 
    double val = 0.0;
 
    //now for the middle terms
-   for(int col = 1;col < Lx - 1;++col){
+   //for(int col = 1;col < Lx - 1;++col){
+   int col = 1;
 
       //first close down the +,- and z terms from the previous site
 
-      //construct the right intermediate contraction (paste top to right)
-      I.clear();
-      Contract(1.0,env.gt(0)[col],shape(2),R[col - 1],shape(0),0.0,I);
+      //construct the left intermediate contraction (paste top right)
+      tmp5.clear();
+      Contract(1.0,env.gt(0)[col],shape(3),R[col-1],shape(0),0.0,tmp5);
 
-      // 1) construct Sm double layer
-      env.construct_double_layer('H',(*this)(0,col),Sm,dlsm);
+      //and upper peps to tmp5
+      tmp6.clear();
+      Contract(1.0,tmp5,shape(1,3),(*this)(0,col),shape(1,4),0.0,tmp6);
 
-      R[col-1].clear();
-      Contract(1.0,I,shape(1,2),dlsm,shape(1,2),0.0,R[col - 1]);
+      //1) S- to intermediary
+      tmp6bis.clear();
+      Contract(1.0,tmp6,shape(4),Sm,shape(0),0.0,tmp6bis);
+
+      tmp5.clear();
+      Contract(1.0,tmp6bis,shape(1,2,5),(*this)(0,col),shape(1,4,2),0.0,tmp5);
+
+      R[col - 1] = tmp5.reshape_clear(shape(env.gt(0)[col].shape(0),(*this)(0,col).shape(0),(*this)(0,col).shape(0)));
 
       //contract with left S+
       val -= 0.5 * Dot(Lp,R[col - 1]);
 
-      // 2) then construct Sp double layer
-      env.construct_double_layer('H',(*this)(0,col),Sp,dlsp);
+      // 2) S+ to intermediary
+      tmp6bis.clear();
+      Contract(1.0,tmp6,shape(4),Sp,shape(0),0.0,tmp6bis);
 
-      R[col-1].clear();
-      Contract(1.0,I,shape(1,2),dlsp,shape(1,2),0.0,R[col - 1]);
+      tmp5.clear();
+      Contract(1.0,tmp6bis,shape(1,2,5),(*this)(0,col),shape(1,4,2),0.0,tmp5);
+
+      R[col - 1] = tmp5.reshape_clear(shape(env.gt(0)[col].shape(0),(*this)(0,col).shape(0),(*this)(0,col).shape(0)));
 
       //contract with left S-
       val -= 0.5 * Dot(Lm,R[col - 1]);
 
-      // 3) then construct Sz double layer
-      env.construct_double_layer('H',(*this)(0,col),Sz,dlsz);
+      // 3) Sz to intermediary
+      tmp6bis.clear();
+      Contract(1.0,tmp6,shape(4),Sz,shape(0),0.0,tmp6bis);
 
-      R[col-1].clear();
-      Contract(1.0,I,shape(1,2),dlsz,shape(1,2),0.0,R[col - 1]);
+      tmp5.clear();
+      Contract(1.0,tmp6bis,shape(1,2,5),(*this)(0,col),shape(1,4,2),0.0,tmp5);
+
+      R[col - 1] = tmp5.reshape_clear(shape(env.gt(0)[col].shape(0),(*this)(0,col).shape(0),(*this)(0,col).shape(0)));
 
       //contract with left Sz
       val += Dot(Lz,R[col - 1]);
-
+/*
       //construct left renormalized operators for next site: first paste top to Left unity
       I.clear();
       Contract(1.0,Lu,shape(0),env.gt(0)[col],shape(0),0.0,I);
@@ -728,7 +750,7 @@ double PEPS<double>::energy(){
       Lu.clear();
       Contract(1.0,I,shape(0,1),env.gb(0)[col],shape(0,1),0.0,Lu);
 
-   }
+   //}
 
    //last site of bottom row:close down the left +,- and z
 
@@ -1707,10 +1729,9 @@ double PEPS<double>::energy(){
    R[Ly - 3] = tmp.reshape_clear(shape(dlsz.shape(0),env.gl(Lx-2)[Ly - 1].shape(0)));
 
    val += Dot(Lz,R[Ly-3]);
-
+*/
    return val;
-   */
-      return 0.0;
+
 }
 
 //forward declarations for types to be used!
