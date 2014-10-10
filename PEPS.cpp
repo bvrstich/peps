@@ -273,8 +273,8 @@ void PEPS<double>::initialize_jastrow(double f) {
 }
 
 /**
- * initialize the peps to an antiferromagnetic D=1 structure, where one time step has been acted on, and compressed to dimension D if necessary
- * @param D compressed dimension of the state
+ * increase the bond dimension to D_in
+ * @param D_in compressed dimension of the state
  * @param noise level of noise added to the initial state
  */
 template<>
@@ -596,311 +596,12 @@ void PEPS<T>::load(const char *filename){
 }
 
 /**
- * evaluate the expectation value of a local operator O = \sum_i O_i , real operator only
- * @param peps the input PEPS 
- * @param O DArray<2> object of the physical dimension of a site.
- * beware, the environments have to be constructed beforehand!
- */
-template<>
-double PEPS<double>::local(const DArray<2> &O){
-   /*
-
-   //from bottom to top: contract in mps/mpo fashion
-
-   // -- (1) -- || bottom row: similar to overlap calculation
-
-   //first construct the right renormalized operators
-   vector< DArray<2> > R(Lx - 1);
-
-   //first the rightmost operator
-   DArray<4> tmp;
-   DArray<3> I;
-
-   //tmp comes out index (t,b)
-   Contract(1.0,env.gt(0)[Lx - 1],shape(1),env.gb(0)[Lx - 1],shape(1),0.0,tmp);
-
-   //reshape tmp to a 2-index array
-   R[Lx - 2] = tmp.reshape_clear(shape(env.gt(0)[Lx - 1].shape(0),env.gb(0)[Lx - 1].shape(0)));
-
-   //now construct the rest
-   for(int c = Lx - 2;c > 0;--c){
-
-   I.clear();
-   Contract(1.0,env.gt(0)[c],shape(2),R[c],shape(0),0.0,I);
-
-   Contract(1.0,I,shape(1,2),env.gb(0)[c],shape(1,2),0.0,R[c - 1]);
-
-   }
-
-   //now sweep from left to right to get the expectation value of the local operator on the bottom row
-   double val = 0.0;
-
-   //construct the double layer object of lowest row (*this) with operator O in between
-   DArray<3> dls;
-   env.construct_double_layer('H',(*this)(0,0),O,dls);
-
-   //we will need left renormalized operators as well
-   DArray<2> L;
-
-   //tmp comes out index (t,b)
-   Contract(1.0,env.gt(0)[0],shape(1),dls,shape(1),0.0,tmp);
-
-   L = tmp.reshape_clear(shape(env.gt(0)[0].shape(2),dls.shape(2)));
-
-   //first value
-   val += Dot(L,R[0]);
-
-   //construct left renormalized operator
-   Contract(1.0,env.gt(0)[0],shape(1),env.gb(0)[0],shape(1),0.0,tmp);
-
-   L = tmp.reshape_clear(shape(env.gt(0)[0].shape(2),env.gb(0)[0].shape(2)));
-
-   //middle of the chain:
-   for(int c = 1;c < Lx-1;++c){
-
-   env.construct_double_layer('H',(*this)(0,c),O,dls);
-
-   I.clear();
-   Contract(1.0,env.gt(0)[c],shape(2),R[c],shape(0),0.0,I);
-
-   Contract(1.0,I,shape(1,2),dls,shape(1,2),0.0,R[c - 1]);
-
-   val += Dot(L,R[c - 1]);
-
-   //construct left renormalized operator
-   I.clear();
-   Contract(1.0,L,shape(0),env.gt(0)[c],shape(0),0.0,I);
-
-   L.clear();
-   Contract(1.0,I,shape(0,1),env.gb(0)[c],shape(0,1),0.0,L);
-
-}
-
-//last site of bottom row
-env.construct_double_layer('H',(*this)(0,Lx-1),O,dls);
-
-//tmp comes out index (t,b)
-tmp.clear();
-Contract(1.0,env.gt(0)[Lx - 1],shape(1),dls,shape(1),0.0,tmp);
-
-//reshape tmp to a 2-index array
-R[Lx - 2] = tmp.reshape_clear(shape(env.gt(0)[Lx - 1].shape(0),dls.shape(0)));
-
-val += Dot(L,R[Lx-2]);
-
-// -- (2) -- || middle rows: similar to MPO/MPS expectation value
-vector< DArray<3> > RO(Lx - 1);
-DArray<3> LO;
-
-DArray<4> dlo;
-
-for(int r = 1;r < Ly - 1;++r){
-
-   //first create right renormalized operator
-
-   //first site make double layer object from (*this)
-   env.construct_double_layer('H',(*this)(r,Lx-1),dlo);
-
-   //paste top environment on
-   DArray<5> tmp5;
-   Contract(1.0,env.gt(r)[Lx - 1],shape(1),dlo,shape(1),0.0,tmp5);
-
-   //then bottom enviroment
-   DArray<6> tmp6;
-   Contract(1.0,tmp5,shape(3),env.gb(r-1)[Lx-1],shape(1),0.0,tmp6);
-
-   //move to a DArray<3> object
-   RO[Lx - 2] = tmp6.reshape_clear(shape(env.gt(r)[Lx - 1].shape(0),dlo.shape(0),env.gb(r-1)[Lx - 1].shape(0)));
-
-   DArray<4> I4;
-   DArray<4> I4bis;
-
-   //now construct the middle operators
-   for(int c = Lx-2;c > 0;--c){
-
-      I4.clear();
-      Contract(1.0,env.gt(r)[c],shape(2),RO[c],shape(0),0.0,I4);
-
-      enum {i,j,k,m,n,o};
-
-      env.construct_double_layer('H',(*this)(r,c),dlo);
-
-      I4bis.clear();
-      Contract(1.0,I4,shape(i,j,k,o),dlo,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
-
-      RO[c-1].clear();
-      Contract(1.0,I4bis,shape(2,3),env.gb(r-1)[c],shape(1,2),0.0,RO[c-1]);
-
-   }
-
-   //expectation value of operator on first site
-
-   //first site make double layer object from (*this)
-   env.construct_double_layer('H',(*this)(r,0),O,dlo);
-
-   //paste top environment on
-   tmp5.clear();
-   Contract(1.0,env.gt(r)[0],shape(1),dlo,shape(1),0.0,tmp5);
-
-   //then bottom enviroment
-   tmp6.clear();
-   Contract(1.0,tmp5,shape(3),env.gb(r-1)[0],shape(1),0.0,tmp6);
-
-   //move to a DArray<3> object: order (top-env,(*this)-row,bottom-env)
-   LO = tmp6.reshape_clear(shape(env.gt(r)[0].shape(2),dlo.shape(3),env.gb(r-1)[0].shape(2)));
-
-   //get expectation value for operator on this site
-   val += Dot(LO,RO[0]);
-
-   //construct left renormalized operator
-   env.construct_double_layer('H',(*this)(r,0),dlo);
-
-   //paste top environment on
-   tmp5.clear();
-   Contract(1.0,env.gt(r)[0],shape(1),dlo,shape(1),0.0,tmp5);
-
-   //then bottom enviroment
-   tmp6.clear();
-   Contract(1.0,tmp5,shape(3),env.gb(r-1)[0],shape(1),0.0,tmp6);
-
-   //move to a DArray<3> object: order (top-env,(*this)-row,bottom-env)
-   LO = tmp6.reshape_clear(shape(env.gt(r)[0].shape(2),dlo.shape(3),env.gb(r-1)[0].shape(2)));
-
-   //middle sites
-   for(int c = 1;c < Lx-1;++c){
-
-      I4.clear();
-      Contract(1.0,env.gt(r)[c],shape(2),RO[c],shape(0),0.0,I4);
-
-      enum {i,j,k,o,m,n};
-
-      env.construct_double_layer('H',(*this)(r,c),O,dlo);
-
-      I4bis.clear();
-      Contract(1.0,I4,shape(i,j,k,o),dlo,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
-
-      Contract(1.0,I4bis,shape(2,3),env.gb(r-1)[c],shape(1,2),0.0,RO[c-1]);
-
-      val += Dot(LO,RO[c - 1]);
-
-      //construct left renormalized operator
-      I4.clear();
-      Contract(1.0,env.gt(r)[c],shape(0),LO,shape(0),0.0,I4);
-
-      env.construct_double_layer('H',(*this)(r,c),dlo);
-
-      I4bis.clear();
-      Contract(1.0,I4,shape(i,j,k,o),dlo,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
-
-      LO.clear();
-      Contract(1.0,I4bis,shape(2,3),env.gb(r-1)[c],shape(0,1),0.0,LO);
-
-   }
-
-   //last site: first make double layer with local operator
-   env.construct_double_layer('H',(*this)(r,Lx-1),O,dlo);
-
-   //paste top environment on
-   tmp5.clear();
-   Contract(1.0,env.gt(r)[Lx - 1],shape(1),dlo,shape(1),0.0,tmp5);
-
-   //then bottom enviroment
-   tmp6.clear();
-   Contract(1.0,tmp5,shape(3),env.gb(r-1)[Lx-1],shape(1),0.0,tmp6);
-
-   //move to a DArray<3> object
-   RO[Lx - 2] = tmp6.reshape_clear(shape(env.gt(r)[Lx - 1].shape(0),dlo.shape(0),env.gb(r-1)[Lx - 1].shape(0)));
-
-   //get expectation value
-   val += Dot(LO,RO[Lx-2]);
-
-}//end of the middle rows!
-
-// -- (3) -- || top row = Ly-1: again similar to overlap calculation
-
-//first construct the right renormalized operators
-
-//tmp comes out index (t,b)
-tmp.clear();
-Contract(1.0,env.gt(Ly-2)[Lx - 1],shape(1),env.gb(Ly-2)[Lx - 1],shape(1),0.0,tmp);
-
-//reshape tmp to a 2-index array
-R[Lx - 2] = tmp.reshape_clear(shape(env.gt(Ly-2)[Lx - 1].shape(0),env.gb(Ly-2)[Lx - 1].shape(0)));
-
-//now construct the rest
-for(int c = Lx - 2;c > 0;--c){
-
-   I.clear();
-   Contract(1.0,env.gt(Ly-2)[c],shape(2),R[c],shape(0),0.0,I);
-
-   R[c-1].clear();
-   Contract(1.0,I,shape(1,2),env.gb(Ly-2)[c],shape(1,2),0.0,R[c - 1]);
-
-}
-
-//construct the double layer object of top row (*this) with operator O in between
-env.construct_double_layer('H',(*this)(Ly-1,0),O,dls);
-
-//tmp comes out index (t,b)
-Contract(1.0,dls,shape(1),env.gb(Ly-2)[0],shape(1),0.0,tmp);
-
-L = tmp.reshape_clear(shape(dls.shape(2),env.gb(Ly-2)[0].shape(2)));
-
-//first value
-val += Dot(L,R[0]);
-
-//construct left renormalized operator
-Contract(1.0,env.gt(Ly-2)[0],shape(1),env.gb(Ly-2)[0],shape(1),0.0,tmp);
-
-L = tmp.reshape_clear(shape(env.gt(Ly-2)[0].shape(2),env.gb(Ly-2)[0].shape(2)));
-
-//middle of the chain:
-for(int c = 1;c < Lx-1;++c){
-
-   env.construct_double_layer('H',(*this)(Ly-1,c),O,dls);
-
-   I.clear();
-   Contract(1.0,dls,shape(2),R[c],shape(0),0.0,I);
-
-   R[c-1].clear();
-   Contract(1.0,I,shape(1,2),env.gb(Ly-2)[c],shape(1,2),0.0,R[c - 1]);
-
-   val += Dot(L,R[c - 1]);
-
-   //construct left renormalized operator
-   I.clear();
-   Contract(1.0,L,shape(0),env.gt(Ly-2)[c],shape(0),0.0,I);
-
-   L.clear();
-   Contract(1.0,I,shape(0,1),env.gb(Ly-2)[c],shape(0,1),0.0,L);
-
-}
-
-//last site of top row
-env.construct_double_layer('H',(*this)(Ly-1,Lx-1),O,dls);
-
-//tmp comes out index (t,b)
-tmp.clear();
-Contract(1.0,dls,shape(1),env.gb(Ly-2)[Lx-1],shape(1),0.0,tmp);
-
-//reshape tmp to a 2-index array
-R[Lx - 2] = tmp.reshape_clear(shape(dls.shape(0),env.gb(Ly-2)[Lx-1].shape(0)));
-
-val += Dot(L,R[Lx-2]);
-
-return val;
-*/
-return 0.0;
-}
-
-/**
  * evaluate the expectation value of the energy for the nn-Heisenberg model
- * @param peps the input PEPS 
  * beware, the environments have to be constructed beforehand!
  */
 template<>
 double PEPS<double>::energy(){
-   /*
+
    // ---- || evaluate the energy in an MPO/MPS manner, first from bottom to top, then left to right || ----
 
    // #################################################################
@@ -913,25 +614,24 @@ double PEPS<double>::energy(){
    vector< DArray<2> > R(Lx - 2);
 
    //first the rightmost operator
-   DArray<4> tmp;
-   DArray<3> I;
+   DArray<4> tmp4;
 
    //tmp comes out index (t,b)
-   Contract(1.0,env.gt(0)[Lx - 1],shape(1),env.gb(0)[Lx - 1],shape(1),0.0,tmp);
+   Contract(1.0,env.gt(0)[Lx - 1],shape(1,2),env.gb(0)[Lx - 1],shape(1,2),0.0,tmp4);
 
    //reshape tmp to a 2-index array
-   R[Lx - 3] = tmp.reshape_clear(shape(env.gt(0)[Lx - 1].shape(0),env.gb(0)[Lx - 1].shape(0)));
+   R[Lx - 3] = tmp4.reshape_clear(shape(env.gt(0)[Lx - 1].shape(0),env.gb(0)[Lx - 1].shape(0)));
 
    //now construct the rest
    for(int col = Lx - 2;col > 1;--col){
 
-   I.clear();
-   Contract(1.0,env.gt(0)[col],shape(2),R[col-1],shape(0),0.0,I);
+      tmp4.clear();
+      Contract(1.0,env.gt(0)[col],shape(3),R[col-1],shape(0),0.0,tmp4);
 
-   Contract(1.0,I,shape(1,2),env.gb(0)[col],shape(1,2),0.0,R[col-2]);
+      Gemm(CblasNoTrans,CblasTrans,1.0,tmp4,env.gb(0)[col],0.0,R[col-2]);
 
    }
-
+  /*
    //4 left going operators: S+, S-, Sz, and 1
    DArray<2> Lp;
    DArray<2> Lm;

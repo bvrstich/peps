@@ -11,7 +11,6 @@
 #include "MPS.h"
 #include "MPO.h"
 
-#include "compress.h"
 #include "Environment.h"
 
 #include "Trotter.h"

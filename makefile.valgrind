@@ -14,7 +14,6 @@ CPPSRC	= main.cpp\
            PEPS.cpp\
            MPS.cpp\
            MPO.cpp\
-           compress.cpp\
            Environment.cpp\
            Trotter.cpp\
            propagate.cpp\

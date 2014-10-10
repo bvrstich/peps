@@ -41,17 +41,7 @@ class Environment {
 
       void add_layer(const char,int,const PEPS<double> &,int);
 
-      void calc(char,int,const PEPS<double> &,int D_aux);
-
       void test();
-
-      void construct_double_layer(char,const DArray<5> &peps,DArray<3> &dls);
-
-      void construct_double_layer(char,const DArray<5> &peps,const DArray<2> &O,DArray<3> &dls);
-
-      void construct_double_layer(char,const DArray<5> &peps,DArray<4> &dlo);
-
-      void construct_double_layer(char,const DArray<5> &peps,const DArray<2> &O,DArray<4> &dlo);
 
       const MPO<double> &gl(int) const;
       MPO<double> &gl(int);
