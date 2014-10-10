@@ -181,7 +181,7 @@ void Environment::test(){
    cout << "FROM LEFT TO RIGHT" << endl;
    cout << endl;
    for(int i = 0;i < Lx - 1;++i)
-      cout << i << "\t" << r[i].dot(l[i]) << endl;
+      cout << i << "\t" << l[i].dot(r[i]) << endl;
    cout << endl;
 }
 
