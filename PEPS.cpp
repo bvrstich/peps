@@ -707,24 +707,21 @@ double PEPS<double>::energy(){
       //1) peps S- to intermediary
       tmp5.clear();
       Contract(1.0,tmp6,shape(1,2,4),peps_m,shape(2,4,0),0.0,tmp5);
-      R[col - 1] = tmp5.reshape_clear(shape(env.gt(0)[col].shape(0),(*this)(0,col).shape(0),(*this)(0,col).shape(0)));
 
       //contract with left S+
-      val -= 0.5 * Dot(Lp,R[col - 1]);
+      val -= 0.5 * blas::dot(Lp.size(),Lp.data(),1,tmp5.data(),1);
 
       // 2) peps S+ to intermediary
       Contract(1.0,tmp6,shape(1,2,4),peps_p,shape(2,4,0),0.0,tmp5);
-      R[col - 1] = tmp5.reshape_clear(shape(env.gt(0)[col].shape(0),(*this)(0,col).shape(0),(*this)(0,col).shape(0)));
 
       //contract with left S-
-      val -= 0.5 * Dot(Lm,R[col - 1]);
+      val -= 0.5 * blas::dot(Lm.size(),Lm.data(),1,tmp5.data(),1);
 
       // 3) Sz to intermediary
       Contract(1.0,tmp6,shape(1,2,4),peps_z,shape(2,4,0),0.0,tmp5);
-      R[col - 1] = tmp5.reshape_clear(shape(env.gt(0)[col].shape(0),(*this)(0,col).shape(0),(*this)(0,col).shape(0)));
 
       //contract with left Sz
-      val += Dot(Lz,R[col - 1]);
+      val += blas::dot(Lz.size(),Lz.data(),1,tmp5.data(),1);
 
       //construct left renormalized operators for next site: first construct intermediary
       tmp5.clear();
@@ -1183,547 +1180,556 @@ double PEPS<double>::energy(){
    Contract(1.0,peps_z,shape(0,3),tmp7,shape(2,5),0.0,tmp8);
    
    val += blas::dot(Lz.size(),Lz.data(),1,tmp8.data(),1);
-/*
+
    // #################################################################
-   // ### ---- from left to right: contract in mps/mpo fashion ---- ### 
+   // ###   ---- from right left : contract in mps/mpo fashion ---- ### 
    // #################################################################
 
    // -- (1) -- || left column: similar to overlap calculation
 
    //first construct the right renormalized operators
-
+   R.resize(Ly - 2);
+   
    //first the rightmost operator
 
-   //tmp comes out index (r,l)
-   Contract(1.0,env.gr(0)[Ly - 1],shape(1),env.gl(0)[Ly - 1],shape(1),0.0,tmp);
+   //tmp comes out index (l,r)
+   Contract(1.0,env.gl(Lx - 2)[Ly - 1],shape(1,2),env.gr(Lx - 2)[Ly - 1],shape(1,2),0.0,tmp4);
 
    //reshape tmp to a 2-index array
-   R[Ly - 3] = tmp.reshape_clear(shape(env.gr(0)[Ly - 1].shape(0),env.gl(0)[Ly - 1].shape(0)));
+   R[Ly - 3] = tmp4.reshape_clear(shape(env.gl(Lx - 2)[Ly - 1].shape(0),(*this)(Ly-1,Lx-1).shape(3),(*this)(Ly-1,Lx-1).shape(3)));
 
    //now construct the rest
    for(int row = Ly - 2;row > 1;--row){
 
-   I.clear();
-   Contract(1.0,env.gr(0)[row],shape(2),R[row-1],shape(0),0.0,I);
+      tmp5.clear();
+      Contract(1.0,env.gl(Lx - 2)[row],shape(3),R[row-1],shape(0),0.0,tmp5);
 
-   R[row-2].clear();
-   Contract(1.0,I,shape(1,2),env.gl(0)[row],shape(1,2),0.0,R[row-2]);
+      R[row - 2].resize(env.gl(Lx - 2)[row].shape(0),(*this)(row,Lx-1).shape(3),(*this)(row,Lx-1).shape(3));
+
+      int m = tmp5.shape(0);//rows of op(A)
+      int n = env.gr(Lx - 2)[row].shape(0);//col of op(B)
+      int k = tmp5.shape(1) * tmp5.shape(2) * tmp5.shape(3) * tmp5.shape(4);
+
+      blas::gemm(CblasRowMajor, CblasNoTrans, CblasTrans,m,n,k,1.0, tmp5.data(),k, env.gr(Lx - 2)[row].data(), k,0.0, R[row - 2].data(), n);
 
    }
 
-   //4 left going operators: S+, S-, Sz, and 1
+   //construct the left operator with two open physical bonds
+   tmp7.clear();
+   Contract(1.0,env.gl(Ly - 2)[0],shape(1),(*this)(0,Lx-1),shape(0),0.0,tmp7);
 
-   //first S+
-   env.construct_double_layer('V',(*this)(0,0),Sp,dlsp);
+   tmp10.clear();
+   Contract(1.0,tmp7,shape(1),(*this)(0,Lx-1),shape(0),0.0,tmp10);
 
-   //tmp comes out index (r,l)
-   Contract(1.0,env.gr(0)[0],shape(1),dlsp,shape(1),0.0,tmp);
+   tmp10bis.clear();
+   Permute(tmp10,shape(0,4,8,5,9,1,2,6,3,7),tmp10bis);
 
-   Lp = tmp.reshape_clear(shape(env.gr(0)[0].shape(2),dlsp.shape(2)));
+   //S+
+   Lp.resize(shape(tmp10.shape(1),tmp10.shape(2),tmp10.shape(6)));
 
-   //then S-
-   env.construct_double_layer('V',(*this)(0,0),Sm,dlsm);
+   m = tmp10.shape(1) * tmp10.shape(2) * tmp10.shape(6);
+   n = tmp10.shape(3) * tmp10.shape(7);
 
-   //tmp comes out index (r,l)
-   Contract(1.0,env.gr(0)[0],shape(1),dlsm,shape(1),0.0,tmp);
-
-   Lm = tmp.reshape_clear(shape(env.gr(0)[0].shape(2),dlsm.shape(2)));
+   blas::gemv(CblasRowMajor,CblasNoTrans, m, n, 1.0, tmp10bis.data(), n, Sp.data(), 1, 0.0, Lp.data(), 1);
+   
+   //S-
+   Lm.resize(shape(tmp10.shape(1),tmp10.shape(2),tmp10.shape(6)));
+   blas::gemv(CblasRowMajor,CblasNoTrans, m, n, 1.0, tmp10bis.data(), n, Sm.data(), 1, 0.0, Lm.data(), 1);
 
    //then Sz 
-   env.construct_double_layer('V',(*this)(0,0),Sz,dlsz);
-
-   //tmp comes out index (r,l)
-   Contract(1.0,env.gr(0)[0],shape(1),dlsz,shape(1),0.0,tmp);
-
-   Lz = tmp.reshape_clear(shape(env.gr(0)[0].shape(2),dlsz.shape(2)));
+   Lz.resize(shape(tmp10.shape(1),tmp10.shape(2),tmp10.shape(6)));
+   blas::gemv(CblasRowMajor,CblasNoTrans, m, n, 1.0, tmp10bis.data(), n, Sz.data(), 1, 0.0, Lz.data(), 1);
 
    //and finally unity
-   Contract(1.0,env.gr(0)[0],shape(1),env.gl(0)[0],shape(1),0.0,tmp);
-
-   Lu = tmp.reshape_clear(shape(env.gr(0)[0].shape(2),env.gl(0)[0].shape(2)));
+   Lu.resize(shape(tmp10.shape(1),tmp10.shape(2),tmp10.shape(6)));
+   blas::gemv(CblasRowMajor,CblasNoTrans, m, n, 1.0, tmp10bis.data(), n, I.data(), 1, 0.0, Lu.data(), 1);
 
    //now for the middle terms
    for(int row = 1;row < Ly - 1;++row){
 
-      //first close down the +,- and z terms from the previous site
+      peps_p.clear();
+      peps_m.clear();
+      peps_z.clear();
 
-      //construct the right intermediate contraction (paste 'right' to R)
-      I.clear();
-      Contract(1.0,env.gr(0)[row],shape(2),R[row - 1],shape(0),0.0,I);
+      //first contract with the peps with Sp,Sm and Sz operators
+      Contract(1.0,Sp,shape(1),(*this)(row,Lx-1),shape(2),0.0,peps_p);
+      Contract(1.0,Sm,shape(1),(*this)(row,Lx-1),shape(2),0.0,peps_m);
+      Contract(1.0,Sz,shape(1),(*this)(row,Lx-1),shape(2),0.0,peps_z);
 
-      // 1) construct Sm double layer
-      env.construct_double_layer('V',(*this)(row,0),Sm,dlsm);
+      //close down the +,- and z terms from the previous site
 
-      R[row-1].clear();
-      Contract(1.0,I,shape(1,2),dlsm,shape(1,2),0.0,R[row - 1]);
+      //construct the intermediate contraction (paste top right)
+      tmp5.clear();
+      Contract(1.0,env.gl(Lx - 2)[row],shape(3),R[row-1],shape(0),0.0,tmp5);
+
+      //and upper peps to tmp5
+      tmp6.clear();
+      Contract(1.0,tmp5,shape(1,3),(*this)(row,Lx-1),shape(0,1),0.0,tmp6);
+
+      //1) peps S- to intermediary
+      tmp5.clear();
+      Contract(1.0,tmp6,shape(3,1,2),peps_m,shape(0,1,2),0.0,tmp5);
 
       //contract with left S+
-      val -= 0.5 * Dot(Lp,R[row - 1]);
+      val -= 0.5 * blas::dot(Lp.size(),Lp.data(),1,tmp5.data(),1);
 
-      // 2) then construct Sp double layer
-      env.construct_double_layer('V',(*this)(row,0),Sp,dlsp);
-
-      R[row-1].clear();
-      Contract(1.0,I,shape(1,2),dlsp,shape(1,2),0.0,R[row - 1]);
+      // 2) peps S+ to intermediary
+      Contract(1.0,tmp6,shape(3,1,2),peps_p,shape(0,1,2),0.0,tmp5);
 
       //contract with left S-
-      val -= 0.5 * Dot(Lm,R[row - 1]);
+      val -= 0.5 * blas::dot(Lm.size(),Lm.data(),1,tmp5.data(),1);
 
-      // 3) then construct Sz double layer
-      env.construct_double_layer('V',(*this)(row,0),Sz,dlsz);
-
-      R[row-1].clear();
-      Contract(1.0,I,shape(1,2),dlsz,shape(1,2),0.0,R[row - 1]);
+      // 3) Sz to intermediary
+      Contract(1.0,tmp6,shape(3,1,2),peps_z,shape(0,1,2),0.0,tmp5);
 
       //contract with left Sz
-      val += Dot(Lz,R[row - 1]);
+      val += blas::dot(Lz.size(),Lz.data(),1,tmp5.data(),1);
 
-      //construct left renormalized operators for next site: first paste top to Left unity
-      I.clear();
-      Contract(1.0,Lu,shape(0),env.gr(0)[row],shape(0),0.0,I);
+      //construct left renormalized operators for next site: first construct intermediary
+      tmp5.clear();
+      Contract(1.0,Lu,shape(0),env.gl(Lx - 2)[row],shape(0),0.0,tmp5);
+
+      tmp6.clear();
+      Contract(1.0,tmp5,shape(0,2),(*this)(row,Lx - 1),shape(3,0),0.0,tmp6);
 
       // 1) construct new Sm left operator
-      Lm.clear();
-      Contract(1.0,I,shape(0,1),dlsm,shape(0,1),0.0,Lm);
+      tmp5.clear();
+      Contract(1.0,tmp6,shape(0,1,4),peps_m,shape(3,1,0),0.0,tmp5);
+      Lm = tmp5.reshape_clear(shape(env.gl(Lx - 2)[row].shape(3),(*this)(row,Lx - 1).shape(1),(*this)(row,Lx - 1).shape(1)));
 
       // 2) construct new Sp left operator
-      Lp.clear();
-      Contract(1.0,I,shape(0,1),dlsp,shape(0,1),0.0,Lp);
+      Contract(1.0,tmp6,shape(0,1,4),peps_p,shape(3,1,0),0.0,tmp5);
+      Lp = tmp5.reshape_clear(shape(env.gl(Lx - 2)[row].shape(3),(*this)(row,Lx - 1).shape(1),(*this)(row,Lx - 1).shape(1)));
 
       // 3) construct new Sz left operator
-      Lz.clear();
-      Contract(1.0,I,shape(0,1),dlsz,shape(0,1),0.0,Lz);
+      Contract(1.0,tmp6,shape(0,1,4),peps_z,shape(3,1,0),0.0,tmp5);
+      Lz = tmp5.reshape_clear(shape(env.gl(Lx - 2)[row].shape(3),(*this)(row,Lx - 1).shape(1),(*this)(row,Lx - 1).shape(1)));
 
       // 4) finally construct new unity on the left
-      Lu.clear();
-      Contract(1.0,I,shape(0,1),env.gl(0)[row],shape(0,1),0.0,Lu);
+      Contract(1.0,tmp6,shape(0,1,4),(*this)(row,Lx-1),shape(3,0,2),0.0,tmp5);
+      Lu = tmp5.reshape_clear(shape(env.gl(Lx - 2)[row].shape(3),(*this)(row,Lx - 1).shape(1),(*this)(row,Lx - 1).shape(1)));
 
    }
+   /*
+   //first contract with the peps with Sp,Sm and Sz operators
+   peps_p.clear();
+   peps_m.clear();
+   peps_z.clear();
 
-   //last site of left column: close down the left +,- and z
+   Contract(1.0,Sp,shape(1),(*this)(0,Lx-1),shape(2),0.0,peps_p);
+   Contract(1.0,Sm,shape(1),(*this)(0,Lx-1),shape(2),0.0,peps_m);
+   Contract(1.0,Sz,shape(1),(*this)(0,Lx-1),shape(2),0.0,peps_z);
 
-   //1) Sm to close down Lp
-   env.construct_double_layer('V',(*this)(Ly-1,0),Sm,dlsm);
+   //last site of bottom row: close down the left +,- and z
 
-   //tmp comes out index (r,l)
-   tmp.clear();
-   Contract(1.0,env.gr(0)[Ly - 1],shape(1),dlsm,shape(1),0.0,tmp);
+   // 1) contract with Lp with peps_m for energy contribution
+   tmp5.clear();
+   Contract(1.0,Lp,shape(0),env.gt(0)[Lx - 1],shape(0),0.0,tmp5);
 
-   //reshape tmp to a 2-index array
-   R[Ly - 3] = tmp.reshape_clear(shape(env.gr(0)[Ly - 1].shape(0),dlsm.shape(0)));
+   tmp6.clear();
+   Contract(1.0,(*this)(0,Lx-1),shape(0,1),tmp5,shape(0,2),0.0,tmp6);
 
-   val -= 0.5 * Dot(Lp,R[Ly-3]);
+   val -= 0.5 * blas::dot(tmp6.size(), tmp6.data(), 1, peps_m.data(), 1);
 
-   //2) Sp to close down Lm
-   env.construct_double_layer('V',(*this)(Ly-1,0),Sp,dlsp);
+   // 2) contract Lm with peps_p 
+   Contract(1.0,Lm,shape(0),env.gt(0)[Lx - 1],shape(0),0.0,tmp5);
+   Contract(1.0,(*this)(0,Lx-1),shape(0,1),tmp5,shape(0,2),0.0,tmp6);
 
-   //tmp comes out index (r,l)
-   tmp.clear();
-   Contract(1.0,env.gr(0)[Ly - 1],shape(1),dlsp,shape(1),0.0,tmp);
+   val -= 0.5 * blas::dot(tmp6.size(), tmp6.data(), 1, peps_p.data(), 1);
 
-   //reshape tmp to a 2-index array
-   R[Ly - 3] = tmp.reshape_clear(shape(env.gr(0)[Ly - 1].shape(0),dlsp.shape(0)));
+   // 3) contract Lz with peps_z 
+   Contract(1.0,Lz,shape(0),env.gt(0)[Lx - 1],shape(0),0.0,tmp5);
+   Contract(1.0,(*this)(0,Lx-1),shape(0,1),tmp5,shape(0,2),0.0,tmp6);
 
-   val -= 0.5 * Dot(Lm,R[Ly-3]);
+   val += blas::dot(tmp6.size(), tmp6.data(), 1, peps_z.data(), 1);
 
-   //3) Sz to close down Lz
-   env.construct_double_layer('V',(*this)(Ly-1,0),Sz,dlsz);
-
-   //tmp comes out index (t,b)
-   tmp.clear();
-   Contract(1.0,env.gr(0)[Ly - 1],shape(1),dlsz,shape(1),0.0,tmp);
-
-   //reshape tmp to a 2-index array
-   R[Ly - 3] = tmp.reshape_clear(shape(env.gr(0)[Ly - 1].shape(0),dlsz.shape(0)));
-
-   val += Dot(Lz,R[Ly-3]);
 
    // -- (2) -- now move from left to right calculating everything like an MPO/MPS expectation value
    for(int col = 1;col < Lx - 1;++col){
 
-      //first create right renormalized operator
+//first create right renormalized operator
 
-      //first site make double layer object from (*this)
-      env.construct_double_layer('V',(*this)(Ly-1,col),dlou);
+//first site make double layer object from (*this)
+env.construct_double_layer('V',(*this)(Ly-1,col),dlou);
 
-      //paste right environment on
-      DArray<5> tmp5;
-      Contract(1.0,env.gr(col)[Ly - 1],shape(1),dlou,shape(1),0.0,tmp5);
+//paste right environment on
+DArray<5> tmp5;
+Contract(1.0,env.gr(col)[Ly - 1],shape(1),dlou,shape(1),0.0,tmp5);
 
-      //then left enviroment
-      DArray<6> tmp6;
-      Contract(1.0,tmp5,shape(3),env.gl(col-1)[Ly-1],shape(1),0.0,tmp6);
+//then left enviroment
+DArray<6> tmp6;
+Contract(1.0,tmp5,shape(3),env.gl(col-1)[Ly-1],shape(1),0.0,tmp6);
 
-      //move to a DArray<3> object
-      RO[Lx - 3] = tmp6.reshape_clear(shape(env.gr(col)[Ly - 1].shape(0),dlou.shape(0),env.gl(col-1)[Ly - 1].shape(0)));
+//move to a DArray<3> object
+RO[Lx - 3] = tmp6.reshape_clear(shape(env.gr(col)[Ly - 1].shape(0),dlou.shape(0),env.gl(col-1)[Ly - 1].shape(0)));
 
-      DArray<4> I4;
-      DArray<4> I4bis;
+DArray<4> I4;
+DArray<4> I4bis;
 
-      //now construct the middle operators
-      for(int row = Ly-2;row > 1;--row){
+//now construct the middle operators
+for(int row = Ly-2;row > 1;--row){
 
-         I4.clear();
-         Contract(1.0,env.gr(col)[row],shape(2),RO[row-1],shape(0),0.0,I4);
+I4.clear();
+Contract(1.0,env.gr(col)[row],shape(2),RO[row-1],shape(0),0.0,I4);
 
-         enum {i,j,k,o,m,n};
+enum {i,j,k,o,m,n};
 
-         env.construct_double_layer('V',(*this)(row,col),dlou);
+env.construct_double_layer('V',(*this)(row,col),dlou);
 
-         I4bis.clear();
-         Contract(1.0,I4,shape(i,j,k,o),dlou,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
+I4bis.clear();
+Contract(1.0,I4,shape(i,j,k,o),dlou,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
 
-         RO[row-2].clear();
-         Contract(1.0,I4bis,shape(2,3),env.gl(col-1)[row],shape(1,2),0.0,RO[row-2]);
+RO[row-2].clear();
+Contract(1.0,I4bis,shape(2,3),env.gl(col-1)[row],shape(1,2),0.0,RO[row-2]);
 
-      }
+}
 
-      // --- now move from left to right to get the expecation value of the interactions ---
-      // --- First construct the left going operators for the first site -----
+// --- now move from left to right to get the expecation value of the interactions ---
+// --- First construct the left going operators for the first site -----
 
-      // 1) S+ -- make double layer object from (*this) with Sp
-      env.construct_double_layer('V',(*this)(0,col),Sp,dlop);
+// 1) S+ -- make double layer object from (*this) with Sp
+env.construct_double_layer('V',(*this)(0,col),Sp,dlop);
 
-      //paste right environment on
-      tmp5.clear();
-      Contract(1.0,env.gr(col)[0],shape(1),dlop,shape(1),0.0,tmp5);
+//paste right environment on
+tmp5.clear();
+Contract(1.0,env.gr(col)[0],shape(1),dlop,shape(1),0.0,tmp5);
 
-      //then left enviroment
-      tmp6.clear();
-      Contract(1.0,tmp5,shape(3),env.gl(col-1)[0],shape(1),0.0,tmp6);
+//then left enviroment
+tmp6.clear();
+Contract(1.0,tmp5,shape(3),env.gl(col-1)[0],shape(1),0.0,tmp6);
 
-      //move to a DArray<3> object: order (right-env,(*this)-col,left-env)
-      LOp = tmp6.reshape_clear(shape(env.gr(col)[0].shape(2),dlop.shape(3),env.gl(col-1)[0].shape(2)));
+//move to a DArray<3> object: order (right-env,(*this)-col,left-env)
+LOp = tmp6.reshape_clear(shape(env.gr(col)[0].shape(2),dlop.shape(3),env.gl(col-1)[0].shape(2)));
 
-      // 2) S- -- make double layer object from (*this) with Sm
-      env.construct_double_layer('V',(*this)(0,col),Sm,dlom);
+// 2) S- -- make double layer object from (*this) with Sm
+env.construct_double_layer('V',(*this)(0,col),Sm,dlom);
 
-      //paste right environment on
-      tmp5.clear();
-      Contract(1.0,env.gr(col)[0],shape(1),dlom,shape(1),0.0,tmp5);
+//paste right environment on
+tmp5.clear();
+Contract(1.0,env.gr(col)[0],shape(1),dlom,shape(1),0.0,tmp5);
 
-      //then left enviroment
-      tmp6.clear();
-      Contract(1.0,tmp5,shape(3),env.gl(col-1)[0],shape(1),0.0,tmp6);
+//then left enviroment
+tmp6.clear();
+Contract(1.0,tmp5,shape(3),env.gl(col-1)[0],shape(1),0.0,tmp6);
 
-      //move to a DArray<3> object: 
-      LOm = tmp6.reshape_clear(shape(env.gr(col)[0].shape(2),dlom.shape(3),env.gl(col-1)[0].shape(2)));
+//move to a DArray<3> object: 
+LOm = tmp6.reshape_clear(shape(env.gr(col)[0].shape(2),dlom.shape(3),env.gl(col-1)[0].shape(2)));
 
-      // 3) Sz -- make double layer object from (*this) with Sz
-      env.construct_double_layer('V',(*this)(0,col),Sz,dloz);
+// 3) Sz -- make double layer object from (*this) with Sz
+env.construct_double_layer('V',(*this)(0,col),Sz,dloz);
 
-      //paste right environment on
-      tmp5.clear();
-      Contract(1.0,env.gr(col)[0],shape(1),dloz,shape(1),0.0,tmp5);
+//paste right environment on
+tmp5.clear();
+Contract(1.0,env.gr(col)[0],shape(1),dloz,shape(1),0.0,tmp5);
 
-      //then bottom enviroment
-      tmp6.clear();
-      Contract(1.0,tmp5,shape(3),env.gl(col-1)[0],shape(1),0.0,tmp6);
+//then bottom enviroment
+tmp6.clear();
+Contract(1.0,tmp5,shape(3),env.gl(col-1)[0],shape(1),0.0,tmp6);
 
-      //move to a DArray<3> object: order (top-env,(*this)-row,bottom-env)
-      LOz = tmp6.reshape_clear(shape(env.gr(col)[0].shape(2),dlom.shape(3),env.gl(col-1)[0].shape(2)));
+//move to a DArray<3> object: order (top-env,(*this)-row,bottom-env)
+LOz = tmp6.reshape_clear(shape(env.gr(col)[0].shape(2),dlom.shape(3),env.gl(col-1)[0].shape(2)));
 
-      // 4) 1 -- finally construct left renormalized operator with unity
-      env.construct_double_layer('V',(*this)(0,col),dlou);
+// 4) 1 -- finally construct left renormalized operator with unity
+env.construct_double_layer('V',(*this)(0,col),dlou);
 
-      //paste right environment on
-      tmp5.clear();
-      Contract(1.0,env.gr(col)[0],shape(1),dlou,shape(1),0.0,tmp5);
+//paste right environment on
+tmp5.clear();
+Contract(1.0,env.gr(col)[0],shape(1),dlou,shape(1),0.0,tmp5);
 
-      //then left enviroment
-      tmp6.clear();
-      Contract(1.0,tmp5,shape(3),env.gl(col-1)[0],shape(1),0.0,tmp6);
+//then left enviroment
+tmp6.clear();
+Contract(1.0,tmp5,shape(3),env.gl(col-1)[0],shape(1),0.0,tmp6);
 
-      //move to a DArray<3> object: 
-      LOu = tmp6.reshape_clear(shape(env.gr(col)[0].shape(2),dlou.shape(3),env.gl(col-1)[0].shape(2)));
+//move to a DArray<3> object: 
+LOu = tmp6.reshape_clear(shape(env.gr(col)[0].shape(2),dlou.shape(3),env.gl(col-1)[0].shape(2)));
 
-      // --- now for the middle sites, close down the operators on the left and construct new ones --- 
-      for(int row = 1;row < Ly - 1;++row){
+// --- now for the middle sites, close down the operators on the left and construct new ones --- 
+for(int row = 1;row < Ly - 1;++row){
 
-         //first add right to the right side, put it in I4
-         I4.clear();
-         Contract(1.0,env.gr(col)[row],shape(2),RO[row-1],shape(0),0.0,I4);
+   //first add right to the right side, put it in I4
+   I4.clear();
+   Contract(1.0,env.gr(col)[row],shape(2),RO[row-1],shape(0),0.0,I4);
 
-         enum {i,j,k,o,m,n};
+   enum {i,j,k,o,m,n};
 
-         //1) close down LOp with Sm
-         env.construct_double_layer('V',(*this)(row,col),Sm,dlom);
+   //1) close down LOp with Sm
+   env.construct_double_layer('V',(*this)(row,col),Sm,dlom);
 
-         I4bis.clear();
-         Contract(1.0,I4,shape(i,j,k,o),dlom,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
+   I4bis.clear();
+   Contract(1.0,I4,shape(i,j,k,o),dlom,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
 
-         RO[row-1].clear();
-         Contract(1.0,I4bis,shape(2,3),env.gl(col-1)[row],shape(1,2),0.0,RO[row-1]);
+   RO[row-1].clear();
+   Contract(1.0,I4bis,shape(2,3),env.gl(col-1)[row],shape(1,2),0.0,RO[row-1]);
 
-         //expectation value:
-         val -= 0.5 * Dot(LOp,RO[row-1]);
+   //expectation value:
+   val -= 0.5 * Dot(LOp,RO[row-1]);
 
-         //2) close down LOm with Sp
-         env.construct_double_layer('V',(*this)(row,col),Sp,dlop);
+   //2) close down LOm with Sp
+   env.construct_double_layer('V',(*this)(row,col),Sp,dlop);
 
-         I4bis.clear();
-         Contract(1.0,I4,shape(i,j,k,o),dlop,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
+   I4bis.clear();
+   Contract(1.0,I4,shape(i,j,k,o),dlop,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
 
-         RO[row-1].clear();
-         Contract(1.0,I4bis,shape(2,3),env.gl(col-1)[row],shape(1,2),0.0,RO[row-1]);
+   RO[row-1].clear();
+   Contract(1.0,I4bis,shape(2,3),env.gl(col-1)[row],shape(1,2),0.0,RO[row-1]);
 
-         //expectation value:
-         val -= 0.5 * Dot(LOm,RO[row-1]);
+   //expectation value:
+   val -= 0.5 * Dot(LOm,RO[row-1]);
 
-         //3) finally close down LOz with Sz
-         env.construct_double_layer('V',(*this)(row,col),Sz,dloz);
+   //3) finally close down LOz with Sz
+   env.construct_double_layer('V',(*this)(row,col),Sz,dloz);
 
-         I4bis.clear();
-         Contract(1.0,I4,shape(i,j,k,o),dloz,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
+   I4bis.clear();
+   Contract(1.0,I4,shape(i,j,k,o),dloz,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
 
-         RO[row-1].clear();
-         Contract(1.0,I4bis,shape(2,3),env.gl(col-1)[row],shape(1,2),0.0,RO[row-1]);
+   RO[row-1].clear();
+   Contract(1.0,I4bis,shape(2,3),env.gl(col-1)[row],shape(1,2),0.0,RO[row-1]);
 
-         //expectation value:
-         val += Dot(LOz,RO[row-1]);
+   //expectation value:
+   val += Dot(LOz,RO[row-1]);
 
-         // now construct the new left going renormalized operators
-         //first attach top to left unity
-         I4.clear();
-         Contract(1.0,env.gr(col)[row],shape(0),LOu,shape(0),0.0,I4);
+   // now construct the new left going renormalized operators
+   //first attach top to left unity
+   I4.clear();
+   Contract(1.0,env.gr(col)[row],shape(0),LOu,shape(0),0.0,I4);
 
-         // 1) construct left Sp operator
-         I4bis.clear();
-         Contract(1.0,I4,shape(i,j,k,o),dlop,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
+   // 1) construct left Sp operator
+   I4bis.clear();
+   Contract(1.0,I4,shape(i,j,k,o),dlop,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
 
-         LOp.clear();
-         Contract(1.0,I4bis,shape(2,3),env.gl(col-1)[row],shape(0,1),0.0,LOp);
+   LOp.clear();
+   Contract(1.0,I4bis,shape(2,3),env.gl(col-1)[row],shape(0,1),0.0,LOp);
 
-         // 2) construct left Sm operator
-         I4bis.clear();
-         Contract(1.0,I4,shape(i,j,k,o),dlom,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
+   // 2) construct left Sm operator
+   I4bis.clear();
+   Contract(1.0,I4,shape(i,j,k,o),dlom,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
 
-         LOm.clear();
-         Contract(1.0,I4bis,shape(2,3),env.gl(col-1)[row],shape(0,1),0.0,LOm);
+   LOm.clear();
+   Contract(1.0,I4bis,shape(2,3),env.gl(col-1)[row],shape(0,1),0.0,LOm);
 
-         // 3) construct left Sz operator
-         I4bis.clear();
-         Contract(1.0,I4,shape(i,j,k,o),dloz,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
+   // 3) construct left Sz operator
+   I4bis.clear();
+   Contract(1.0,I4,shape(i,j,k,o),dloz,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
 
-         LOz.clear();
-         Contract(1.0,I4bis,shape(2,3),env.gl(col-1)[row],shape(0,1),0.0,LOz);
+   LOz.clear();
+   Contract(1.0,I4bis,shape(2,3),env.gl(col-1)[row],shape(0,1),0.0,LOz);
 
-         // 4) finally construct new left unity
-         env.construct_double_layer('V',(*this)(row,col),dlou);
+   // 4) finally construct new left unity
+   env.construct_double_layer('V',(*this)(row,col),dlou);
 
-         I4bis.clear();
-         Contract(1.0,I4,shape(i,j,k,o),dlou,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
+   I4bis.clear();
+   Contract(1.0,I4,shape(i,j,k,o),dlou,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
 
-         LOu.clear();
-         Contract(1.0,I4bis,shape(2,3),env.gl(col-1)[row],shape(0,1),0.0,LOu);
+   LOu.clear();
+   Contract(1.0,I4bis,shape(2,3),env.gl(col-1)[row],shape(0,1),0.0,LOu);
 
-      }
+}
 
-      //last site on the right: close down on the incomings
+//last site on the right: close down on the incomings
 
-      //1) first Lp with Sm
-      env.construct_double_layer('V',(*this)(Ly-1,col),Sm,dlom);
+//1) first Lp with Sm
+env.construct_double_layer('V',(*this)(Ly-1,col),Sm,dlom);
 
-      //paste right environment on
-      tmp5.clear();
-      Contract(1.0,env.gr(col)[Ly - 1],shape(1),dlom,shape(1),0.0,tmp5);
+//paste right environment on
+tmp5.clear();
+Contract(1.0,env.gr(col)[Ly - 1],shape(1),dlom,shape(1),0.0,tmp5);
 
-      //then left enviroment
-      tmp6.clear();
-      Contract(1.0,tmp5,shape(3),env.gl(col-1)[Ly-1],shape(1),0.0,tmp6);
+//then left enviroment
+tmp6.clear();
+Contract(1.0,tmp5,shape(3),env.gl(col-1)[Ly-1],shape(1),0.0,tmp6);
 
-      //move to a DArray<3> object
-      RO[Ly - 3] = tmp6.reshape_clear(shape(env.gr(col)[Ly - 1].shape(0),dlom.shape(0),env.gl(col-1)[Ly - 1].shape(0)));
+//move to a DArray<3> object
+RO[Ly - 3] = tmp6.reshape_clear(shape(env.gr(col)[Ly - 1].shape(0),dlom.shape(0),env.gl(col-1)[Ly - 1].shape(0)));
 
-      //add to value
-      val -= 0.5 * Dot(LOp,RO[Ly - 3]);
+//add to value
+val -= 0.5 * Dot(LOp,RO[Ly - 3]);
 
-      //2) then Lm with Sp
-      env.construct_double_layer('V',(*this)(Ly-1,col),Sp,dlop);
+//2) then Lm with Sp
+env.construct_double_layer('V',(*this)(Ly-1,col),Sp,dlop);
 
-      //paste right environment on
-      tmp5.clear();
-      Contract(1.0,env.gr(col)[Ly - 1],shape(1),dlop,shape(1),0.0,tmp5);
+//paste right environment on
+tmp5.clear();
+Contract(1.0,env.gr(col)[Ly - 1],shape(1),dlop,shape(1),0.0,tmp5);
 
-      //then bottom enviroment
-      tmp6.clear();
-      Contract(1.0,tmp5,shape(3),env.gl(col-1)[Ly-1],shape(1),0.0,tmp6);
+//then bottom enviroment
+tmp6.clear();
+Contract(1.0,tmp5,shape(3),env.gl(col-1)[Ly-1],shape(1),0.0,tmp6);
 
-      //move to a DArray<3> object
-      RO[Ly - 3] = tmp6.reshape_clear(shape(env.gr(col)[Ly - 1].shape(0),dlop.shape(0),env.gl(col-1)[Ly - 1].shape(0)));
+//move to a DArray<3> object
+RO[Ly - 3] = tmp6.reshape_clear(shape(env.gr(col)[Ly - 1].shape(0),dlop.shape(0),env.gl(col-1)[Ly - 1].shape(0)));
 
-      //add to value
-      val -= 0.5 * Dot(LOm,RO[Ly - 3]);
+//add to value
+val -= 0.5 * Dot(LOm,RO[Ly - 3]);
 
-      //3) then Lz with Sz
-      env.construct_double_layer('V',(*this)(Ly-1,col),Sz,dloz);
+//3) then Lz with Sz
+env.construct_double_layer('V',(*this)(Ly-1,col),Sz,dloz);
 
-      //paste top environment on
-      tmp5.clear();
-      Contract(1.0,env.gr(col)[Ly - 1],shape(1),dloz,shape(1),0.0,tmp5);
+//paste top environment on
+tmp5.clear();
+Contract(1.0,env.gr(col)[Ly - 1],shape(1),dloz,shape(1),0.0,tmp5);
 
-      //then bottom enviroment
-      tmp6.clear();
-      Contract(1.0,tmp5,shape(3),env.gl(col-1)[Ly-1],shape(1),0.0,tmp6);
+//then bottom enviroment
+tmp6.clear();
+Contract(1.0,tmp5,shape(3),env.gl(col-1)[Ly-1],shape(1),0.0,tmp6);
 
-      //move to a DArray<3> object
-      RO[Ly - 3] = tmp6.reshape_clear(shape(env.gr(col)[Ly - 1].shape(0),dloz.shape(0),env.gl(col-1)[Ly - 1].shape(0)));
+//move to a DArray<3> object
+RO[Ly - 3] = tmp6.reshape_clear(shape(env.gr(col)[Ly - 1].shape(0),dloz.shape(0),env.gl(col-1)[Ly - 1].shape(0)));
 
-      //add to value
-      val += Dot(LOz,RO[Ly - 3]);
+//add to value
+val += Dot(LOz,RO[Ly - 3]);
 
-   }
+}
 
-   // -- (3) -- || right column = Lx-1: again similar to overlap calculation
+// -- (3) -- || right column = Lx-1: again similar to overlap calculation
 
-   //first construct the right renormalized operators
+//first construct the right renormalized operators
 
-   //tmp comes out index (r,l)
-   tmp.clear();
-   Contract(1.0,env.gr(Lx-2)[Ly - 1],shape(1),env.gl(Lx-2)[Ly - 1],shape(1),0.0,tmp);
+//tmp comes out index (r,l)
+tmp.clear();
+Contract(1.0,env.gr(Lx-2)[Ly - 1],shape(1),env.gl(Lx-2)[Ly - 1],shape(1),0.0,tmp);
 
-   //reshape tmp to a 2-index array
-   R[Lx - 3] = tmp.reshape_clear(shape(env.gr(Lx-2)[Ly - 1].shape(0),env.gl(Lx-2)[Ly - 1].shape(0)));
+//reshape tmp to a 2-index array
+R[Lx - 3] = tmp.reshape_clear(shape(env.gr(Lx-2)[Ly - 1].shape(0),env.gl(Lx-2)[Ly - 1].shape(0)));
 
-   //now construct the rest
-   for(int row = Ly - 2;row > 1;--row){
+//now construct the rest
+for(int row = Ly - 2;row > 1;--row){
 
-      I.clear();
-      Contract(1.0,env.gr(Lx-2)[row],shape(2),R[row-1],shape(0),0.0,I);
+   I.clear();
+   Contract(1.0,env.gr(Lx-2)[row],shape(2),R[row-1],shape(0),0.0,I);
 
-      R[row-2].clear();
-      Contract(1.0,I,shape(1,2),env.gl(Lx-2)[row],shape(1,2),0.0,R[row-2]);
+   R[row-2].clear();
+   Contract(1.0,I,shape(1,2),env.gl(Lx-2)[row],shape(1,2),0.0,R[row-2]);
 
-   }
+}
 
-   //construct the left going operators on the first top site
+//construct the left going operators on the first top site
 
-   //first S+
-   env.construct_double_layer('V',(*this)(0,Lx-1),Sp,dlsp);
+//first S+
+env.construct_double_layer('V',(*this)(0,Lx-1),Sp,dlsp);
 
-   //tmp comes out index (r,l)
-   Contract(1.0,dlsp,shape(1),env.gl(Lx-2)[0],shape(1),0.0,tmp);
+//tmp comes out index (r,l)
+Contract(1.0,dlsp,shape(1),env.gl(Lx-2)[0],shape(1),0.0,tmp);
 
-   Lp = tmp.reshape_clear(shape(dlsp.shape(2),env.gl(Lx-2)[0].shape(2)));
+Lp = tmp.reshape_clear(shape(dlsp.shape(2),env.gl(Lx-2)[0].shape(2)));
 
-   //then S-
-   env.construct_double_layer('V',(*this)(0,Lx-1),Sm,dlsm);
+//then S-
+env.construct_double_layer('V',(*this)(0,Lx-1),Sm,dlsm);
 
-   //tmp comes out index (r,l)
-   Contract(1.0,dlsm,shape(1),env.gl(Lx-2)[0],shape(1),0.0,tmp);
+//tmp comes out index (r,l)
+Contract(1.0,dlsm,shape(1),env.gl(Lx-2)[0],shape(1),0.0,tmp);
 
-   Lm = tmp.reshape_clear(shape(dlsm.shape(2),env.gl(Lx-2)[0].shape(2)));
+Lm = tmp.reshape_clear(shape(dlsm.shape(2),env.gl(Lx-2)[0].shape(2)));
 
-   //then Sz 
-   env.construct_double_layer('V',(*this)(0,Lx-1),Sz,dlsz);
+//then Sz 
+env.construct_double_layer('V',(*this)(0,Lx-1),Sz,dlsz);
 
-   //tmp comes out index (r,l)
-   Contract(1.0,dlsz,shape(1),env.gl(Lx-2)[0],shape(1),0.0,tmp);
+//tmp comes out index (r,l)
+Contract(1.0,dlsz,shape(1),env.gl(Lx-2)[0],shape(1),0.0,tmp);
 
-   Lz = tmp.reshape_clear(shape(dlsz.shape(2),env.gl(Lx-2)[0].shape(2)));
+Lz = tmp.reshape_clear(shape(dlsz.shape(2),env.gl(Lx-2)[0].shape(2)));
 
-   //and finally unity
-   Contract(1.0,env.gr(Lx-2)[0],shape(1),env.gl(Lx-2)[0],shape(1),0.0,tmp);
+//and finally unity
+Contract(1.0,env.gr(Lx-2)[0],shape(1),env.gl(Lx-2)[0],shape(1),0.0,tmp);
 
-   Lu = tmp.reshape_clear(shape(env.gr(Lx-2)[0].shape(2),env.gl(Lx-2)[0].shape(2)));
+Lu = tmp.reshape_clear(shape(env.gr(Lx-2)[0].shape(2),env.gl(Lx-2)[0].shape(2)));
 
-   //middle of the chain:
-   for(int row = 1;row < Ly-1;++row){
+//middle of the chain:
+for(int row = 1;row < Ly-1;++row){
 
-      //first close down the +,- and z terms from the previous site
+   //first close down the +,- and z terms from the previous site
 
-      //construct the right intermediate contraction (paste left to 'right')
-      I.clear();
-      Contract(1.0,env.gl(Lx-2)[row],shape(2),R[row - 1],shape(1),0.0,I);
+   //construct the right intermediate contraction (paste left to 'right')
+   I.clear();
+   Contract(1.0,env.gl(Lx-2)[row],shape(2),R[row - 1],shape(1),0.0,I);
 
-      // 1) construct Sm double layer
-      env.construct_double_layer('V',(*this)(row,Lx-1),Sm,dlsm);
+   // 1) construct Sm double layer
+   env.construct_double_layer('V',(*this)(row,Lx-1),Sm,dlsm);
 
-      R[row-1].clear();
-      Contract(1.0,dlsm,shape(1,2),I,shape(1,2),0.0,R[row - 1]);
+   R[row-1].clear();
+   Contract(1.0,dlsm,shape(1,2),I,shape(1,2),0.0,R[row - 1]);
 
-      //contract with left S+
-      val -= 0.5 * Dot(Lp,R[row - 1]);
+   //contract with left S+
+   val -= 0.5 * Dot(Lp,R[row - 1]);
 
-      // 2) construct Sp double layer
-      env.construct_double_layer('V',(*this)(row,Lx-1),Sp,dlsp);
+   // 2) construct Sp double layer
+   env.construct_double_layer('V',(*this)(row,Lx-1),Sp,dlsp);
 
-      R[row-1].clear();
-      Contract(1.0,dlsp,shape(1,2),I,shape(1,2),0.0,R[row - 1]);
+   R[row-1].clear();
+   Contract(1.0,dlsp,shape(1,2),I,shape(1,2),0.0,R[row - 1]);
 
-      //contract with left S-
-      val -= 0.5 * Dot(Lm,R[row - 1]);
+   //contract with left S-
+   val -= 0.5 * Dot(Lm,R[row - 1]);
 
-      // 3) construct Sz double layer
-      env.construct_double_layer('V',(*this)(row,Lx-1),Sz,dlsz);
+   // 3) construct Sz double layer
+   env.construct_double_layer('V',(*this)(row,Lx-1),Sz,dlsz);
 
-      R[row-1].clear();
-      Contract(1.0,dlsz,shape(1,2),I,shape(1,2),0.0,R[row - 1]);
+   R[row-1].clear();
+   Contract(1.0,dlsz,shape(1,2),I,shape(1,2),0.0,R[row - 1]);
 
-      //contract with left Sz
-      val += Dot(Lz,R[row - 1]);
+   //contract with left Sz
+   val += Dot(Lz,R[row - 1]);
 
-      //construct left renormalized operators for next site: first paste bottom to Left unity
-      I.clear();
-      Contract(1.0,Lu,shape(1),env.gl(Lx-2)[row],shape(0),0.0,I);
+   //construct left renormalized operators for next site: first paste bottom to Left unity
+   I.clear();
+   Contract(1.0,Lu,shape(1),env.gl(Lx-2)[row],shape(0),0.0,I);
 
-      // 1) construct new Sm left operator
-      Lm.clear();
-      Contract(1.0,dlsm,shape(0,1),I,shape(0,1),0.0,Lm);
+   // 1) construct new Sm left operator
+   Lm.clear();
+   Contract(1.0,dlsm,shape(0,1),I,shape(0,1),0.0,Lm);
 
-      // 2) construct new Sp left operator
-      Lp.clear();
-      Contract(1.0,dlsp,shape(0,1),I,shape(0,1),0.0,Lp);
+   // 2) construct new Sp left operator
+   Lp.clear();
+   Contract(1.0,dlsp,shape(0,1),I,shape(0,1),0.0,Lp);
 
-      // 3) construct new Sz left operator
-      Lz.clear();
-      Contract(1.0,dlsz,shape(0,1),I,shape(0,1),0.0,Lz);
+   // 3) construct new Sz left operator
+   Lz.clear();
+   Contract(1.0,dlsz,shape(0,1),I,shape(0,1),0.0,Lz);
 
-      // 4) finally construct new unity on the left
-      Lu.clear();
-      Contract(1.0,env.gr(Lx-2)[row],shape(0,1),I,shape(0,1),0.0,Lu);
+   // 4) finally construct new unity on the left
+   Lu.clear();
+   Contract(1.0,env.gr(Lx-2)[row],shape(0,1),I,shape(0,1),0.0,Lu);
 
-   }
+}
 
-   //finally close down on last 'right' site
+//finally close down on last 'right' site
 
-   //1) Sm to close down Lp
-   env.construct_double_layer('V',(*this)(Ly-1,Lx-1),Sm,dlsm);
+//1) Sm to close down Lp
+env.construct_double_layer('V',(*this)(Ly-1,Lx-1),Sm,dlsm);
 
-   //tmp comes out index (r,l)
-   tmp.clear();
-   Contract(1.0,dlsm,shape(1),env.gl(Lx-2)[Ly - 1],shape(1),0.0,tmp);
+//tmp comes out index (r,l)
+tmp.clear();
+Contract(1.0,dlsm,shape(1),env.gl(Lx-2)[Ly - 1],shape(1),0.0,tmp);
 
-   //reshape tmp to a 2-index array
-   R[Ly - 3] = tmp.reshape_clear(shape(dlsm.shape(0),env.gl(Lx-2)[Ly - 1].shape(0)));
+//reshape tmp to a 2-index array
+R[Ly - 3] = tmp.reshape_clear(shape(dlsm.shape(0),env.gl(Lx-2)[Ly - 1].shape(0)));
 
-   val -= 0.5 * Dot(Lp,R[Ly-3]);
+val -= 0.5 * Dot(Lp,R[Ly-3]);
 
-   //2) Sp to close down Lm
-   env.construct_double_layer('V',(*this)(Ly-1,Lx-1),Sp,dlsp);
+//2) Sp to close down Lm
+env.construct_double_layer('V',(*this)(Ly-1,Lx-1),Sp,dlsp);
 
-   //tmp comes out index (r,l)
-   tmp.clear();
-   Contract(1.0,dlsp,shape(1),env.gl(Lx-2)[Ly - 1],shape(1),0.0,tmp);
+//tmp comes out index (r,l)
+tmp.clear();
+Contract(1.0,dlsp,shape(1),env.gl(Lx-2)[Ly - 1],shape(1),0.0,tmp);
 
-   //reshape tmp to a 2-index array
-   R[Ly - 3] = tmp.reshape_clear(shape(dlsp.shape(0),env.gl(Lx-2)[Ly - 1].shape(0)));
+//reshape tmp to a 2-index array
+R[Ly - 3] = tmp.reshape_clear(shape(dlsp.shape(0),env.gl(Lx-2)[Ly - 1].shape(0)));
 
-   val -= 0.5 * Dot(Lm,R[Ly-3]);
+val -= 0.5 * Dot(Lm,R[Ly-3]);
 
-   //3) Sz to close down Lz
-   env.construct_double_layer('V',(*this)(Ly-1,Lx-1),Sz,dlsz);
+//3) Sz to close down Lz
+env.construct_double_layer('V',(*this)(Ly-1,Lx-1),Sz,dlsz);
 
-   //tmp comes out index (r,l)
-   tmp.clear();
-   Contract(1.0,dlsz,shape(1),env.gl(Lx-2)[Ly - 1],shape(1),0.0,tmp);
+//tmp comes out index (r,l)
+tmp.clear();
+Contract(1.0,dlsz,shape(1),env.gl(Lx-2)[Ly - 1],shape(1),0.0,tmp);
 
-   //reshape tmp to a 2-index array
-   R[Ly - 3] = tmp.reshape_clear(shape(dlsz.shape(0),env.gl(Lx-2)[Ly - 1].shape(0)));
+//reshape tmp to a 2-index array
+R[Ly - 3] = tmp.reshape_clear(shape(dlsz.shape(0),env.gl(Lx-2)[Ly - 1].shape(0)));
 
-   val += Dot(Lz,R[Ly-3]);
-   */
-      return val;
+val += Dot(Lz,R[Ly-3]);
+*/
+return val;
 
 }
 
