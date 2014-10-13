@@ -1310,40 +1310,36 @@ double PEPS<double>::energy(){
       Lu = tmp5.reshape_clear(shape(env.gl(Lx - 2)[row].shape(3),(*this)(row,Lx - 1).shape(1),(*this)(row,Lx - 1).shape(1)));
 
    }
-   /*
+   
    //first contract with the peps with Sp,Sm and Sz operators
    peps_p.clear();
    peps_m.clear();
    peps_z.clear();
 
-   Contract(1.0,Sp,shape(1),(*this)(0,Lx-1),shape(2),0.0,peps_p);
-   Contract(1.0,Sm,shape(1),(*this)(0,Lx-1),shape(2),0.0,peps_m);
-   Contract(1.0,Sz,shape(1),(*this)(0,Lx-1),shape(2),0.0,peps_z);
+   Contract(1.0,Sp,shape(1),(*this)(Ly-1,Lx-1),shape(2),0.0,peps_p);
+   Contract(1.0,Sm,shape(1),(*this)(Ly-1,Lx-1),shape(2),0.0,peps_m);
+   Contract(1.0,Sz,shape(1),(*this)(Ly-1,Lx-1),shape(2),0.0,peps_z);
 
    //last site of bottom row: close down the left +,- and z
 
+   //construct intermediate first
+   tmp7.clear();
+   Contract(1.0,env.gl(Ly-2)[Lx - 1],shape(1),(*this)(Ly-1,Lx-1),shape(0),0.0,tmp7);
+
    // 1) contract with Lp with peps_m for energy contribution
-   tmp5.clear();
-   Contract(1.0,Lp,shape(0),env.gt(0)[Lx - 1],shape(0),0.0,tmp5);
+   tmp8.clear();
+   Contract(1.0,tmp7,shape(4,1),peps_m,shape(0,1),0.0,tmp8);
 
-   tmp6.clear();
-   Contract(1.0,(*this)(0,Lx-1),shape(0,1),tmp5,shape(0,2),0.0,tmp6);
-
-   val -= 0.5 * blas::dot(tmp6.size(), tmp6.data(), 1, peps_m.data(), 1);
+   val -= 0.5 * blas::dot(Lp.size(), Lp.data(), 1, tmp8.data(), 1);
 
    // 2) contract Lm with peps_p 
-   Contract(1.0,Lm,shape(0),env.gt(0)[Lx - 1],shape(0),0.0,tmp5);
-   Contract(1.0,(*this)(0,Lx-1),shape(0,1),tmp5,shape(0,2),0.0,tmp6);
-
-   val -= 0.5 * blas::dot(tmp6.size(), tmp6.data(), 1, peps_p.data(), 1);
+   Contract(1.0,tmp7,shape(4,1),peps_p,shape(0,1),0.0,tmp8);
+   val -= 0.5 * blas::dot(Lm.size(), Lm.data(), 1, tmp8.data(), 1);
 
    // 3) contract Lz with peps_z 
-   Contract(1.0,Lz,shape(0),env.gt(0)[Lx - 1],shape(0),0.0,tmp5);
-   Contract(1.0,(*this)(0,Lx-1),shape(0,1),tmp5,shape(0,2),0.0,tmp6);
-
-   val += blas::dot(tmp6.size(), tmp6.data(), 1, peps_z.data(), 1);
-
-
+   Contract(1.0,tmp7,shape(4,1),peps_z,shape(0,1),0.0,tmp8);
+   val += blas::dot(Lz.size(), Lz.data(), 1, tmp8.data(), 1);
+/*
    // -- (2) -- now move from left to right calculating everything like an MPO/MPS expectation value
    for(int col = 1;col < Lx - 1;++col){
 
