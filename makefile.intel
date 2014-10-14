@@ -9,6 +9,7 @@
 # -----------------------------------------------------------------------------
 BINNAME = peps
 CPPSRC	= main.cpp\
+			  Hamiltonian.cpp\
 			  global.cpp\
            Random.cpp\
            PEPS.cpp\
