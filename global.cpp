@@ -53,7 +53,7 @@ namespace global{
       d = d_in;
 
       //set the interaction
-      ham.set_heisenberg(false);
+      ham.set_heisenberg(true);
 
       //identity matrix
       I.resize(d,d);

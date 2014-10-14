@@ -1044,7 +1044,7 @@ double PEPS<double>::energy(){
       val += ham.gcoef(i) * blas::dot(Li[i].size(),Li[i].data(),1,tmp8.data(),1);
 
    }
-
+/*
    // #################################################################
    // ###   ---- from right left : contract in mps/mpo fashion ---- ### 
    // #################################################################
@@ -1462,7 +1462,7 @@ double PEPS<double>::energy(){
       val += ham.gcoef(i) * blas::dot(Li[i].size(),Li[i].data(),1,tmp8.data(),1);
 
    }
-
+*/
    return val;
 
 }

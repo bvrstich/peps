@@ -34,15 +34,14 @@ int main(int argc,char *argv[]){
 
    double f = 0.74;
 
-   PEPS<double> peps;
-
-   peps.initialize_jastrow(f);
-   peps.normalize();
+   PEPS<double> peps(D);
+   //peps.initialize_jastrow(f);
+   //peps.normalize();
 
    global::env.calc('A',peps);
    global::env.test();
 
-   cout << f << "\t" << peps.energy()/(double)(L*L) << endl;
+   cout << peps.energy() << endl;
 
    return 0;
 }
