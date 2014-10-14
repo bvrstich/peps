@@ -24,7 +24,7 @@ namespace global{
    int d;
 
    Random RN;
- 
+
    //! spin operators
    DArray<2> Sp;
    DArray<2> Sm;
@@ -33,6 +33,8 @@ namespace global{
    DArray<2> Sz;
 
    DArray<2> I;
+
+   Hamiltonian ham;
 
    Environment env;
 
@@ -50,39 +52,18 @@ namespace global{
 
       d = d_in;
 
-      //set the spin operators
-      Sp.resize(d,d);
-      Sm.resize(d,d);
-      Sx.resize(d,d);
-      iSy.resize(d,d);
-      Sz.resize(d,d);
+      //set the interaction
+      ham.set_heisenberg(true);
 
+      //identity matrix
       I.resize(d,d);
 
-      Sp = 0.0;
-      Sm = 0.0;
-      Sx = 0.0;
-      iSy = 0.0;
-      Sz = 0.0;
-
       I = 0.0;
-
-      Sp(1,0) = 1.0;
-
-      Sm(0,1) = 1.0;
-
-      Sx(0,1) = 0.5;
-      Sx(1,0) = 0.5;
-
-      iSy(0,1) = -0.5;
-      iSy(1,0) = 0.5;
-
-      Sz(0,0) = -0.5;
-      Sz(1,1) = 0.5;
 
       I(0,0) = 1.0;
       I(1,1) = 1.0;
 
+      //initialize/allocate the environment
       env = Environment(D_in,D_aux_in);
 
    }

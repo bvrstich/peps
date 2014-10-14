@@ -32,16 +32,16 @@ namespace global {
    //!physical dimension of sites
    extern int d;
 
-   //!operators!
-   extern DArray<2> Sp;
-   extern DArray<2> Sm;
-   extern DArray<2> Sx;
-   extern DArray<2> iSy;
-   extern DArray<2> Sz;
+   //!hamiltonian object, containing nn-interaction operators and coefficients
+   extern Hamiltonian ham;
+
+   //!physical unit matrix
    extern DArray<2> I;
 
+   //!Environment object, needed for basically everything when calculating
    extern Environment env;
 
+   //!initializer
    void init(int,int,int,int,int);
 
    template<typename T>
