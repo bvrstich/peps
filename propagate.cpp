@@ -64,14 +64,14 @@ namespace propagate {
 
       DArray<4> N_eff;
       calc_N_eff('b',0,L,QL,R[0],QR,N_eff);
-/*
+
       //now get the 'X' matrix:
       DArray<3> X;
       get_X(N_eff,X);
 
       //make the environment as 'unitary' as possible
       canonicalize(X,a_L,QL,a_R,QR);
-
+/*
       //now do the update! Apply the gates!
       update(D,a_L,a_R);
 
@@ -783,7 +783,7 @@ namespace propagate {
     * @param X output DArray<3> is X
     */
    void get_X(DArray<4> &N_eff,DArray<3> &X){
-/*
+
       int matdim = N_eff.shape(0)*N_eff.shape(1);
 
       //symmetrize
@@ -812,7 +812,7 @@ namespace propagate {
                      X(iL,kL*N_eff.shape(1) + kR,iR) = sqrt( eig(kL*N_eff.shape(1) + kR) ) * N_eff(iL,iR,kL,kR);
 
                }
-*/
+
    }
 
    /** 
@@ -820,7 +820,7 @@ namespace propagate {
     * @param A both input as output matrix: on input A, on output A^{-1}
     */
    void invert(DArray<2> &A){
-/*
+
       int *ipiv = new int [A.shape(0)];
 
       lapack::getrf(CblasRowMajor,A.shape(0),A.shape(1), A.data(), A.shape(1), ipiv);
@@ -828,7 +828,7 @@ namespace propagate {
       lapack::getri(CblasRowMajor,A.shape(0), A.data(), A.shape(1), ipiv);
 
       delete [] ipiv;
-*/
+
    }
 
    /**
@@ -846,38 +846,37 @@ namespace propagate {
       if(option == 'b'){
 
          if(rc == 0){//left edge
-/*
-            //make a 'double layer' object out of Q for contraction with environment
-            DArray<5> tmp5;
-            construct_double_layer('L',QL,tmp5);
 
             //for this one only top contraction is needed:
             DArray<6> tmp6;
-            Contract(1.0,env.gt(0)[0],shape(1),tmp5,shape(1),0.0,tmp6);
+            Contract(1.0,env.gt(0)[0],shape(1),QL,shape(1),0.0,tmp6);
+
+            DArray<8> tmp8;
+            Contract(1.0,tmp6,shape(1),QL,shape(1),0.0,tmp8);
 
             //construct the 'Left' eff environment
-            DArray<3> L_env = tmp6.reshape_clear(shape(env.gt(0)[0].shape(2),tmp5.shape(3),tmp5.shape(4)));
-
-            //make a 'double layer' object out of Q for contraction with environment
-            construct_double_layer('R',QR,tmp5);
+            DArray<3> L_env = tmp8.reshape_clear(shape(tmp8.shape(1),tmp8.shape(4),tmp8.shape(7)));
 
             //contract with right renormalized operator:
-            DArray<3> tmp3;
-            Contract(1.0,env.gt(0)[1],shape(2),R,shape(0),0.0,tmp3);
+            DArray<5> tmp5;
+            Contract(1.0,env.gt(0)[1],shape(3),R,shape(0),0.0,tmp5);
 
             //to construct the R_environment
-            DArray<4> tmp4;
-            Contract(1.0,tmp3,shape(1,2),tmp5,shape(2,4),0.0,tmp4);
+            DArray<5> tmp5bis;
+            Contract(1.0,tmp5,shape(1,3),QR,shape(1,3),0.0,tmp5bis);
+
+            tmp5.clear();
+            Contract(1.0,tmp5bis,shape(1,2),QR,shape(1,3),0.0,tmp5);
 
             //construct the 'Right' eff environment
-            DArray<3> R_env = tmp4.reshape_clear(shape(tmp4.shape(0),tmp4.shape(1),tmp4.shape(2)));
+            DArray<3> R_env = tmp5.reshape_clear(shape(tmp5.shape(0),tmp5.shape(1),tmp5.shape(3)));
 
             //now contract left and right environment to form N_eff
             enum {i,j,k,m,n};
 
             N_eff.clear();
             Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,n,m),0.0,N_eff,shape(j,n,k,m));
-  */
+
          }
          else if(rc == Lx - 2){//right edge
 /*
@@ -1299,7 +1298,7 @@ namespace propagate {
     * @param QR unitary part of the right tensor reduction, will be multiplied with the inverse of the R of the environment
     */
    void canonicalize(DArray<3> &X,DArray<3> &a_L,DArray<4> &QL,DArray<3> &a_R,DArray<4> &QR){
-/*
+
       //now QR and LQ the X matrix and paste it on the aR and aL
       DArray<3> X_copy(X);
 
@@ -1337,7 +1336,7 @@ namespace propagate {
       Contract(1.0,QL,shape(3),tmp2,shape(1),0.0,tmp4);
 
       QL = std::move(tmp4);
-  */
+
    }
 
    /**
