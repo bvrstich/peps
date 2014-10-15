@@ -40,11 +40,7 @@ int main(int argc,char *argv[]){
    peps.initialize_jastrow(f);
    peps.normalize();
 
-   global::env.calc('A',peps); 
-
-   cout << peps.energy() << endl;
-
-//   propagate::step(peps);
+   propagate::step(peps);
 
    return 0;
 }

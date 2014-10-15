@@ -46,8 +46,8 @@ namespace propagate {
 
       //initialize the right operators for the bottom row
       contractions::init_ro('b',peps,R);
-/*
-      DArray<2> L;
+
+      DArray<3> L;
 
       //now construct the reduced tensors of the first pair to propagate
       DArray<4> QL;
@@ -64,7 +64,7 @@ namespace propagate {
 
       DArray<4> N_eff;
       calc_N_eff('b',0,L,QL,R[0],QR,N_eff);
-
+/*
       //now get the 'X' matrix:
       DArray<3> X;
       get_X(N_eff,X);
@@ -613,7 +613,7 @@ namespace propagate {
     * @param L == left, R == right
     */
    void construct_reduced_tensor(char hv,char option,const DArray<5> &peps,DArray<4> &Q,DArray<3> &red){
-/*
+
       if(hv == 'H'){
 
          if(option == 'L'){
@@ -774,7 +774,7 @@ namespace propagate {
          }
 
       }
-*/
+
    }
 
    /**
@@ -841,12 +841,12 @@ namespace propagate {
     * @param QR right unitary matrix coming out of the reduced tensor construction
     * @param N_eff output DArray<4> object containing the effective norm environment on exit
     */
-   void calc_N_eff(char option,int rc,const DArray<2> &L,const DArray<4> &QL,const DArray<2> &R, const DArray<4> &QR,DArray<4> &N_eff){
-/*
+   void calc_N_eff(char option,int rc,const DArray<3> &L,const DArray<4> &QL,const DArray<3> &R, const DArray<4> &QR,DArray<4> &N_eff){
+
       if(option == 'b'){
 
          if(rc == 0){//left edge
-
+/*
             //make a 'double layer' object out of Q for contraction with environment
             DArray<5> tmp5;
             construct_double_layer('L',QL,tmp5);
@@ -877,10 +877,10 @@ namespace propagate {
 
             N_eff.clear();
             Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,n,m),0.0,N_eff,shape(j,n,k,m));
-
+  */
          }
          else if(rc == Lx - 2){//right edge
-
+/*
             //Left
 
             //make a 'double layer' object out of Q for contraction with environment
@@ -913,10 +913,10 @@ namespace propagate {
 
             N_eff.clear();
             Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,m,n),0.0,N_eff,shape(j,m,k,n));
-
+  */
          }
          else{//middle
-
+/*
             enum {i,j,k,m,n};
 
             //make a 'double layer' object out of Q for contraction with environment
@@ -950,14 +950,14 @@ namespace propagate {
             //now contract left and right environment to form N_eff
             N_eff.clear();
             Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,m,n),0.0,N_eff,shape(j,m,k,n));
-
+  */
          }
 
       }
       else if(option == 't'){//top row!
 
          if(rc == 0){
-
+/*
             //make a 'double layer' object out of Q for contraction with environment
             DArray<5> tmp5;
             construct_double_layer('L',QL,tmp5);
@@ -988,10 +988,10 @@ namespace propagate {
 
             N_eff.clear();
             Contract(1.0,L_env,shape(i,j,k),R_env,shape(m,n,k),0.0,N_eff,shape(i,m,j,n));
-
+  */
          }
          else if(rc == Lx-2){//right edge of top row
-
+  /*
             //Left
 
             //make a 'double layer' object out of Q for contraction with environment
@@ -1024,10 +1024,10 @@ namespace propagate {
 
             N_eff.clear();
             Contract(1.0,L_env,shape(i,j,k),R_env,shape(m,n,k),0.0,N_eff,shape(i,m,j,n));
-
+  */
          }
          else{//middle columns
-
+/*
             enum {i,j,k,m,n};
 
             //make a 'double layer' object out of Q for contraction with environment
@@ -1061,14 +1061,14 @@ namespace propagate {
             //now contract left and right environment to form N_eff
             N_eff.clear();
             Contract(1.0,L_env,shape(i,j,k),R_env,shape(m,n,k),0.0,N_eff,shape(i,m,j,n));
-
+  */
          }
 
       }
       else if(option == 'l'){//left
 
          if(rc == 0){//left edge
-
+/*
             //make a 'double layer' object out of Q for contraction with environment
             DArray<5> tmp5;
             construct_double_layer('L',QL,tmp5);
@@ -1099,10 +1099,10 @@ namespace propagate {
 
             N_eff.clear();
             Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,n,m),0.0,N_eff,shape(j,n,k,m));
-
+  */
          }
          else if(rc == Ly - 2){//'right' edge
-
+/*
             //Left
 
             //make a 'double layer' object out of Q for contraction with environment
@@ -1135,10 +1135,10 @@ namespace propagate {
 
             N_eff.clear();
             Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,m,n),0.0,N_eff,shape(j,m,k,n));
-
+  */
          }
          else{//middle
-
+/*
             enum {i,j,k,m,n};
 
             //make a 'double layer' object out of Q for contraction with environment
@@ -1172,14 +1172,14 @@ namespace propagate {
             //now contract left and right environment to form N_eff
             N_eff.clear();
             Contract(1.0,L_env,shape(i,j,k),R_env,shape(i,m,n),0.0,N_eff,shape(j,m,k,n));
-
+  */
          }
 
       }
       else{//rightmost column
 
          if(rc == 0){
-
+  /*
             //make a 'double layer' object out of Q for contraction with environment
             DArray<5> tmp5;
             construct_double_layer('L',QL,tmp5);
@@ -1210,10 +1210,10 @@ namespace propagate {
 
             N_eff.clear();
             Contract(1.0,L_env,shape(i,j,k),R_env,shape(m,n,k),0.0,N_eff,shape(i,m,j,n));
-
+  */
          }
          else if(rc == Lx-2){//right edge of top row
-
+/*
             //Left
 
             //make a 'double layer' object out of Q for contraction with environment
@@ -1246,10 +1246,10 @@ namespace propagate {
 
             N_eff.clear();
             Contract(1.0,L_env,shape(i,j,k),R_env,shape(m,n,k),0.0,N_eff,shape(i,m,j,n));
-
+*/
          }
          else{//middle columns
-
+/*
             enum {i,j,k,m,n};
 
             //make a 'double layer' object out of Q for contraction with environment
@@ -1283,11 +1283,11 @@ namespace propagate {
             //now contract left and right environment to form N_eff
             N_eff.clear();
             Contract(1.0,L_env,shape(i,j,k),R_env,shape(m,n,k),0.0,N_eff,shape(i,m,j,n));
-
+*/
          }
 
       }
-*/
+
    }
 
    /**
