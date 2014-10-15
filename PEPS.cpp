@@ -667,7 +667,7 @@ double PEPS<double>::energy(){
    int m = tmp10.shape(1) * tmp10.shape(5) * tmp10.shape(9);
    int n = tmp10.shape(3) * tmp10.shape(7);
 
-   //S+
+   //add left hamiltonian operators
    for(int i = 0;i < delta;++i){
 
       Li[i].resize(shape(tmp10.shape(1),tmp10.shape(5),tmp10.shape(9)));
@@ -684,7 +684,7 @@ double PEPS<double>::energy(){
    //now for the middle terms
    for(int col = 1;col < Lx - 1;++col){
 
-      //close down the +,- and z terms from the previous site
+      //close down the left renormalized operators from the previous site
 
       //construct the intermediate contraction (paste top right)
       tmp5.clear();
@@ -835,7 +835,7 @@ double PEPS<double>::energy(){
 
       // --- now for the middle sites, close down the operators on the left and construct new ones --- 
       for(int col = 1;col < Lx - 1;++col){
-
+      
          //add top and one peps to the right side
          tmp6.clear();
          Contract(1.0,env.gt(row)[col],shape(3),RO[col-1],shape(0),0.0,tmp6);
@@ -920,11 +920,11 @@ double PEPS<double>::energy(){
       }
 
    }
-   
+
    // -- (3) -- || top row = Ly-1: again similar to overlap calculation
 
    //first construct the right renormalized operators
-   
+  
    //tmp comes out index (t,b)
    Contract(1.0,env.gt(Ly-2)[Lx - 1],shape(1,2),env.gb(Ly-2)[Lx - 1],shape(1,2),0.0,tmp4);
 
@@ -938,7 +938,7 @@ double PEPS<double>::energy(){
       n = R[col - 1].shape(2);//col of op(B)
       int k = R[col - 1].shape(0) * R[col - 1].shape(1);
 
-      tmp5.resize( shape( (*this)(Ly-1,col).shape(0),(*this)(Ly-1,col).shape(0),env.gt(Ly-2)[col].shape(1),env.gt(Ly-2)[col].shape(2),R[col-1].shape(2) ) );
+      tmp5.resize( shape( (*this)(Ly-1,col).shape(0),(*this)(Ly-1,col).shape(0),env.gt(Ly-2)[col].shape(1),env.gt(Ly-2)[col].shape(2),R[col - 1].shape(2) ) );
 
       blas::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,m,n,k,1.0, env.gt(Ly-2)[col].data(),k, R[col - 1].data(), n,0.0,tmp5.data(), n);
 
@@ -976,7 +976,7 @@ double PEPS<double>::energy(){
    //middle of the chain:
    for(int col = 1;col < Lx-1;++col){
 
-      //close down the +,- and z terms from the previous site
+      //close down the left renormalized terms from the previous site
 
       //construct the intermediate contraction (paste top right)
       tmp5.clear();
@@ -984,7 +984,7 @@ double PEPS<double>::energy(){
 
       //and upper peps to tmp5
       tmp6.clear();
-      Contract(1.0,(*this)(Ly-1,col),shape(3,4),tmp5,shape(1,3),0.0,tmp6);
+      Contract(1.0,(*this)(Ly-1,col),shape(3,4),tmp5,shape(2,4),0.0,tmp6);
 
       //paste right hamiltonian operators to intermediary an contract with left renormalized operator
       for(int i = 0;i < delta;++i){
@@ -995,7 +995,7 @@ double PEPS<double>::energy(){
          tmp5.clear();
          Contract(1.0,peps_i[i],shape(0,3,4),tmp6,shape(2,4,5),0.0,tmp5);
 
-         //contract with left S+
+         //contract with left hamiltonian operator
          val += ham.gcoef(i) * blas::dot(Li[i].size(), Li[i].data(), 1, tmp5.data(), 1);
 
       }
@@ -1044,7 +1044,7 @@ double PEPS<double>::energy(){
       val += ham.gcoef(i) * blas::dot(Li[i].size(),Li[i].data(),1,tmp8.data(),1);
 
    }
-/*
+
    // #################################################################
    // ###   ---- from right left : contract in mps/mpo fashion ---- ### 
    // #################################################################
@@ -1106,7 +1106,7 @@ double PEPS<double>::energy(){
 
    //now for the middle terms
    for(int row = 1;row < Ly - 1;++row){
-
+ 
       //first close down the interaction terms from the previous site
 
       //construct the intermediate contraction (paste top right)
@@ -1338,7 +1338,7 @@ double PEPS<double>::energy(){
       }
 
    }
-   
+  
    // -- (3) -- || left column = 0: again similar to overlap calculation
 
    //first construct the right renormalized operators
@@ -1402,7 +1402,7 @@ double PEPS<double>::energy(){
 
       //and upper peps to tmp5
       tmp6.clear();
-      Contract(1.0,(*this)(row,0),shape(4,1),tmp5,shape(1,3),0.0,tmp6);
+      Contract(1.0,(*this)(row,0),shape(4,1),tmp5,shape(2,4),0.0,tmp6);
 
       //paste right hamiltonian operators to it for energy 
       for(int i = 0;i < delta;++i){
@@ -1462,7 +1462,7 @@ double PEPS<double>::energy(){
       val += ham.gcoef(i) * blas::dot(Li[i].size(),Li[i].data(),1,tmp8.data(),1);
 
    }
-*/
+
    return val;
 
 }
