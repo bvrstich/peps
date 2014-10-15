@@ -12,22 +12,25 @@ using std::ofstream;
 
 #include "include.h"
 
-using namespace global;
 
-DArray<3> Trotter::LO;
-DArray<3> Trotter::RO;
-double Trotter::tau;
+/**
+ *  empty constructor
+ */
+Trotter::Trotter() { }
 
 /** 
- * initialize the operators
+ * constructor
  * @param tau timestep
  */
-void Trotter::set(double tau_in) {
+Trotter::Trotter(double tau_in) {
 
-   tau = tau_in;
+   int d = global::d;
+
+   this->tau = tau_in;
 
    //first construct S_i.S_j on a d^2 x d^2 space
    DArray<2> Sij(d*d,d*d);
+
    Sij = 0.0;
 
    //basis: |dd> , |du> , |ud> , |uu>
@@ -58,6 +61,7 @@ void Trotter::set(double tau_in) {
 
    //now singular value decomposition over two sites: first reshape to |i><i'| x |j><j'| form
    DArray<2> tmp(d*d,d*d);
+
    tmp = 0.0;
 
    //new basis |d><d| |d><u| |u><d| |u><u|
@@ -76,11 +80,11 @@ void Trotter::set(double tau_in) {
    Gesvd('S','S',tmp,eig,U,V);
 
    //now put them correctly into left and right operators
-   LO.resize(d,d*d,d);
-   RO.resize(d,d*d,d);
+   this->LO.resize(d,d*d,d);
+   this->RO.resize(d,d*d,d);
 
-   LO = 0.0;
-   RO = 0.0;
+   this->LO = 0.0;
+   this->RO = 0.0;
 
    for(int s = 0;s < d;++s)
       for(int s_ = 0;s_ < d;++s_){
@@ -89,11 +93,56 @@ void Trotter::set(double tau_in) {
 
          for(int k = 0;k < d*d;++k){
 
-            LO(s,k,s_) = U(i,k) * sqrt( eig(k) );
-            RO(s,k,s_) = sqrt( eig(k) ) * V(k,i);
+            this->LO(s,k,s_) = U(i,k) * sqrt( eig(k) );
+            this->RO(s,k,s_) = sqrt( eig(k) ) * V(k,i);
 
          }
 
       }
+
+}
+
+/** 
+ * copy constructor
+ * @param trotter_c object to be copied
+ */
+Trotter::Trotter(const Trotter &trotter_c){
+
+   tau = trotter_c.gtau();
+
+   LO = trotter_c.gLO();
+   RO = trotter_c.gRO();
+
+}
+
+/**
+ * empty destructor
+ */
+Trotter::~Trotter() {}
+
+/**
+ * @return the time step tau
+ */
+double Trotter::gtau() const {
+
+   return tau;
+
+}
+
+/**
+ * @return the left trotter operator
+ */
+const DArray<3> &Trotter::gLO() const {
+
+   return LO;
+
+}
+
+/**
+ * @return the right trotter operator
+ */
+const DArray<3> &Trotter::gRO() const {
+
+   return RO;
 
 }

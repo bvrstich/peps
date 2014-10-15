@@ -25,18 +25,13 @@ namespace global{
 
    Random RN;
 
-   //! spin operators
-   DArray<2> Sp;
-   DArray<2> Sm;
-   DArray<2> Sx;
-   DArray<2> iSy;
-   DArray<2> Sz;
-
    DArray<2> I;
 
    Hamiltonian ham;
 
    Environment env;
+
+   Trotter trot;
 
    /**
     * @param D_in virtual dimension of the trial
@@ -44,8 +39,9 @@ namespace global{
     * @param d_in physical dimension
     * @param Lx_in x dimension of the square lattice
     * @param Ly_in y dimension of the square lattice
+    * @param tau the time step of the imaginary time evolution
     */
-   void init(int D_in,int D_aux_in,int d_in,int Lx_in,int Ly_in){
+   void init(int D_in,int D_aux_in,int d_in,int Lx_in,int Ly_in,double tau){
 
       Lx = Lx_in;
       Ly = Ly_in;
@@ -54,6 +50,8 @@ namespace global{
 
       //set the interaction
       ham.set_heisenberg(true);
+
+      trot = Trotter(tau);
 
       //identity matrix
       I.resize(d,d);

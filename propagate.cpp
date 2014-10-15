@@ -21,11 +21,7 @@ namespace propagate {
     * @param peps the PEPS to be propagated
     * @param D_aux auxiliary dimension for the contractions. Determines the accuracy of the effective environment.
     */
-   void step(PEPS<double> &peps,int D_aux){
-/*
-      int D = peps.gD();
-
-      enum {i,j,k,m,n,o,p,q};
+   void step(PEPS<double> &peps){
 
       // ########################################################### //
       // ########################################################### //
@@ -39,18 +35,19 @@ namespace propagate {
       // --- !!! (1) the bottom row (1) !!! ---// 
       // --------------------------------------//
 
-      //construct the top environment:
-      env.calc('T',peps,D_aux);
-
-      //construct the 'bottom environment' for the bottom row:
-      env.calc('B',0,peps,D_aux);
+      //construct the full top environment:
+      env.calc('T',peps);
+      
+      //and the bottom row environment
+      env.gb(0).fill('b',peps);
 
       //containers for the renormalized operators
-      vector< DArray<2> > R(Lx - 2);
-      DArray<2> L;
+      vector< DArray<3> > R(Lx - 2);
 
       //initialize the right operators for the bottom row
-      init_ro('b',R);
+      contractions::init_ro('b',peps,R);
+/*
+      DArray<2> L;
 
       //now construct the reduced tensors of the first pair to propagate
       DArray<4> QL;
@@ -86,7 +83,7 @@ namespace propagate {
       env.construct_double_layer('H',peps(0,0),env.gb(0)[0]);
 
       //update left renormalized operator for use on next site
-      update_L('b',0,L);
+      contractions::update_L('b',0,L);
 
       //middle sites of the bottom row:
       for(int col = 1;col < Lx-2;++col){
@@ -114,7 +111,7 @@ namespace propagate {
          //first construct a double layer object for the newly updated bottom 
          env.construct_double_layer('H',peps(0,col),env.gb(0)[col]);
 
-         update_L('b',col,L);
+         contractions::update_L('b',col,L);
 
       }
 
@@ -155,7 +152,7 @@ namespace propagate {
       for(int row = 1;row < Ly-1;++row){
 
          //first create right renormalized operator
-         init_ro('H',row,peps,RO);
+         contractions::init_ro('H',row,peps,RO);
 
          //construct reduced tensors
          construct_reduced_tensor('H','L',peps(row,0),QL,a_L);
@@ -177,7 +174,7 @@ namespace propagate {
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,0),shape(i,j,m,k,n));
          Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(row,1),shape(i,o,j,m,n));
 
-         update_L('H',row,0,peps,LO);
+         contractions::update_L('H',row,0,peps,LO);
 
          //middle pairs of the row:
          for(int col = 1;col < Lx-2;++col){
@@ -203,7 +200,7 @@ namespace propagate {
             Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(row,col+1),shape(i,o,j,m,n));
 
             //first construct a double layer object for the newly updated bottom 
-            update_L('H',row,col,peps,LO);
+            contractions::update_L('H',row,col,peps,LO);
 
          }
 
@@ -236,7 +233,7 @@ namespace propagate {
       // ------------------------------------------//
 
       //make the right operators
-      init_ro('t',R);
+      contractions::init_ro('t',R);
 
       //construct the reduced tensor for the first bond of top row
       construct_reduced_tensor('H','L',peps(Ly-1,0),QL,a_L);
@@ -260,7 +257,7 @@ namespace propagate {
       env.construct_double_layer('H',peps(Ly-1,0),env.gt(Ly-2)[0]);
 
       //update left renormalized operator for use on next site
-      update_L('t',0,L);
+      contractions::update_L('t',0,L);
 
       //middle sites of the bottom row:
       for(int col = 1;col < Lx-2;++col){
@@ -288,7 +285,7 @@ namespace propagate {
          //first construct a double layer object for the newly updated top 
          env.construct_double_layer('H',peps(Ly-1,col),env.gt(Ly-2)[col]);
 
-         update_L('t',col,L);
+         contractions::update_L('t',col,L);
 
       }
 
@@ -319,8 +316,8 @@ namespace propagate {
       env.construct_double_layer('H',peps(Ly-1,Lx-1),env.gt(Ly-2)[Lx-1]);
 
       //get the norm matrix
-      update_L('t',Lx-2,L);
-      update_L('t',Lx-1,L);
+      contractions::update_L('t',Lx-2,L);
+      contractions::update_L('t',Lx-1,L);
 
       //scale the peps
       peps.scal(1.0/sqrt(L(0,0)));
@@ -346,7 +343,7 @@ namespace propagate {
 
       //first construct the right renormalized operators
       R.resize(Ly - 2);
-      init_ro('l',R);
+      contractions::init_ro('l',R);
 
       //construct the reduced tensor for the first bond of left column
       construct_reduced_tensor('V','L',peps(0,0),QL,a_L);
@@ -370,7 +367,7 @@ namespace propagate {
       env.construct_double_layer('V',peps(0,0),env.gl(0)[0]);
 
       //update left renormalized operator for use on next site
-      update_L('l',0,L);
+      contractions::update_L('l',0,L);
 
       //middle sites of the left column:
       for(int row = 1;row < Ly-2;++row){
@@ -398,7 +395,7 @@ namespace propagate {
          //first construct a double layer object for the newly updated bottom 
          env.construct_double_layer('V',peps(row,0),env.gl(0)[row]);
 
-         update_L('l',row,L);
+         contractions::update_L('l',row,L);
 
       }
 
@@ -438,7 +435,7 @@ namespace propagate {
       for(int col = 1;col < Lx-1;++col){
 
          //first create right renormalized operator
-         init_ro('V',col,peps,RO);
+         contractions::init_ro('V',col,peps,RO);
 
          //construct reduced tensors
          construct_reduced_tensor('V','L',peps(0,col),QL,a_L);
@@ -460,7 +457,7 @@ namespace propagate {
          Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(0,col),shape(k,o,n,i,j));
          Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(1,col),shape(n,o,j,i,m));
 
-         update_L('V',col,0,peps,LO);
+         contractions::update_L('V',col,0,peps,LO);
 
          //middle pairs of the col: loop over the rows
          for(int row = 1;row < Ly-2;++row){
@@ -486,7 +483,7 @@ namespace propagate {
             Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(row+1,col),shape(n,o,j,i,m));
 
             //first construct a double layer object for the newly updated bottom:again col is li, row is si
-            update_L('V',col,row,peps,LO);
+            contractions::update_L('V',col,row,peps,LO);
 
          }
 
@@ -519,7 +516,7 @@ namespace propagate {
       // -----------------------------------------------//
 
       //make the right operators
-      init_ro('r',R);
+      contractions::init_ro('r',R);
 
       //construct the reduced tensor for the first bond of top row
       construct_reduced_tensor('V','L',peps(0,Lx-1),QL,a_L);
@@ -543,7 +540,7 @@ namespace propagate {
       env.construct_double_layer('V',peps(0,Lx-1),env.gr(Lx-2)[0]);
 
       //update left renormalized operator for use on next site
-      update_L('r',0,L);
+      contractions::update_L('r',0,L);
 
       //middle sites of the bottom column
       for(int row = 1;row < Ly-2;++row){
@@ -571,7 +568,7 @@ namespace propagate {
          //first construct a double layer object for the newly updated top 
          env.construct_double_layer('V',peps(row,Lx-1),env.gr(Lx-2)[row]);
 
-         update_L('r',row,L);
+         contractions::update_L('r',row,L);
 
       }
 
@@ -602,8 +599,8 @@ namespace propagate {
       env.construct_double_layer('V',peps(Ly-1,Lx-1),env.gr(Lx-2)[Ly-1]);
 
       //get the norm matrix
-      update_L('r',Ly-2,L);
-      update_L('r',Ly-1,L);
+      contractions::update_L('r',Ly-2,L);
+      contractions::update_L('r',Ly-1,L);
 
       //scale the peps
       peps.scal(1.0/sqrt(L(0,0)));
@@ -778,52 +775,6 @@ namespace propagate {
 
       }
 */
-   }
-
-   /**
-    * construct a double layer object out of a Q coming from a reduced tensor construction.
-    * keep one leg, the one pointing to the reduced tensor, not doubled.
-    * @param option 'L'eft or 'R'ight
-    * @param Q input object
-    * @param dlQ output object
-    */
-   void construct_double_layer(char option,const DArray<4> &Q,DArray<5> &dlQ){
-/*
-      //first outer product of Q
-      DArray<8> tmp;
-      Ger(1.0,Q,Q,tmp);
-
-      if(option == 'L'){
-
-         DArray<8> reorder;
-         Permute(tmp,shape(0,4,1,5,2,6,3,7),reorder);
-
-         //and move it to dlQ
-         int d0 = reorder.shape(0) * reorder.shape(1);
-         int d1 = reorder.shape(2) * reorder.shape(3);
-         int d2 = reorder.shape(4) * reorder.shape(5);
-         int d3 = reorder.shape(6);
-         int d4 = reorder.shape(7);
-
-         dlQ = reorder.reshape_clear(shape(d0,d1,d2,d3,d4));
-
-      }
-      else{
-
-         DArray<8> reorder;
-         Permute(tmp,shape(0,4,1,5,2,6,3,7),reorder);
-
-         //and move it to dlQ
-         int d0 = reorder.shape(0);
-         int d1 = reorder.shape(1);
-         int d2 = reorder.shape(2) * reorder.shape(3);
-         int d3 = reorder.shape(4) * reorder.shape(5);
-         int d4 = reorder.shape(6) * reorder.shape(7);
-
-         dlQ = reorder.reshape_clear(shape(d0,d1,d2,d3,d4));
-
-      }
-  */
    }
 
    /**
@@ -1427,301 +1378,8 @@ namespace propagate {
 */
    }
 
-   /** 
-    * init the right renormalized operator for the top or bottom row
-    * @param option == 'l'eft 'r'ight 'top' or 'b'ottom
-    * @param R vector containing the right operators on exit
-    */
-   void init_ro(char option,vector< DArray<2> > &R){
-/*
-      if(option == 'b'){
-
-         //first the rightmost operator
-         DArray<4> tmp4;
-         DArray<3> tmp3;
-
-         //tmp comes out index (t,b)
-         Contract(1.0,env.gt(0)[Lx - 1],shape(1),env.gb(0)[Lx - 1],shape(1),0.0,tmp4);
-
-         //reshape tmp to a 2-index array
-         R[Lx - 3] = tmp4.reshape_clear(shape(env.gt(0)[Lx - 1].shape(0),env.gb(0)[Lx - 1].shape(0)));
-
-         //now construct the rest
-         for(int col = Lx - 2;col > 1;--col){
-
-            tmp3.clear();
-            Contract(1.0,env.gt(0)[col],shape(2),R[col-1],shape(0),0.0,tmp3);
-
-            R[col-2].clear();
-            Contract(1.0,tmp3,shape(1,2),env.gb(0)[col],shape(1,2),0.0,R[col-2]);
-
-         }
-
-      }
-      else if(option == 't'){
-
-         //first the rightmost operator
-         DArray<4> tmp4;
-         DArray<3> tmp3;
-
-         //tmp comes out index (t,b)
-         Contract(1.0,env.gt(Ly-2)[Lx - 1],shape(1),env.gb(Ly-2)[Lx - 1],shape(1),0.0,tmp4);
-
-         //reshape tmp to a 2-index array
-         R[Lx - 3] = tmp4.reshape_clear(shape(env.gt(Ly-2)[Lx - 1].shape(0),env.gb(Ly-2)[Lx - 1].shape(0)));
-
-         //now construct the rest
-         for(int col = Lx - 2;col > 1;--col){
-
-            tmp3.clear();
-            Contract(1.0,env.gt(Ly-2)[col],shape(2),R[col-1],shape(0),0.0,tmp3);
-
-            R[col-2].clear();
-            Contract(1.0,tmp3,shape(1,2),env.gb(Ly-2)[col],shape(1,2),0.0,R[col-2]);
-
-         }
-
-      }
-      else if(option == 'l'){
-
-         //first the rightmost operator
-         DArray<4> tmp4;
-         DArray<3> tmp3;
-
-         //tmp comes out index (r,l)
-         Contract(1.0,env.gr(0)[Ly - 1],shape(1),env.gl(0)[Ly - 1],shape(1),0.0,tmp4);
-
-         //reshape tmp to a 2-index array
-         R[Ly - 3] = tmp4.reshape_clear(shape(env.gr(0)[Ly - 1].shape(0),env.gl(0)[Ly - 1].shape(0)));
-
-         //now construct the rest
-         for(int row = Ly - 2;row > 1;--row){
-
-            tmp3.clear();
-            Contract(1.0,env.gr(0)[row],shape(2),R[row-1],shape(0),0.0,tmp3);
-
-            R[row-2].clear();
-            Contract(1.0,tmp3,shape(1,2),env.gl(0)[row],shape(1,2),0.0,R[row-2]);
-
-         }
-
-      }
-      else{//right
-
-         //first the rightmost operator
-         DArray<4> tmp4;
-         DArray<3> tmp3;
-
-         //tmp comes out index (r,l)
-         Contract(1.0,env.gr(Lx-2)[Ly - 1],shape(1),env.gl(Lx-2)[Ly - 1],shape(1),0.0,tmp4);
-
-         //reshape tmp to a 2-index array
-         R[Lx - 3] = tmp4.reshape_clear(shape(env.gr(Lx-2)[Ly - 1].shape(0),env.gl(Lx-2)[Ly - 1].shape(0)));
-
-         //now construct the rest
-         for(int row = Ly - 2;row > 1;--row){
-
-            tmp3.clear();
-            Contract(1.0,env.gr(Lx-2)[row],shape(2),R[row-1],shape(0),0.0,tmp3);
-
-            R[row-2].clear();
-            Contract(1.0,tmp3,shape(1,2),env.gl(Lx-2)[row],shape(1,2),0.0,R[row-2]);
-
-         }
-
-      }
-*/
-   }
-
-   /**
-    * update left renormalized operator on site col 
-    * @param option == 't'op ,'b'ottom, 'l'eft or 'r'ight
-    * @param rc is row or column index, col for t,b row for r,l
-    */
-   void update_L(char option,int rc,DArray<2> &L){
-/*
-      if(option == 'b'){//bottom
-
-         if(rc == 0){
-
-            DArray<4> tmp4;
-            Contract(1.0,env.gt(0)[0],shape(1),env.gb(0)[0],shape(1),0.0,tmp4);
-
-            L = tmp4.reshape_clear(shape(env.gt(0)[0].shape(2),env.gb(0)[0].shape(2)));
-
-         }
-         else{
-
-            //update the left renormalized operator:
-            DArray<3> tmp3;
-            Contract(1.0,L,shape(0),env.gt(0)[rc],shape(0),0.0,tmp3);
-
-            L.clear();
-            Contract(1.0,tmp3,shape(0,1),env.gb(0)[rc],shape(0,1),0.0,L);
-
-         }
-
-      }
-      else if(option == 't'){//top
-
-         if(rc == 0){
-
-            DArray<4> tmp4;
-            Contract(1.0,env.gt(Ly-2)[0],shape(1),env.gb(Ly-2)[0],shape(1),0.0,tmp4);
-
-            L = tmp4.reshape_clear(shape(env.gt(Ly-2)[0].shape(2),env.gb(Ly-2)[0].shape(2)));
-
-         }
-         else{
-
-            //update the left renormalized operator:
-            DArray<3> tmp3;
-            Contract(1.0,L,shape(0),env.gt(Ly-2)[rc],shape(0),0.0,tmp3);
-
-            L.clear();
-            Contract(1.0,tmp3,shape(0,1),env.gb(Ly-2)[rc],shape(0,1),0.0,L);
-
-         }
-
-      }
-      else if(option == 'l'){//left
-
-         if(rc == 0){
-
-            DArray<4> tmp4;
-            Contract(1.0,env.gr(0)[0],shape(1),env.gl(0)[0],shape(1),0.0,tmp4);
-
-            L = tmp4.reshape_clear(shape(env.gr(0)[0].shape(2),env.gl(0)[0].shape(2)));
-
-         }
-         else{
-
-            //update the left renormalized operator:
-            DArray<3> tmp3;
-            Contract(1.0,L,shape(0),env.gr(0)[rc],shape(0),0.0,tmp3);
-
-            L.clear();
-            Contract(1.0,tmp3,shape(0,1),env.gl(0)[rc],shape(0,1),0.0,L);
-
-         }
-
-      }
-      else{//right
-
-         if(rc == 0){
-
-            DArray<4> tmp4;
-            Contract(1.0,env.gr(Lx-2)[0],shape(1),env.gl(Lx-2)[0],shape(1),0.0,tmp4);
-
-            L = tmp4.reshape_clear(shape(env.gr(Lx-2)[0].shape(2),env.gl(Lx-2)[0].shape(2)));
-
-         }
-         else{
-
-            //update the left renormalized operator:
-            DArray<3> tmp3;
-            Contract(1.0,L,shape(0),env.gr(Lx-2)[rc],shape(0),0.0,tmp3);
-
-            L.clear();
-            Contract(1.0,tmp3,shape(0,1),env.gl(Lx-2)[rc],shape(0,1),0.0,L);
-
-         }
-
-      }
-*/
-   }
-
-   /** 
-    * init the right renormalized operator for the middle rows: 
-    * @param option 'H'orizontal or 'V'ertical
-    * @param rc 'row' index for Horizontal, 'col' index for Vertical
-    * @param peps The PEPS object
-    * @param R vector containing the right operators on exit
-    */
-   void init_ro(char option,int rc,const PEPS<double> &peps,vector< DArray<3> > &RO){
-/*
-      if(option == 'H'){
-
-         //last site make double layer object from peps
-         DArray<4> dlo;
-         env.construct_double_layer('H',peps(rc,Lx-1),dlo);
-
-         //paste top environment on
-         DArray<5> tmp5;
-         Contract(1.0,env.gt(rc)[Lx - 1],shape(1),dlo,shape(1),0.0,tmp5);
-
-         //then bottom enviroment
-         DArray<6> tmp6;
-         Contract(1.0,tmp5,shape(3),env.gb(rc-1)[Lx-1],shape(1),0.0,tmp6);
-
-         //move to a DArray<3> object
-         RO[Lx - 3] = tmp6.reshape_clear(shape(env.gt(rc)[Lx - 1].shape(0),dlo.shape(0),env.gb(rc-1)[Lx - 1].shape(0)));
-
-         DArray<4> I4;
-         DArray<4> I4bis;
-
-         //now construct the middle operators
-         for(int col = Lx-2;col > 1;--col){
-
-            I4.clear();
-            Contract(1.0,env.gt(rc)[col],shape(2),RO[col-1],shape(0),0.0,I4);
-
-            enum {i,j,k,o,m,n};
-
-            env.construct_double_layer('H',peps(rc,col),dlo);
-
-            I4bis.clear();
-            Contract(1.0,I4,shape(i,j,k,o),dlo,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
-
-            RO[col-2].clear();
-            Contract(1.0,I4bis,shape(2,3),env.gb(rc-1)[col],shape(1,2),0.0,RO[col-2]);
-
-         }
-
-      }
-      else{//vertical, columns
-
-         //last site make double layer object from peps
-         DArray<4> dlo;
-         env.construct_double_layer('V',peps(Ly-1,rc),dlo);
-
-         //paste right environment on
-         DArray<5> tmp5;
-         Contract(1.0,env.gr(rc)[Ly - 1],shape(1),dlo,shape(1),0.0,tmp5);
-
-         //then left enviroment
-         DArray<6> tmp6;
-         Contract(1.0,tmp5,shape(3),env.gl(rc-1)[Ly-1],shape(1),0.0,tmp6);
-
-         //move to a DArray<3> object
-         RO[Ly - 3] = tmp6.reshape_clear(shape(env.gr(rc)[Ly - 1].shape(0),dlo.shape(0),env.gl(rc-1)[Lx - 1].shape(0)));
-
-         DArray<4> I4;
-         DArray<4> I4bis;
-
-         //now go down to rows to construct the middle operators
-         for(int row = Ly-2;row > 1;--row){
-
-            I4.clear();
-            Contract(1.0,env.gr(rc)[row],shape(2),RO[row-1],shape(0),0.0,I4);
-
-            enum {i,j,k,o,m,n};
-
-            env.construct_double_layer('V',peps(row,rc),dlo);
-
-            I4bis.clear();
-            Contract(1.0,I4,shape(i,j,k,o),dlo,shape(m,j,n,k),0.0,I4bis,shape(i,m,n,o));
-
-            RO[row-2].clear();
-            Contract(1.0,I4bis,shape(2,3),env.gl(rc-1)[row],shape(1,2),0.0,RO[row-2]);
-
-         }
-
-      }
-*/
-   }
-
-   /**
+ 
+    /**
     * calculate the effective environment of a pair with the left tensor on site (row,col)
     * @param option 'H'orizontal or 'V'ertical
     * @param li large index: if 'H' li == row, if 'V' then li == col
@@ -1987,454 +1645,6 @@ namespace propagate {
 
       }
   */
-   }
-
-   /**
-    * update left renormalized operator on site (row,col )
-    * @param option 'H'orizonal or 'V'ertical
-    * @param li large index, if 'H' then row, if 'V' then col
-    * @param si small index, if 'H' then col, if 'V' then row
-    * @param peps the input PEPS object
-    * @param LO input old left renormalized operator, output new left renormalized operator
-    */
-   void update_L(char option,int li,int si,const PEPS<double> &peps,DArray<3> &LO){
-/*
-      if(option == 'H'){
-
-         if(si == 0){
-
-            DArray<4> tmp4;
-            env.construct_double_layer('H',peps(li,0),tmp4);
-
-            //paste top environment on
-            DArray<5> tmp5;
-            Contract(1.0,env.gt(li)[0],shape(1),tmp4,shape(1),0.0,tmp5);
-
-            //then bottom enviroment
-            DArray<6> tmp6;
-            Contract(1.0,tmp5,shape(3),env.gb(li-1)[0],shape(1),0.0,tmp6);
-
-            //move to a DArray<3> object: order (top-env,peps-row,bottom-env)
-            LO = tmp6.reshape_clear(shape(env.gt(li)[0].shape(2),tmp4.shape(3),env.gb(li-1)[0].shape(2)));
-
-         }
-         else{
-
-            enum {i,j,k,m,n,o};
-
-            //first attach top to left unity
-            DArray<4> I4;
-            Contract(1.0,env.gt(li)[si],shape(0),LO,shape(0),0.0,I4);
-
-            DArray<4> tmp4;
-            env.construct_double_layer('H',peps(li,si),tmp4);
-
-            DArray<4> I4bis;
-            Contract(1.0,I4,shape(i,j,k,o),tmp4,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
-
-            LO.clear();
-            Contract(1.0,I4bis,shape(2,3),env.gb(li-1)[si],shape(0,1),0.0,LO);
-
-         }
-
-      }
-      else{//Vertical
-
-         if(si == 0){
-
-            DArray<4> tmp4;
-            env.construct_double_layer('V',peps(0,li),tmp4);
-
-            //paste top environment on
-            DArray<5> tmp5;
-            Contract(1.0,env.gr(li)[0],shape(1),tmp4,shape(1),0.0,tmp5);
-
-            //then bottom enviroment
-            DArray<6> tmp6;
-            Contract(1.0,tmp5,shape(3),env.gl(li-1)[0],shape(1),0.0,tmp6);
-
-            //move to a DArray<3> object: order (top-env,peps-row,bottom-env)
-            LO = tmp6.reshape_clear(shape(env.gr(li)[0].shape(2),tmp4.shape(3),env.gl(li-1)[0].shape(2)));
-
-         }
-         else{
-
-            enum {i,j,k,m,n,o};
-
-            //first attach top to left unity
-            DArray<4> I4;
-            Contract(1.0,env.gr(li)[si],shape(0),LO,shape(0),0.0,I4);
-
-            DArray<4> tmp4;
-            env.construct_double_layer('V',peps(si,li),tmp4);
-
-            DArray<4> I4bis;
-            Contract(1.0,I4,shape(i,j,k,o),tmp4,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
-
-            LO.clear();
-            Contract(1.0,I4bis,shape(2,3),env.gl(li-1)[si],shape(0,1),0.0,LO);
-
-         }
-
-      }
-  */
-   }
-
-   /**
-    * to help convergence of the algorithm, it apparently helps to apply a staggered magnetic field during optimization
-    * @param peps input peps object, magnetic field to be applied
-    * @param B magnetic field strength
-    */
-   void apply_stag_field(PEPS<double> &peps,double B){
-/*
-      DArray<2> Bp(d,d);
-      DArray<2> Bm(d,d);
-
-      Bp(0,0) = exp(-0.5 * Trotter::tau * B);
-      Bm(0,0) = exp(0.5 * Trotter::tau * B);
-
-      Bp(0,1) = 0.0;
-      Bm(0,1) = 0.0;
-
-      Bp(1,0) = 0.0;
-      Bm(1,0) = 0.0;
-
-      Bp(1,1) = exp(0.5 * Trotter::tau * B);
-      Bm(1,1) = exp(-0.5 * Trotter::tau * B);
-
-      DArray<5> tmp5;
-
-      enum {i,j,k,l,m,n};
-
-      for(int row = 0;row < Ly;++row)
-         for(int col = 0;col < Lx;++col){
-
-            if( (row + col)%2 == 0){ //positive field
-
-               tmp5.clear();
-               Contract(1.0,peps(row,col),shape(i,j,k,l,m),Bp,shape(k,n),0.0,tmp5,shape(i,j,n,l,m));
-
-               peps(row,col) = std::move(tmp5);
-
-            }
-            else{//negative field
-
-               tmp5.clear();
-               Contract(1.0,peps(row,col),shape(i,j,k,l,m),Bm,shape(k,n),0.0,tmp5,shape(i,j,n,l,m));
-
-               peps(row,col) = std::move(tmp5);
-
-            }
-
-         }
-*/
-   }
-
-   /**
-    * propagate the peps one imaginary time step: no environment correction!
-    * @param peps the PEPS to be propagated
-    * @param D_aux auxiliary dimension for the contractions. Determines the accuracy of the effective environment.
-    */
-   void step_no_env(PEPS<double> &peps,int D_aux){
-/*
-      int D = peps.gD();
-
-      enum {i,j,k,m,n,o,p,q};
-
-      // ########################################################### //
-      // ########################################################### //
-      // ##                                                       ## //
-      // ## First propagate applying the gates from bottom to top ## //
-      // ##                                                       ## //
-      // ########################################################### //
-      // ########################################################### //
-
-      // --------------------------------------//
-      // --- !!! (1) the bottom row (1) !!! ---// 
-      // --------------------------------------//
-
-      //now construct the reduced tensors of the first pair to propagate
-      DArray<4> QL;
-      DArray<3> a_L;
-
-      //Left
-      construct_reduced_tensor('H','L',peps(0,0),QL,a_L);
-
-      //Right
-      DArray<4> QR;
-      DArray<3> a_R;
-
-      construct_reduced_tensor('H','R',peps(0,1),QR,a_R);
-
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
-
-      //now expand updated reduced tensors back to the full tensors
-      Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,0),shape(i,j,m,k,n));
-      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(0,1),shape(i,o,j,m,n));
-
-      //middle sites of the bottom row:
-      for(int col = 1;col < Lx-2;++col){
-
-         //first construct the reduced tensors of the first pair to propagate
-         construct_reduced_tensor('H','L',peps(0,col),QL,a_L);
-         construct_reduced_tensor('H','R',peps(0,col+1),QR,a_R);
-
-         //now do the update! Apply the gates!
-         update(D,a_L,a_R);
-
-         //and expand back to the full tensors
-         Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,col),shape(i,j,m,k,n));
-         Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(0,col+1),shape(i,o,j,m,n));
-
-      }
-
-      //right bottom pair update
-
-      //get the reduced tensors
-      construct_reduced_tensor('H','L',peps(0,Lx-2),QL,a_L);
-      construct_reduced_tensor('H','R',peps(0,Lx-1),QR,a_R);
-
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
-
-      //and expand back to the full tensors
-      Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,Lx-2),shape(i,j,m,k,n));
-      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(0,Lx-1),shape(i,o,j,m,n));
-
-      // ---------------------------------------------------//
-      // --- !!! (2) the middle rows (1 -> Ly-2) (2) !!! ---// 
-      // ---------------------------------------------------//
-
-      //renormalized operators for the middle sites
-      for(int row = 1;row < Ly-1;++row){
-
-         //construct reduced tensors
-         construct_reduced_tensor('H','L',peps(row,0),QL,a_L);
-         construct_reduced_tensor('H','R',peps(row,1),QR,a_R);
-
-         //and update
-         update(D,a_L,a_R);
-
-         //and expand back to the full tensors
-         Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,0),shape(i,j,m,k,n));
-         Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(row,1),shape(i,o,j,m,n));
-
-         //middle pairs of the row:
-         for(int col = 1;col < Lx-2;++col){
-
-            //first construct the reduced tensors of the first pair to propagate
-            construct_reduced_tensor('H','L',peps(row,col),QL,a_L);
-            construct_reduced_tensor('H','R',peps(row,col+1),QR,a_R);
-
-            update(D,a_L,a_R);
-
-            //and expand back to the full tensors
-            Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,col),shape(i,j,m,k,n));
-            Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(row,col+1),shape(i,o,j,m,n));
-
-         }
-
-         //last pair
-         construct_reduced_tensor('H','L',peps(row,Lx-2),QL,a_L);
-         construct_reduced_tensor('H','R',peps(row,Lx-1),QR,a_R);
-
-         //now do the update! Apply the gates!
-         update(D,a_L,a_R);
-
-         //and expand back to the full tensors
-         Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,Lx-2),shape(i,j,m,k,n));
-         Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(row,Lx-1),shape(i,o,j,m,n));
-
-      }
-
-      // ------------------------------------------//
-      // --- !!! (3) the top row (Ly-1) (3) !!! ---// 
-      // ------------------------------------------//
-
-      //construct the reduced tensor for the first bond of top row
-      construct_reduced_tensor('H','L',peps(Ly-1,0),QL,a_L);
-      construct_reduced_tensor('H','R',peps(Ly-1,1),QR,a_R);
-
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
-
-      //and expand back to the full tensors
-      Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(Ly-1,0),shape(i,j,m,k,n));
-      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(Ly-1,1),shape(i,o,j,m,n));
-
-      //middle sites of the bottom row:
-      for(int col = 1;col < Lx-2;++col){
-
-         //first construct the reduced tensors of the first pair to propagate
-         construct_reduced_tensor('H','L',peps(Ly-1,col),QL,a_L);
-         construct_reduced_tensor('H','R',peps(Ly-1,col+1),QR,a_R);
-
-         //now do the update! Apply the gates!
-         update(D,a_L,a_R);
-
-         //and expand back to the full tensors
-         Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(Ly-1,col),shape(i,j,m,k,n));
-         Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(Ly-1,col+1),shape(i,o,j,m,n));
-
-      }
-
-      //last pair, top right
-
-      //get the reduced tensors
-      construct_reduced_tensor('H','L',peps(Ly-1,Lx-2),QL,a_L);
-      construct_reduced_tensor('H','R',peps(Ly-1,Lx-1),QR,a_R);
-
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
-
-      //and expand back to the full tensors
-      Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(Ly-1,Lx-2),shape(i,j,m,k,n));
-      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(Ly-1,Lx-1),shape(i,o,j,m,n));
-
-
-      // ########################################################## //
-      // ########################################################## //
-      // ##                                                      ## //
-      // ## Then propagate applying the gates from left to right ## //
-      // ##                                                      ## //
-      // ########################################################## //
-      // ########################################################## //
-
-
-      // ---------------------------------------//
-      // --- !!! (1) the left column (1) !!! ---// 
-      // ---------------------------------------//
-
-      //construct the reduced tensor for the first bond of left column
-      construct_reduced_tensor('V','L',peps(0,0),QL,a_L);
-      construct_reduced_tensor('V','R',peps(1,0),QR,a_R);
-
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
-
-      //and expand back to the full tensors
-      Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(0,0),shape(k,o,n,i,j));
-      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(1,0),shape(n,o,j,i,m));
-
-      //middle sites of the left column:
-      for(int row = 1;row < Ly-2;++row){
-
-         //first construct the reduced tensors of the first pair to propagate
-         construct_reduced_tensor('V','L',peps(row,0),QL,a_L);
-         construct_reduced_tensor('V','R',peps(row+1,0),QR,a_R);
-
-         //now do the update! Apply the gates!
-         update(D,a_L,a_R);
-
-         //and expand back to the full tensors
-         Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(row,0),shape(k,o,n,i,j));
-         Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(row+1,0),shape(n,o,j,i,m));
-
-      }
-
-      //top left vertical pair update
-
-      //get the reduced tensors
-      construct_reduced_tensor('V','L',peps(Ly-2,0),QL,a_L);
-      construct_reduced_tensor('V','R',peps(Ly-1,0),QR,a_R);
-
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
-
-      //and expand back to the full tensors
-      Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(Ly-2,0),shape(k,o,n,i,j));
-      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(Ly-1,0),shape(n,o,j,i,m));
-
-      // -----------------------------------------------------//
-      // --- !!! (2) the middle colums (1 -> Lx-2) (2) !!! ---// 
-      // -----------------------------------------------------//
-
-      for(int col = 1;col < Lx-1;++col){
-
-         construct_reduced_tensor('V','L',peps(0,col),QL,a_L);
-         construct_reduced_tensor('V','R',peps(1,col),QR,a_R);
-
-         //and update
-         update(D,a_L,a_R);
-
-         //and expand back to the full tensors
-         Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(0,col),shape(k,o,n,i,j));
-         Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(1,col),shape(n,o,j,i,m));
-
-         //middle pairs of the col: loop over the rows
-         for(int row = 1;row < Ly-2;++row){
-
-            //first construct the reduced tensors of the first pair to propagate
-            construct_reduced_tensor('V','L',peps(row,col),QL,a_L);
-            construct_reduced_tensor('V','R',peps(row+1,col),QR,a_R);
-
-            //now do the update! Apply the gates!
-            update(D,a_L,a_R);
-
-            //and expand back to the full tensors
-            Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(row,col),shape(k,o,n,i,j));
-            Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(row+1,col),shape(n,o,j,i,m));
-
-         }
-
-         //last vertical pair on col 'col'
-         construct_reduced_tensor('V','L',peps(Ly-2,col),QL,a_L);
-         construct_reduced_tensor('V','R',peps(Ly-1,col),QR,a_R);
-
-         //now do the update! Apply the gates!
-         update(D,a_L,a_R);
-
-         //and expand back to the full tensors
-         Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(Ly-2,col),shape(k,o,n,i,j));
-         Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(Ly-1,col),shape(n,o,j,i,m));
-
-      }
-
-      // -----------------------------------------------//
-      // --- !!! (3) the right column (Lx-1) (3) !!! ---// 
-      // -----------------------------------------------//
-
-      //construct the reduced tensor for the first bond of top row
-      construct_reduced_tensor('V','L',peps(0,Lx-1),QL,a_L);
-      construct_reduced_tensor('V','R',peps(1,Lx-1),QR,a_R);
-
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
-
-      //and expand back to the full tensors
-      Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(0,Lx-1),shape(k,o,n,i,j));
-      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(1,Lx-1),shape(n,o,j,i,m));
-
-      //middle sites of the bottom column
-      for(int row = 1;row < Ly-2;++row){
-
-         //first construct the reduced tensors of the first pair to propagate
-         construct_reduced_tensor('V','L',peps(row,Lx-1),QL,a_L);
-         construct_reduced_tensor('V','R',peps(row+1,Lx-1),QR,a_R);
-
-         //now do the update! Apply the gates!
-         update(D,a_L,a_R);
-
-         //and expand back to the full tensors
-         Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(row,Lx-1),shape(k,o,n,i,j));
-         Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(row+1,Lx-1),shape(n,o,j,i,m));
-
-      }
-
-      //last pair, vertical top right pair
-
-      //get the reduced tensors
-      construct_reduced_tensor('V','L',peps(Ly-2,Lx-1),QL,a_L);
-      construct_reduced_tensor('V','R',peps(Ly-1,Lx-1),QR,a_R);
-
-      //now do the update! Apply the gates!
-      update(D,a_L,a_R);
-
-      //and expand back to the full tensors
-      Contract(1.0,QL,shape(i,j,k,m),a_L,shape(m,n,o),0.0,peps(Ly-2,Lx-1),shape(k,o,n,i,j));
-      Contract(1.0,a_R,shape(i,j,k),QR,shape(k,m,n,o),0.0,peps(Ly-1,Lx-1),shape(n,o,j,i,m));
-*/
    }
 
 }

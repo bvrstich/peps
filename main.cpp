@@ -29,19 +29,22 @@ int main(int argc,char *argv[]){
    int D = atoi(argv[3]);//virtual dimension
    int D_aux = atoi(argv[4]);//auxiliary dimension for the contraction
 
+   double tau = 0.001;
+
    //initialize some statics dimensions
-   global::init(D,D_aux,d,L,L);
+   global::init(D,D_aux,d,L,L,tau);
 
    double f = 0.74;
 
-   PEPS<double> peps(D);
-   //peps.initialize_jastrow(f);
-   //peps.normalize();
+   PEPS<double> peps;
+   peps.initialize_jastrow(f);
+   peps.normalize();
 
-   global::env.calc('A',peps);
-   global::env.test();
+   global::env.calc('A',peps); 
 
    cout << peps.energy() << endl;
+
+//   propagate::step(peps);
 
    return 0;
 }

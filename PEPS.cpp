@@ -282,187 +282,7 @@ void PEPS<double>::grow_bond_dimension(int D_in,double noise) {
 
    this->D = D_in;
 
-   for(int r = 0;r < Ly;++r){
-
-      enum {i,j,k,l,m,n,p};
-      IVector<5> pshape;
-
-      //first the even bonds, (0,1)-(2,3),...
-      for(int c = 0;c < Lx-1;c+=2){
-
-         //left
-         pshape = (*this)[r*Lx + c].shape();
-
-         DArray<6> tmp;
-         Contract(1.0,(*this)[r*Lx + c],shape(i,j,k,l,m),Trotter::LO,shape(n,p,k),0.0,tmp,shape(i,j,n,l,m,p));
-
-         (*this)[r*Lx + c] = tmp.reshape_clear(shape(pshape[0],pshape[1],d,pshape[3],pshape[4]*Trotter::LO.shape(1)));
-
-         //right
-         pshape = (*this)[r*Lx + c + 1].shape();
-
-         Contract(1.0,Trotter::RO,shape(i,j,k),(*this)[r*Lx + c + 1],shape(l,m,k,n,p),0.0,tmp,shape(l,j,m,i,n,p));
-
-         (*this)[r*Lx + c + 1] = tmp.reshape_clear(shape(pshape[0]*Trotter::RO.shape(1),pshape[1],d,pshape[3],pshape[4]));
-
-         //now create 'two-site' object
-         DArray<8> ts;
-         Contract(1.0,(*this)[r*Lx + c],shape(4),(*this)[r*Lx + c + 1],shape(0),0.0,ts);
-
-         //svd the fucker
-         DArray<1> S;
-         Gesvd ('S','S', ts, S,(*this)[r*Lx + c],(*this)[r*Lx + c + 1],D);
-
-         //take the square root of the sv's
-         for(int i = 0;i < S.size();++i)
-            S(i) = sqrt(S(i));
-
-         //and multiply it left and right to the tensors
-         Dimm(S,(*this)[r*Lx + c + 1]);
-         Dimm((*this)[r*Lx + c],S);
-
-      }
-
-      //then the odd bonds, (1,2)-(3,4),...
-      for(int c = 1;c < Lx-1;c+=2){
-
-         //left
-         pshape = (*this)[r*Lx + c].shape();
-
-         DArray<6> tmp;
-         Contract(1.0,(*this)[r*Lx + c],shape(i,j,k,l,m),Trotter::LO,shape(n,p,k),0.0,tmp,shape(i,j,n,l,m,p));
-
-         (*this)[r*Lx + c] = tmp.reshape_clear(shape(pshape[0],pshape[1],d,pshape[3],pshape[4]*Trotter::LO.shape(1)));
-
-         //right
-         pshape = (*this)[r*Lx + c + 1].shape();
-
-         Contract(1.0,Trotter::RO,shape(i,j,k),(*this)[r*Lx + c + 1],shape(l,m,k,n,p),0.0,tmp,shape(l,j,m,i,n,p));
-
-         (*this)[r*Lx + c + 1] = tmp.reshape_clear(shape(pshape[0]*Trotter::RO.shape(1),pshape[1],d,pshape[3],pshape[4]));
-
-         //now create 'two-site' object
-         DArray<8> ts;
-         Contract(1.0,(*this)[r*Lx + c],shape(4),(*this)[r*Lx + c + 1],shape(0),0.0,ts);
-
-         //svd the fucker
-         DArray<1> S;
-         Gesvd ('S','S', ts, S,(*this)[r*Lx + c],(*this)[r*Lx + c + 1],D);
-
-         //take the square root of the sv's
-         for(int i = 0;i < S.size();++i)
-            S(i) = sqrt(S(i));
-
-         //and multiply it left and right to the tensors
-         Dimm(S,(*this)[r*Lx + c + 1]);
-         Dimm((*this)[r*Lx + c],S);
-
-      }
-
-   }
-
-   //then on the columns, i.e. vertical bonds
-   for(int c = 0;c < Lx;++c){
-
-      enum {i,j,k,l,m,n,p};
-      IVector<5> pshape;
-
-      //first the even bonds, (0,1)-(2,3),...
-      for(int r = 0;r < Ly-1;r+=2){
-
-         //left
-         pshape = (*this)[r*Lx + c].shape();
-
-         DArray<6> tmp;
-         Contract(1.0,(*this)[r*Lx + c],shape(i,j,k,l,m),Trotter::LO,shape(n,p,k),0.0,tmp,shape(i,j,p,n,l,m));
-
-         (*this)[r*Lx + c] = tmp.reshape_clear(shape(pshape[0],pshape[1]*Trotter::LO.shape(1),d,pshape[3],pshape[4]));
-
-         //right
-         pshape = (*this)[(r+1)*Lx + c].shape();
-
-         Contract(1.0,Trotter::RO,shape(i,j,k),(*this)[(r+1)*Lx + c],shape(l,m,k,n,p),0.0,tmp,shape(l,m,i,n,j,p));
-
-         (*this)[(r+1)*Lx + c] = tmp.reshape_clear(shape(pshape[0],pshape[1],d,pshape[3]*Trotter::RO.shape(1),pshape[4]));
-
-         //now create 'two-site' object
-         DArray<8> ts;
-         Contract(1.0,(*this)[r*Lx + c],shape(1),(*this)[(r+1)*Lx + c],shape(3),0.0,ts);
-
-         //svd the fucker
-         DArray<1> S;
-         DArray<5> U;
-         DArray<5> VT;
-
-         Gesvd ('S','S', ts, S,U,VT,D);
-
-         //take the square root of the sv's
-         for(int i = 0;i < S.size();++i)
-            S(i) = sqrt(S(i));
-
-         //and multiply it left and right to the tensors
-         Dimm(U,S);
-         Dimm(S,VT);
-
-         //permute the memory the way it should be
-         Permute(U,shape(0,4,1,2,3),(*this)[r*Lx + c]);
-         Permute(VT,shape(1,2,3,0,4),(*this)[(r+1)*Lx + c]);
-
-      }
-
-      //then the odd bonds, (1,2)-(3,4),...
-      for(int r = 1;r < Ly-1;r+=2){
-
-         //left
-         pshape = (*this)[r*Lx + c].shape();
-
-         DArray<6> tmp;
-         Contract(1.0,(*this)[r*Lx + c],shape(i,j,k,l,m),Trotter::LO,shape(n,p,k),0.0,tmp,shape(i,j,p,n,l,m)); 
-
-         (*this)[r*Lx + c] = tmp.reshape_clear(shape(pshape[0],pshape[1]*Trotter::LO.shape(1),d,pshape[3],pshape[4]));
-
-         //right
-         pshape = (*this)[(r+1)*Lx + c].shape();
-
-         Contract(1.0,Trotter::RO,shape(i,j,k),(*this)[(r+1)*Lx + c],shape(l,m,k,n,p),0.0,tmp,shape(l,m,i,n,j,p));
-
-         (*this)[(r+1)*Lx + c] = tmp.reshape_clear(shape(pshape[0],pshape[1],d,pshape[3]*Trotter::RO.shape(1),pshape[4]));
-
-         //now create 'two-site' object
-         DArray<8> ts;
-         Contract(1.0,(*this)[r*Lx + c],shape(1),(*this)[(r+1)*Lx + c],shape(3),0.0,ts);
-
-         //svd the fucker
-         DArray<1> S;
-         DArray<5> U;
-         DArray<5> VT;
-
-         Gesvd ('S','S', ts, S,U,VT,D);
-
-         //take the square root of the sv's
-         for(int i = 0;i < S.size();++i)
-            S(i) = sqrt(S(i));
-
-         //and multiply it left and right to the tensors
-         Dimm(U,S);
-         Dimm(S,VT);
-
-         //permute the memory the way it should be
-         Permute(U,shape(0,4,1,2,3),(*this)[r*Lx + c]);
-         Permute(VT,shape(1,2,3,0,4),(*this)[(r+1)*Lx + c]);
-
-      }
-
-   }
-
-   //make some noise!
-   for(int r = 0;r < Ly;++r)
-      for(int c = 0;c < Lx;++c)
-         for(int index = 0;index < (*this)(r,c).size();++index)
-            (*this)(r,c).data()[index] += noise * rgen<double>();
-
 }
-
 
 
 /**
@@ -614,31 +434,7 @@ double PEPS<double>::energy(){
    //first construct the right renormalized operators
    vector< DArray<3> > R(Lx - 2);
 
-   //first the rightmost operator
-   DArray<4> tmp4;
-   DArray<5> tmp5;
-
-   //tmp comes out index (t,b)
-   Contract(1.0,env.gt(0)[Lx - 1],shape(1,2),env.gb(0)[Lx - 1],shape(1,2),0.0,tmp4);
-
-   //reshape tmp to a 2-index array
-   R[Lx - 3] = tmp4.reshape_clear(shape(env.gt(0)[Lx - 1].shape(0),(*this)(0,Lx-1).shape(0),(*this)(0,Lx-1).shape(0)));
-
-   //now construct the rest
-   for(int col = Lx - 2;col > 1;--col){
-
-      tmp5.clear();
-      Contract(1.0,env.gt(0)[col],shape(3),R[col-1],shape(0),0.0,tmp5);
-
-      R[col - 2].resize(env.gt(0)[col].shape(0),(*this)(0,col).shape(0),(*this)(0,col).shape(0));
-
-      int m = tmp5.shape(0);//rows of op(A)
-      int n = env.gb(0)[col].shape(0);//col of op(B)
-      int k = tmp5.shape(1) * tmp5.shape(2) * tmp5.shape(3) * tmp5.shape(4);
-
-      blas::gemm(CblasRowMajor, CblasNoTrans, CblasTrans,m,n,k,1.0, tmp5.data(),k, env.gb(0)[col].data(), k,0.0, R[col - 2].data(), n);
-
-   }
+   contractions::init_ro('b',*this,R); 
 
    //left going operators: Li
    std::vector< DArray<3> > Li( delta ); 
@@ -649,6 +445,8 @@ double PEPS<double>::energy(){
    //peps contracted with a local operator
    std::vector< DArray<5> > peps_i( delta );
 
+   DArray<4> tmp4;
+   DArray<5> tmp5;
    DArray<6> tmp6;
    DArray<6> tmp6bis;
    DArray<7> tmp7;
@@ -767,39 +565,7 @@ double PEPS<double>::energy(){
    for(int row = 1;row < Ly - 1;++row){
 
       //first create right renormalized operator
-
-      //paste top peps 'operators'
-      tmp7.clear();
-      Contract(1.0,env.gt(row)[Lx - 1],shape(1),(*this)(row,Lx-1),shape(1),0.0,tmp7);
-
-      tmp8.clear();
-      Contract(1.0,tmp7,shape(1,4),(*this)(row,Lx-1),shape(1,2),0.0,tmp8);
-
-      tmp8bis.clear();
-      Contract(1.0,tmp8,shape(3,6),env.gb(row-1)[Lx-1],shape(1,2),0.0,tmp8bis);
-
-      //move to a DArray<3> object
-      RO[Lx - 3] = tmp8bis.reshape_clear(shape(env.gt(row)[Lx - 1].shape(0),(*this)(row,Lx-1).shape(0),(*this)(row,Lx-1).shape(0),env.gb(row-1)[Lx - 1].shape(0)));
-
-      //now construct the middle operators
-      for(int col = Lx-2;col > 1;--col){
-
-         tmp6.clear();
-         Contract(1.0,env.gt(row)[col],shape(3),RO[col-1],shape(0),0.0,tmp6);
-
-         tmp7.clear();
-         Contract(1.0,tmp6,shape(1,3),(*this)(row,col),shape(1,4),0.0,tmp7);
-
-         tmp6.clear();
-         Contract(1.0,tmp7,shape(1,2,5),(*this)(row,col),shape(1,4,2),0.0,tmp6);
-
-         tmp6bis.clear();
-         Permute(tmp6,shape(0,2,4,3,5,1),tmp6bis);
-
-         RO[col-2].clear();
-         Gemm(CblasNoTrans,CblasTrans,1.0,tmp6bis,env.gb(row - 1)[col],0.0,RO[col - 2]);
-
-      }
+      contractions::init_ro('H',row,*this,RO);
 
       // --- now move from left to right to get the expecation value of the interactions ---
 
@@ -924,28 +690,7 @@ double PEPS<double>::energy(){
    // -- (3) -- || top row = Ly-1: again similar to overlap calculation
 
    //first construct the right renormalized operators
-  
-   //tmp comes out index (t,b)
-   Contract(1.0,env.gt(Ly-2)[Lx - 1],shape(1,2),env.gb(Ly-2)[Lx - 1],shape(1,2),0.0,tmp4);
-
-   //reshape tmp to a 2-index array
-   R[Lx - 3] = tmp4.reshape_clear(shape((*this)(Ly-1,Lx-1).shape(0),(*this)(Ly-1,Lx-1).shape(0),env.gb(Ly-2)[Lx-1].shape(0)));
-
-   //now construct the rest
-   for(int col = Lx - 2;col > 1;--col){
-
-      m = env.gt(Ly - 2)[col].shape(0) * env.gt(Ly - 2)[col].shape(1) * env.gt(Ly - 2)[col].shape(2);//rows of op(A)
-      n = R[col - 1].shape(2);//col of op(B)
-      int k = R[col - 1].shape(0) * R[col - 1].shape(1);
-
-      tmp5.resize( shape( (*this)(Ly-1,col).shape(0),(*this)(Ly-1,col).shape(0),env.gt(Ly-2)[col].shape(1),env.gt(Ly-2)[col].shape(2),R[col - 1].shape(2) ) );
-
-      blas::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,m,n,k,1.0, env.gt(Ly-2)[col].data(),k, R[col - 1].data(), n,0.0,tmp5.data(), n);
-
-      R[col - 2].clear();
-      Contract(1.0,tmp5,shape(2,3,4),env.gb(Ly-2)[col],shape(1,2,3),0.0,R[col - 2]);
-
-   }
+   contractions::init_ro('t',*this,R);
 
    //construct the left operator with two open physical bonds
    tmp7.clear();
@@ -1049,34 +794,12 @@ double PEPS<double>::energy(){
    // ###   ---- from right left : contract in mps/mpo fashion ---- ### 
    // #################################################################
 
-   // -- (1) -- || left column: similar to overlap calculation
+   // -- (1) -- || right column: similar to overlap calculation
 
    //first construct the right renormalized operators
    R.resize(Ly - 2);
 
-   //first the rightmost operator
-
-   //tmp comes out index (l,r)
-   Contract(1.0,env.gl(Lx - 2)[Ly - 1],shape(1,2),env.gr(Lx - 2)[Ly - 1],shape(1,2),0.0,tmp4);
-
-   //reshape tmp to a 2-index array
-   R[Ly - 3] = tmp4.reshape_clear(shape(env.gl(Lx - 2)[Ly - 1].shape(0),(*this)(Ly-1,Lx-1).shape(3),(*this)(Ly-1,Lx-1).shape(3)));
-
-   //now construct the rest
-   for(int row = Ly - 2;row > 1;--row){
-
-      tmp5.clear();
-      Contract(1.0,env.gl(Lx - 2)[row],shape(3),R[row-1],shape(0),0.0,tmp5);
-
-      R[row - 2].resize(env.gl(Lx - 2)[row].shape(0),(*this)(row,Lx-1).shape(3),(*this)(row,Lx-1).shape(3));
-
-      int m = tmp5.shape(0);//rows of op(A)
-      int n = env.gr(Lx - 2)[row].shape(0);//col of op(B)
-      int k = tmp5.shape(1) * tmp5.shape(2) * tmp5.shape(3) * tmp5.shape(4);
-
-      blas::gemm(CblasRowMajor, CblasNoTrans, CblasTrans,m,n,k,1.0, tmp5.data(),k, env.gr(Lx - 2)[row].data(), k,0.0, R[row - 2].data(), n);
-
-   }
+   contractions::init_ro('r',*this,R);
 
    //construct the left operator with two open physical bonds
    tmp7.clear();
@@ -1184,39 +907,7 @@ double PEPS<double>::energy(){
    for(int col = Lx - 2;col > 0;--col){
 
       //first create right renormalized operator
-
-      //paste left peps 'operators'
-      tmp7.clear();
-      Contract(1.0,env.gl(col - 1)[Ly - 1],shape(1),(*this)(Ly-1,col),shape(0),0.0,tmp7);
-
-      tmp8.clear();
-      Contract(1.0,tmp7,shape(1,4),(*this)(Ly-1,col),shape(0,2),0.0,tmp8);
-
-      tmp8bis.clear();
-      Contract(1.0,tmp8,shape(4,7),env.gr(col)[Ly-1],shape(1,2),0.0,tmp8bis);
-
-      //move to a DArray<3> object
-      RO[Ly - 3] = tmp8bis.reshape_clear(shape(env.gl(col - 1)[Ly - 1].shape(0),(*this)(Ly-1,col).shape(3),(*this)(Ly-1,col).shape(3),env.gr(col)[Ly - 1].shape(0)));
-
-      //now construct the middle operators
-      for(int row = Ly - 2;row > 1;--row){
-
-         tmp6.clear();
-         Contract(1.0,env.gl(col - 1)[row],shape(3),RO[row-1],shape(0),0.0,tmp6);
-
-         tmp7.clear();
-         Contract(1.0,tmp6,shape(1,3),(*this)(row,col),shape(0,1),0.0,tmp7);
-
-         tmp6.clear();
-         Contract(1.0,tmp7,shape(1,2,4),(*this)(row,col),shape(0,1,2),0.0,tmp6);
-
-         tmp6bis.clear();
-         Permute(tmp6,shape(0,2,4,3,5,1),tmp6bis);
-
-         RO[row-2].clear();
-         Gemm(CblasNoTrans,CblasTrans,1.0,tmp6bis,env.gr(col)[row],0.0,RO[row - 2]);
-
-      }
+      contractions::init_ro('V',col,*this,RO);
 
       // --- now move from left to right to get the expecation value of the interactions ---
 
@@ -1342,28 +1033,7 @@ double PEPS<double>::energy(){
    // -- (3) -- || left column = 0: again similar to overlap calculation
 
    //first construct the right renormalized operators
-
-   //tmp comes out index (t,b)
-   Contract(1.0,env.gl(0)[Ly - 1],shape(1,2),env.gr(0)[Ly - 1],shape(1,2),0.0,tmp4);
-
-   //reshape tmp to a 2-index array
-   R[Ly - 3] = tmp4.reshape_clear( shape((*this)(Ly-1,0).shape(3),(*this)(Ly-1,0).shape(3),env.gr(0)[Ly-1].shape(0)));
-
-   //now construct the rest
-   for(int row = Ly - 2;row > 1;--row){
-
-      int m = env.gl(0)[row].shape(0) * env.gl(0)[row].shape(1) * env.gl(0)[row].shape(2);//rows of op(A)
-      int n = R[row - 1].shape(2);//col of op(B)
-      int k = R[row - 1].shape(0) * R[row - 1].shape(1);
-
-      tmp5.resize( shape( (*this)(row,Lx-1).shape(3),(*this)(row,Lx-1).shape(3),env.gl(0)[row].shape(1),env.gl(0)[row].shape(2),R[row-1].shape(2) ) );
-
-      blas::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,m,n,k,1.0, env.gl(0)[row].data(),k, R[row - 1].data(), n,0.0,tmp5.data(), n);
-
-      R[row - 2].clear();
-      Contract(1.0,tmp5,shape(2,3,4),env.gr(0)[row],shape(1,2,3),0.0,R[row - 2]);
-
-   }
+   contractions::init_ro('l',*this,R);
 
    //construct the left operator with two open physical bonds
    tmp7.clear();
