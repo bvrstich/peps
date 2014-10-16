@@ -21,97 +21,101 @@ namespace contractions {
     * @param option == 't'op ,'b'ottom, 'l'eft or 'r'ight
     * @param rc is row or column index, col for t,b row for r,l
     */
-   void update_L(char option,int rc,DArray<2> &L){
-/*
+   void update_L(char option,int rc,DArray<3> &L){
+
       if(option == 'b'){//bottom
 
          if(rc == 0){
 
             DArray<4> tmp4;
-            Contract(1.0,env.gt(0)[0],shape(1),env.gb(0)[0],shape(1),0.0,tmp4);
+            Contract(1.0,env.gt(0)[0],shape(1,2),env.gb(0)[0],shape(1,2),0.0,tmp4);
 
-            L = tmp4.reshape_clear(shape(env.gt(0)[0].shape(2),env.gb(0)[0].shape(2)));
+            L = tmp4.reshape_clear(shape(env.gt(0)[0].shape(3),D,D));
 
          }
-         else{
+         else if(rc < Lx - 1){
 
             //update the left renormalized operator:
-            DArray<3> tmp3;
-            Contract(1.0,L,shape(0),env.gt(0)[rc],shape(0),0.0,tmp3);
+            DArray<5> tmp5;
+            Contract(1.0,L,shape(0),env.gt(0)[rc],shape(0),0.0,tmp5);
 
-            L.clear();
-            Contract(1.0,tmp3,shape(0,1),env.gb(0)[rc],shape(0,1),0.0,L);
+            DArray<4> tmp4 = tmp5.reshape_clear( shape(tmp5.shape(0)*tmp5.shape(1),tmp5.shape(2),tmp5.shape(3),tmp5.shape(4)) );
+
+            DArray<2> tmp2;
+            Contract(1.0,tmp4,shape(0,1,2),env.gb(0)[rc],shape(0,1,2),0.0,tmp2);
+
+            L = tmp4.reshape_clear(shape(env.gt(0)[0].shape(3),D,D));
 
          }
 
       }
       else if(option == 't'){//top
-
-         if(rc == 0){
+         /*
+            if(rc == 0){
 
             DArray<4> tmp4;
             Contract(1.0,env.gt(Ly-2)[0],shape(1),env.gb(Ly-2)[0],shape(1),0.0,tmp4);
 
             L = tmp4.reshape_clear(shape(env.gt(Ly-2)[0].shape(2),env.gb(Ly-2)[0].shape(2)));
 
+            }
+            else{
+
+         //update the left renormalized operator:
+         DArray<3> tmp3;
+         Contract(1.0,L,shape(0),env.gt(Ly-2)[rc],shape(0),0.0,tmp3);
+
+         L.clear();
+         Contract(1.0,tmp3,shape(0,1),env.gb(Ly-2)[rc],shape(0,1),0.0,L);
+
          }
-         else{
-
-            //update the left renormalized operator:
-            DArray<3> tmp3;
-            Contract(1.0,L,shape(0),env.gt(Ly-2)[rc],shape(0),0.0,tmp3);
-
-            L.clear();
-            Contract(1.0,tmp3,shape(0,1),env.gb(Ly-2)[rc],shape(0,1),0.0,L);
-
-         }
-
+         */
       }
       else if(option == 'l'){//left
-
-         if(rc == 0){
+         /*
+            if(rc == 0){
 
             DArray<4> tmp4;
             Contract(1.0,env.gr(0)[0],shape(1),env.gl(0)[0],shape(1),0.0,tmp4);
 
             L = tmp4.reshape_clear(shape(env.gr(0)[0].shape(2),env.gl(0)[0].shape(2)));
 
+            }
+            else{
+
+         //update the left renormalized operator:
+         DArray<3> tmp3;
+         Contract(1.0,L,shape(0),env.gr(0)[rc],shape(0),0.0,tmp3);
+
+         L.clear();
+         Contract(1.0,tmp3,shape(0,1),env.gl(0)[rc],shape(0,1),0.0,L);
+
          }
-         else{
-
-            //update the left renormalized operator:
-            DArray<3> tmp3;
-            Contract(1.0,L,shape(0),env.gr(0)[rc],shape(0),0.0,tmp3);
-
-            L.clear();
-            Contract(1.0,tmp3,shape(0,1),env.gl(0)[rc],shape(0,1),0.0,L);
-
-         }
-
+         */
       }
       else{//right
-
-         if(rc == 0){
+         /*
+            if(rc == 0){
 
             DArray<4> tmp4;
             Contract(1.0,env.gr(Lx-2)[0],shape(1),env.gl(Lx-2)[0],shape(1),0.0,tmp4);
 
             L = tmp4.reshape_clear(shape(env.gr(Lx-2)[0].shape(2),env.gl(Lx-2)[0].shape(2)));
 
+            }
+            else{
+
+         //update the left renormalized operator:
+         DArray<3> tmp3;
+         Contract(1.0,L,shape(0),env.gr(Lx-2)[rc],shape(0),0.0,tmp3);
+
+         L.clear();
+         Contract(1.0,tmp3,shape(0,1),env.gl(Lx-2)[rc],shape(0,1),0.0,L);
+
          }
-         else{
-
-            //update the left renormalized operator:
-            DArray<3> tmp3;
-            Contract(1.0,L,shape(0),env.gr(Lx-2)[rc],shape(0),0.0,tmp3);
-
-            L.clear();
-            Contract(1.0,tmp3,shape(0,1),env.gl(Lx-2)[rc],shape(0,1),0.0,L);
-
-         }
-
+         */
       }
-*/
+
    }
 
    /** 

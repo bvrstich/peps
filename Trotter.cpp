@@ -47,8 +47,6 @@ Trotter::Trotter(double tau_in) {
 
             }
 
-   cout << Sij << endl;
-
    DArray<1> eig(d*d);
 
    lapack::syev(CblasRowMajor, 'V', 'U', d*d, Sij.data(), d*d, eig.data());
