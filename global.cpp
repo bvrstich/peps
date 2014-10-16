@@ -48,6 +48,10 @@ namespace global{
 
       d = d_in;
 
+      D = D_in;
+
+      D_aux = D_aux_in;
+
       //set the interaction
       ham.set_heisenberg(true);
 

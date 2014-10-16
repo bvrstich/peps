@@ -33,6 +33,12 @@ namespace global {
    //!physical dimension of sites
    extern int d;
 
+   //!bond dimension of the tensors
+   extern int D;
+
+   //!auxiliary bond dimension of the tensors
+   extern int D_aux;
+
    //!hamiltonian object, containing nn-interaction operators and coefficients
    extern Hamiltonian ham;
 

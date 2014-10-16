@@ -31,16 +31,23 @@ Trotter::Trotter(double tau_in) {
    //first construct S_i.S_j on a d^2 x d^2 space
    DArray<2> Sij(d*d,d*d);
 
-   Sij = 0.0;
-
    //basis: |dd> , |du> , |ud> , |uu>
-   Sij(0,0) = 0.25;
-   Sij(1,1) = -0.25;
-   Sij(2,2) = -0.25;
-   Sij(3,3) = 0.25;
+   for(int s_i = 0;s_i < d;++s_i)
+      for(int s_j = 0;s_j < d;++s_j)
+         for(int s_k = 0;s_k < d;++s_k)
+            for(int s_l = 0;s_l < d;++s_l){
+               
+               int i = s_i*d + s_j;
+               int k = s_k*d + s_l;
 
-   Sij(1,2) = 0.5;
-   Sij(2,1) = 0.5;
+               Sij(i,k) = 0.0;
+
+               for(int del = 0;del < global::ham.gdelta();++del)
+                  Sij(i,k) += global::ham.gcoef(del) * global::ham.gL(del)(s_i,s_k) * global::ham.gR(del)(s_j,s_l);
+
+            }
+
+   cout << Sij << endl;
 
    DArray<1> eig(d*d);
 
