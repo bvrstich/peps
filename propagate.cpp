@@ -62,30 +62,24 @@ namespace propagate {
       //middle sites of the bottom row:
       for(int col = 0;col < Lx-2;++col){
 
-         cout << col << "test1" << endl;
 
          //first construct the reduced tensors of the first pair to propagate
          construct_reduced_tensor('H','L',peps(0,col),QL,a_L);
          construct_reduced_tensor('H','R',peps(0,col+1),QR,a_R);
 
-         cout << col << "test2" << endl;
          //calculate the effective environment N_eff
          calc_N_eff('b',col,L,QL,R[col],QR,N_eff);
 
-         cout << col << "test3" << endl;
          //make environment close to unitary before the update
          canonicalize(full,N_eff,a_L,QL,a_R,QR);
 
-         cout << col << "test4" << endl;
          //now do the update! Apply the gates!
          update(full,N_eff,a_L,a_R,5);
 
-         cout << col << "test5" << endl;
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,col),shape(i,j,m,k,n));
          Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(0,col+1),shape(i,o,j,m,n));
 
-         cout << col << "test6" << endl;
          contractions::update_L('b',col,L);
 
       }
@@ -888,10 +882,10 @@ void calc_N_eff(char option,int rc,const DArray<3> &L,const DArray<4> &QL,const 
 
          //to construct the R_environment
          tmp5bis.clear();
-         Contract(1.0,tmp5,shape(1,3),QR,shape(1,4),0.0,tmp5bis);
+         Contract(1.0,tmp5,shape(1,3),QR,shape(1,3),0.0,tmp5bis);
 
          tmp5.clear();
-         Contract(1.0,tmp5bis,shape(1,2),QR,shape(1,4),0.0,tmp5);
+         Contract(1.0,tmp5bis,shape(1,2),QR,shape(1,3),0.0,tmp5);
 
          //construct the 'Right' eff environment
          DArray<3> R_env = tmp5.reshape_clear(shape(tmp5.shape(0),tmp5.shape(1),tmp5.shape(3)));

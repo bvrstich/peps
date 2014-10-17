@@ -35,6 +35,7 @@ namespace contractions {
          }
          else if(rc < Lx - 1){
 
+
             //update the left renormalized operator:
             DArray<5> tmp5;
             Contract(1.0,L,shape(0),env.gt(0)[rc],shape(0),0.0,tmp5);
@@ -44,7 +45,7 @@ namespace contractions {
             DArray<2> tmp2;
             Contract(1.0,tmp4,shape(0,1,2),env.gb(0)[rc],shape(0,1,2),0.0,tmp2);
 
-            L = tmp4.reshape_clear(shape(env.gt(0)[0].shape(3),D,D));
+            L = tmp2.reshape_clear(shape(env.gt(0)[rc].shape(3),D,D));
 
          }
 
