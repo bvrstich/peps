@@ -17,7 +17,7 @@ namespace contractions {
 
    void init_ro(char option,int rc,const PEPS<double> &,vector< DArray<4> > &RO);
 
-   void update_L(char option,int col,DArray<3> &L);
+   void update_L(char option,int col,const PEPS<double> &,DArray<3> &L);
 
    void update_L(char option,int row,int col,const PEPS<double> &,DArray<4> &LO);
 

@@ -40,7 +40,9 @@ int main(int argc,char *argv[]){
    peps.initialize_jastrow(f);
    peps.normalize();
 
-   propagate::step(true,peps);
+   global::env.calc('A',peps);
+
+   propagate::step(false,peps);
 
    return 0;
 }

@@ -21,31 +21,35 @@ namespace contractions {
     * @param option == 't'op ,'b'ottom, 'l'eft or 'r'ight
     * @param rc is row or column index, col for t,b row for r,l
     */
-   void update_L(char option,int rc,DArray<3> &L){
+   void update_L(char option,int rc,const PEPS<double> &peps,DArray<3> &L){
 
       if(option == 'b'){//bottom
 
          if(rc == 0){
 
-            DArray<4> tmp4;
-            Contract(1.0,env.gt(0)[0],shape(1,2),env.gb(0)[0],shape(1,2),0.0,tmp4);
+            DArray<7> tmp7;
+            Contract(1.0,env.gt(0)[0],shape(1),peps(0,0),shape(1),0.0,tmp7);
 
-            L = tmp4.reshape_clear(shape(env.gt(0)[0].shape(3),D,D));
+            DArray<8> tmp8;
+            Contract(1.0,tmp7,shape(1,4),peps(0,0),shape(1,2),0.0,tmp8);
+
+            L = tmp8.reshape_clear( shape(tmp8.shape(1),tmp8.shape(4),tmp8.shape(7)) );
 
          }
-         else if(rc < Lx - 1){
+         else if(rc < Lx - 2){
 
-
-            //update the left renormalized operator:
+            //construct left renormalized operator for next site: first construct intermediary
             DArray<5> tmp5;
             Contract(1.0,L,shape(0),env.gt(0)[rc],shape(0),0.0,tmp5);
 
-            DArray<4> tmp4 = tmp5.reshape_clear( shape(tmp5.shape(0)*tmp5.shape(1),tmp5.shape(2),tmp5.shape(3),tmp5.shape(4)) );
+            DArray<6> tmp6;
+            Contract(1.0,tmp5,shape(0,2),peps(0,rc),shape(0,1),0.0,tmp6);
 
-            DArray<2> tmp2;
-            Contract(1.0,tmp4,shape(0,1,2),env.gb(0)[rc],shape(0,1,2),0.0,tmp2);
+            tmp5.clear();
+            Contract(1.0,tmp6,shape(0,1,3),peps(0,rc),shape(0,1,2),0.0,tmp5);
 
-            L = tmp2.reshape_clear(shape(env.gt(0)[rc].shape(3),D,D));
+            L = tmp5.reshape_clear(shape(env.gt(0)[rc].shape(3),peps(0,rc).shape(4),peps(0,rc).shape(4)));
+
 
          }
          else{//nothing, no update necessary
@@ -54,26 +58,30 @@ namespace contractions {
 
       }
       else if(option == 't'){//top
-         /*
-            if(rc == 0){
+
+         if(rc == 0){
 
             DArray<4> tmp4;
-            Contract(1.0,env.gt(Ly-2)[0],shape(1),env.gb(Ly-2)[0],shape(1),0.0,tmp4);
+            Contract(1.0,env.gt(Ly-2)[0],shape(1,2),env.gb(Ly-2)[0],shape(1,2),0.0,tmp4);
 
-            L = tmp4.reshape_clear(shape(env.gt(Ly-2)[0].shape(2),env.gb(Ly-2)[0].shape(2)));
-
-            }
-            else{
-
-         //update the left renormalized operator:
-         DArray<3> tmp3;
-         Contract(1.0,L,shape(0),env.gt(Ly-2)[rc],shape(0),0.0,tmp3);
-
-         L.clear();
-         Contract(1.0,tmp3,shape(0,1),env.gb(Ly-2)[rc],shape(0,1),0.0,L);
+            L = tmp4.reshape_clear(shape(D,D,env.gb(Ly-2)[0].shape(3)));
 
          }
-         */
+         else{
+
+            //update the left renormalized operator:
+            DArray<5> tmp5;
+            Contract(1.0,L,shape(2),env.gb(Ly - 2)[rc],shape(0),0.0,tmp5);
+
+            DArray<4> tmp4 = tmp5.reshape_clear( shape(tmp5.shape(0)*tmp5.shape(1),tmp5.shape(2),tmp5.shape(3),tmp5.shape(4)) );
+
+            DArray<2> tmp2;
+            Contract(1.0,tmp4,shape(0,1,2),env.gt(Ly - 2)[rc],shape(0,1,2),0.0,tmp2);
+
+            L = tmp2.reshape_clear(shape(peps(Ly-1,rc).shape(4),peps(Ly-1,rc).shape(4),env.gb(Ly - 2)[rc].shape(3)));
+
+         }
+
       }
       else if(option == 'l'){//left
          /*
@@ -352,7 +360,7 @@ namespace contractions {
       if(option == 'H'){
 
          if(col == 0){
-            
+
             //paste top environment on
             DArray<7> tmp7;
             Contract(1.0,env.gt(row)[0],shape(1),peps(row,0),shape(1),0.0,tmp7);
@@ -367,7 +375,7 @@ namespace contractions {
             LO = tmp8bis.reshape_clear(shape(env.gt(row)[0].shape(3),peps(row,0).shape(4),peps(row,0).shape(4),env.gb(row-1)[0].shape(3)));
 
          }
-         else if(col < Lx - 1){//middle
+         else if(col < Lx - 2){//middle
 
             //first attach top to left unity
             DArray<6> tmp6;
@@ -378,6 +386,7 @@ namespace contractions {
             Contract(1.0,tmp6,shape(3,0),peps(row,col),shape(0,1),0.0,tmp7);
 
             //finally construct new left unity
+            tmp6.clear();
             Contract(1.0,tmp7,shape(2,0,4),peps(row,col),shape(0,1,2),0.0,tmp6);
 
             DArray<6> tmp6bis;
