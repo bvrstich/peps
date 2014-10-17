@@ -19,7 +19,7 @@ namespace contractions {
 
    void update_L(char option,int col,DArray<3> &L);
 
-   void update_L(char option,int row,int col,const PEPS<double> &,DArray<3> &LO);
+   void update_L(char option,int row,int col,const PEPS<double> &,DArray<4> &LO);
 
 }
 

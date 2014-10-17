@@ -342,92 +342,98 @@ namespace contractions {
    /**
     * update left renormalized operator on site (row,col )
     * @param option 'H'orizonal or 'V'ertical
-    * @param li large index, if 'H' then row, if 'V' then col
-    * @param si small index, if 'H' then col, if 'V' then row
+    * @param row index
+    * @param col index
     * @param peps the input PEPS object
     * @param LO input old left renormalized operator, output new left renormalized operator
     */
-   void update_L(char option,int li,int si,const PEPS<double> &peps,DArray<3> &LO){
-      /*
-         if(option == 'H'){
+   void update_L(char option,int row,int col,const PEPS<double> &peps,DArray<4> &LO){
 
-         if(si == 0){
+      if(option == 'H'){
 
-         DArray<4> tmp4;
-         env.construct_double_layer('H',peps(li,0),tmp4);
+         if(col == 0){
+            
+            //paste top environment on
+            DArray<7> tmp7;
+            Contract(1.0,env.gt(row)[0],shape(1),peps(row,0),shape(1),0.0,tmp7);
 
-      //paste top environment on
-      DArray<5> tmp5;
-      Contract(1.0,env.gt(li)[0],shape(1),tmp4,shape(1),0.0,tmp5);
+            DArray<8> tmp8;
+            Contract(1.0,tmp7,shape(1,4),peps(row,0),shape(1,2),0.0,tmp8);
 
-      //then bottom enviroment
-      DArray<6> tmp6;
-      Contract(1.0,tmp5,shape(3),env.gb(li-1)[0],shape(1),0.0,tmp6);
+            DArray<8> tmp8bis;
+            Contract(1.0,tmp8,shape(3,6),env.gb(row-1)[0],shape(1,2),0.0,tmp8bis);
 
-      //move to a DArray<3> object: order (top-env,peps-row,bottom-env)
-      LO = tmp6.reshape_clear(shape(env.gt(li)[0].shape(2),tmp4.shape(3),env.gb(li-1)[0].shape(2)));
+            //move to a DArray<4> object: order (top-env,(*this)-row,bottom-env)
+            LO = tmp8bis.reshape_clear(shape(env.gt(row)[0].shape(3),peps(row,0).shape(4),peps(row,0).shape(4),env.gb(row-1)[0].shape(3)));
 
-      }
-      else{
+         }
+         else if(col < Lx - 1){//middle
 
-      enum {i,j,k,m,n,o};
+            //first attach top to left unity
+            DArray<6> tmp6;
+            Contract(1.0,env.gt(row)[col],shape(0),LO,shape(0),0.0,tmp6);
 
-      //first attach top to left unity
-      DArray<4> I4;
-      Contract(1.0,env.gt(li)[si],shape(0),LO,shape(0),0.0,I4);
+            //add peps to it, intermediary
+            DArray<7> tmp7;
+            Contract(1.0,tmp6,shape(3,0),peps(row,col),shape(0,1),0.0,tmp7);
 
-      DArray<4> tmp4;
-      env.construct_double_layer('H',peps(li,si),tmp4);
+            //finally construct new left unity
+            Contract(1.0,tmp7,shape(2,0,4),peps(row,col),shape(0,1,2),0.0,tmp6);
 
-      DArray<4> I4bis;
-      Contract(1.0,I4,shape(i,j,k,o),tmp4,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
+            DArray<6> tmp6bis;
+            Permute(tmp6,shape(0,3,5,1,2,4),tmp6bis);
 
-      LO.clear();
-      Contract(1.0,I4bis,shape(2,3),env.gb(li-1)[si],shape(0,1),0.0,LO);
+            LO.clear();
+            Gemm(CblasNoTrans,CblasNoTrans,1.0,tmp6bis,env.gb(row - 1)[col],0.0,LO);
 
-      }
+         }
+         else{
+
+            //no update
+
+         }
 
       }
       else{//Vertical
+         /*
+            if(si == 0){
 
-      if(si == 0){
+            DArray<4> tmp4;
+            env.construct_double_layer('V',peps(0,li),tmp4);
 
-      DArray<4> tmp4;
-      env.construct_double_layer('V',peps(0,li),tmp4);
+         //paste top environment on
+         DArray<5> tmp5;
+         Contract(1.0,env.gr(li)[0],shape(1),tmp4,shape(1),0.0,tmp5);
 
-      //paste top environment on
-      DArray<5> tmp5;
-      Contract(1.0,env.gr(li)[0],shape(1),tmp4,shape(1),0.0,tmp5);
+         //then bottom enviroment
+         DArray<6> tmp6;
+         Contract(1.0,tmp5,shape(3),env.gl(li-1)[0],shape(1),0.0,tmp6);
 
-      //then bottom enviroment
-      DArray<6> tmp6;
-      Contract(1.0,tmp5,shape(3),env.gl(li-1)[0],shape(1),0.0,tmp6);
+         //move to a DArray<3> object: order (top-env,peps-row,bottom-env)
+         LO = tmp6.reshape_clear(shape(env.gr(li)[0].shape(2),tmp4.shape(3),env.gl(li-1)[0].shape(2)));
 
-      //move to a DArray<3> object: order (top-env,peps-row,bottom-env)
-      LO = tmp6.reshape_clear(shape(env.gr(li)[0].shape(2),tmp4.shape(3),env.gl(li-1)[0].shape(2)));
+         }
+         else{
 
+         enum {i,j,k,m,n,o};
+
+         //first attach top to left unity
+         DArray<4> I4;
+         Contract(1.0,env.gr(li)[si],shape(0),LO,shape(0),0.0,I4);
+
+         DArray<4> tmp4;
+         env.construct_double_layer('V',peps(si,li),tmp4);
+
+         DArray<4> I4bis;
+         Contract(1.0,I4,shape(i,j,k,o),tmp4,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
+
+         LO.clear();
+         Contract(1.0,I4bis,shape(2,3),env.gl(li-1)[si],shape(0,1),0.0,LO);
+
+         }
+         */
       }
-      else{
 
-      enum {i,j,k,m,n,o};
-
-      //first attach top to left unity
-      DArray<4> I4;
-      Contract(1.0,env.gr(li)[si],shape(0),LO,shape(0),0.0,I4);
-
-      DArray<4> tmp4;
-      env.construct_double_layer('V',peps(si,li),tmp4);
-
-      DArray<4> I4bis;
-      Contract(1.0,I4,shape(i,j,k,o),tmp4,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
-
-      LO.clear();
-      Contract(1.0,I4bis,shape(2,3),env.gl(li-1)[si],shape(0,1),0.0,LO);
-
-   }
-
-   }
-   */
    }
 
 }

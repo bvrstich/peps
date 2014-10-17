@@ -22,7 +22,7 @@ namespace propagate {
 
    void calc_N_eff(char,int,const DArray<3> &,const DArray<4> &,const DArray<3> &, const DArray<4> &,DArray<4> &);
 
-   void calc_N_eff(char,int,int,const DArray<3> &,const DArray<4> &,const DArray<3> &,const DArray<4> &,DArray<4> &);
+   void calc_N_eff(char,int,int,const DArray<4> &,const DArray<4> &,const DArray<4> &,const DArray<4> &,DArray<4> &);
 
    void canonicalize(bool,DArray<4> &,DArray<3> &a_L,DArray<4> &QL,DArray<3> &a_R,DArray<4> &QR);
 
