@@ -48,6 +48,9 @@ namespace contractions {
             L = tmp2.reshape_clear(shape(env.gt(0)[rc].shape(3),D,D));
 
          }
+         else{//nothing, no update necessary
+
+         }
 
       }
       else if(option == 't'){//top
