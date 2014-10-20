@@ -110,26 +110,34 @@ namespace contractions {
          */
       }
       else{//right
-         /*
-            if(rc == 0){
 
-            DArray<4> tmp4;
-            Contract(1.0,env.gr(Lx-2)[0],shape(1),env.gl(Lx-2)[0],shape(1),0.0,tmp4);
+         if(rc == 0){
 
-            L = tmp4.reshape_clear(shape(env.gr(Lx-2)[0].shape(2),env.gl(Lx-2)[0].shape(2)));
+            DArray<7> tmp7;
+            Contract(1.0,env.gl(Lx - 2)[0],shape(1),peps(0,Lx - 1),shape(0),0.0,tmp7);
 
-            }
-            else{
+            DArray<8> tmp8;
+            Contract(1.0,tmp7,shape(1,4),peps(0,Lx - 1),shape(0,2),0.0,tmp8);
 
-         //update the left renormalized operator:
-         DArray<3> tmp3;
-         Contract(1.0,L,shape(0),env.gr(Lx-2)[rc],shape(0),0.0,tmp3);
-
-         L.clear();
-         Contract(1.0,tmp3,shape(0,1),env.gl(Lx-2)[rc],shape(0,1),0.0,L);
+            L = tmp8.reshape_clear( shape(tmp8.shape(1),tmp8.shape(2),tmp8.shape(5)) );
 
          }
-         */
+         else{
+            
+            //construct left renormalized operators for next site: first construct intermediary
+            DArray<5> tmp5;
+            Contract(1.0,L,shape(0),env.gl(Lx - 2)[rc],shape(0),0.0,tmp5);
+
+            DArray<6> tmp6;
+            Contract(1.0,tmp5,shape(0,2),peps(rc,Lx - 1),shape(3,0),0.0,tmp6);
+
+            tmp5.clear();
+            Contract(1.0,tmp6,shape(0,1,4),peps(rc,Lx-1),shape(3,0,2),0.0,tmp5);
+
+            L = tmp5.reshape_clear(shape(env.gl(Lx - 2)[rc].shape(3),peps(rc,Lx - 1).shape(1),peps(rc,Lx - 1).shape(1)));
+
+         }
+
       }
 
    }
@@ -408,43 +416,49 @@ namespace contractions {
 
       }
       else{//Vertical
-         /*
-            if(si == 0){
 
-            DArray<4> tmp4;
-            env.construct_double_layer('V',peps(0,li),tmp4);
+         if(row == 0){
 
-         //paste top environment on
-         DArray<5> tmp5;
-         Contract(1.0,env.gr(li)[0],shape(1),tmp4,shape(1),0.0,tmp5);
+            //paste left environment on
+            DArray<7> tmp7;
+            Contract(1.0,env.gl(col - 1)[0],shape(1),peps(0,col),shape(0),0.0,tmp7);
 
-         //then bottom enviroment
-         DArray<6> tmp6;
-         Contract(1.0,tmp5,shape(3),env.gl(li-1)[0],shape(1),0.0,tmp6);
+            DArray<8> tmp8;
+            Contract(1.0,tmp7,shape(1,4),peps(0,col),shape(0,2),0.0,tmp8);
 
-         //move to a DArray<3> object: order (top-env,peps-row,bottom-env)
-         LO = tmp6.reshape_clear(shape(env.gr(li)[0].shape(2),tmp4.shape(3),env.gl(li-1)[0].shape(2)));
+            DArray<8> tmp8bis;
+            Contract(1.0,tmp8,shape(4,7),env.gr(col)[0],shape(1,2),0.0,tmp8bis);
+
+            //move to a DArray<3> object: order (top-env,(*this)-row,bottom-env)
+            LO = tmp8bis.reshape_clear(shape(env.gl(col - 1)[0].shape(3),peps(0,col).shape(1),peps(0,col).shape(1),env.gr(col)[0].shape(3)));
+
+         }
+         else if(row < Ly - 2){
+
+            //first attach top to left unity, make intermediary
+            DArray<6> tmp6;
+            Contract(1.0,env.gl(col - 1)[row],shape(0),LO,shape(0),0.0,tmp6);
+
+            //add peps to it
+            DArray<7> tmp7;
+            Contract(1.0,tmp6,shape(0,3),peps(row,col),shape(0,3),0.0,tmp7);
+
+            tmp6.clear();
+            Contract(1.0,tmp7,shape(0,5,2),peps(row,col),shape(0,2,3),0.0,tmp6);
+
+            DArray<6> tmp6bis;
+            Permute(tmp6,shape(0,2,4,1,3,5),tmp6bis);
+
+            LO.clear();
+            Gemm(CblasNoTrans,CblasNoTrans,1.0,tmp6bis,env.gr(col)[row],0.0,LO);
 
          }
          else{
 
-         enum {i,j,k,m,n,o};
-
-         //first attach top to left unity
-         DArray<4> I4;
-         Contract(1.0,env.gr(li)[si],shape(0),LO,shape(0),0.0,I4);
-
-         DArray<4> tmp4;
-         env.construct_double_layer('V',peps(si,li),tmp4);
-
-         DArray<4> I4bis;
-         Contract(1.0,I4,shape(i,j,k,o),tmp4,shape(k,i,m,n),0.0,I4bis,shape(j,n,o,m));
-
-         LO.clear();
-         Contract(1.0,I4bis,shape(2,3),env.gl(li-1)[si],shape(0,1),0.0,LO);
+            //nothing
 
          }
-         */
+
       }
 
    }

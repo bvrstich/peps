@@ -898,7 +898,7 @@ double PEPS<double>::energy(){
 
    }
 
-   // -- (2) -- now move from left to right calculating everything like an MPO/MPS expectation value
+   // -- (2) -- now move from right to left calculating everything like an MPO/MPS expectation value
 
    //Right renormalized operators
    RO.resize(Ly - 2);
