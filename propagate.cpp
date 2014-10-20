@@ -101,8 +101,7 @@ int row = 1;
          contractions::init_ro('H',row,peps,RO);
 
          //middle pairs of the row:
-         //for(int col = 0;col < Lx - 1;++col){
-         for(int col = 0;col < 2;++col){
+         for(int col = 0;col < Lx - 1;++col){
 
             //first construct the reduced tensors of the first pair to propagate
             construct_reduced_tensor('H','L',peps(row,col),QL,a_L);
@@ -110,6 +109,7 @@ int row = 1;
 
             //calculate the effective environment N_eff
             calc_N_eff('H',row,col,LO,QL,RO[col],QR,N_eff);
+            cout << N_eff << endl;
 /*
             //make environment close to unitary before the update
             canonicalize(full,N_eff,a_L,QL,a_R,QR);
@@ -1360,16 +1360,15 @@ int row = 1;
          else if(col == Lx - 2){//right edge
 
             //Left
-
             //first attach top to left unity
             DArray<6> tmp6;
             Contract(1.0,env.gt(row)[col],shape(0),LO,shape(0),0.0,tmp6);
 
             DArray<6> tmp6bis;
-            Contract(1.0,tmp6,shape(0,3),QL,shape(0,1),0.0,tmp6bis);
+            Contract(1.0,tmp6,shape(3,0),QL,shape(0,1),0.0,tmp6bis);
 
             tmp6.clear();
-            Contract(1.0,tmp6bis,shape(0,2),QL,shape(0,1),0.0,tmp6);
+            Contract(1.0,tmp6bis,shape(2,0),QL,shape(0,1),0.0,tmp6);
 
             tmp6bis.clear();
             Permute(tmp6,shape(0,3,5,1,2,4),tmp6bis);
@@ -1441,12 +1440,10 @@ int row = 1;
             N_eff.clear();
             Contract(1.0,LO_env,shape(i,j,k,l),RO_env,shape(i,m,n,l),0.0,N_eff,shape(j,m,k,n));
 
-            cout << N_eff << endl;
-
          }
 
       }
-      else{//calc environemnt for vertical pairs
+      else{//calc environment for vertical pairs
          /*
             if(si == 0){//left edge
 
