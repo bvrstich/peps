@@ -29,7 +29,7 @@ int main(int argc,char *argv[]){
    int D = atoi(argv[3]);//virtual dimension
    int D_aux = atoi(argv[4]);//auxiliary dimension for the contraction
 
-   double tau = 0.0;
+   double tau = 0.01;
 
    //initialize some statics dimensions
    global::init(D,D_aux,d,L,L,tau);

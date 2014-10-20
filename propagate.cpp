@@ -100,17 +100,18 @@ int row = 1;
          //first create right renormalized operator
          contractions::init_ro('H',row,peps,RO);
 
-         //middle pairs of the row:
          for(int col = 0;col < Lx - 1;++col){
 
             //first construct the reduced tensors of the first pair to propagate
             construct_reduced_tensor('H','L',peps(row,col),QL,a_L);
             construct_reduced_tensor('H','R',peps(row,col+1),QR,a_R);
 
+            Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,col),shape(i,j,m,k,n));
+            Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(row,col+1),shape(i,o,j,m,n));
+
             //calculate the effective environment N_eff
             calc_N_eff('H',row,col,LO,QL,RO[col],QR,N_eff);
-            cout << N_eff << endl;
-/*
+
             //make environment close to unitary before the update
             canonicalize(full,N_eff,a_L,QL,a_R,QR);
 
@@ -120,11 +121,15 @@ int row = 1;
             //and expand back to the full tensors
             Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,col),shape(i,j,m,k,n));
             Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(row,col+1),shape(i,o,j,m,n));
-*/
+
             //first construct a double layer object for the newly updated bottom 
             contractions::update_L('H',row,col,peps,LO);
 
          }
+
+         for(int col = 0;col < Lx;++col)
+            cout << peps(row,col) << endl;
+
 /*
          //finally update the 'bottom' environment for the row
          env.add_layer('b',row,peps,5);
