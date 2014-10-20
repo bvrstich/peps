@@ -50,7 +50,6 @@ namespace contractions {
 
             L = tmp5.reshape_clear(shape(env.gt(0)[rc].shape(3),peps(0,rc).shape(4),peps(0,rc).shape(4)));
 
-
          }
          else{//nothing, no update necessary
 
@@ -61,24 +60,29 @@ namespace contractions {
 
          if(rc == 0){
 
-            DArray<4> tmp4;
-            Contract(1.0,env.gt(Ly-2)[0],shape(1,2),env.gb(Ly-2)[0],shape(1,2),0.0,tmp4);
+            DArray<7> tmp7;
+            Contract(1.0,peps(Ly-1,0),shape(3),env.gb(Ly-2)[0],shape(2),0.0,tmp7);
 
-            L = tmp4.reshape_clear(shape(D,D,env.gb(Ly-2)[0].shape(3)));
+            DArray<8> tmp8;
+            Contract(1.0,peps(Ly-1,0),shape(2,3),tmp7,shape(2,5),0.0,tmp8);
+
+            L = tmp8.reshape_clear( shape(tmp8.shape(2),tmp8.shape(5),tmp8.shape(7)) );
 
          }
          else{
 
-            //update the left renormalized operator:
+            //construct left renormalized operators for next site: first construct intermediary
             DArray<5> tmp5;
-            Contract(1.0,L,shape(2),env.gb(Ly - 2)[rc],shape(0),0.0,tmp5);
+            Contract(1.0,env.gb(Ly-2)[rc],shape(0),L,shape(2),0.0,tmp5);
 
-            DArray<4> tmp4 = tmp5.reshape_clear( shape(tmp5.shape(0)*tmp5.shape(1),tmp5.shape(2),tmp5.shape(3),tmp5.shape(4)) );
+            DArray<6> tmp6;
+            Contract(1.0,peps(Ly-1,rc),shape(3,0),tmp5,shape(1,4),0.0,tmp6);
 
-            DArray<2> tmp2;
-            Contract(1.0,tmp4,shape(0,1,2),env.gt(Ly - 2)[rc],shape(0,1,2),0.0,tmp2);
+            //finally construct new unity on the left
+            tmp5.clear();
+            Contract(1.0,peps(Ly-1,rc),shape(2,3,0),tmp6,shape(1,3,5),0.0,tmp5);
 
-            L = tmp2.reshape_clear(shape(peps(Ly-1,rc).shape(4),peps(Ly-1,rc).shape(4),env.gb(Ly - 2)[rc].shape(3)));
+            L = tmp5.reshape_clear(shape(peps(Ly-1,rc).shape(4),peps(Ly-1,rc).shape(4),env.gb(Ly-2)[rc].shape(3)));
 
          }
 
