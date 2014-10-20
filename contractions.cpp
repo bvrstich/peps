@@ -88,26 +88,35 @@ namespace contractions {
 
       }
       else if(option == 'l'){//left
-         /*
-            if(rc == 0){
 
-            DArray<4> tmp4;
-            Contract(1.0,env.gr(0)[0],shape(1),env.gl(0)[0],shape(1),0.0,tmp4);
+         if(rc == 0){
 
-            L = tmp4.reshape_clear(shape(env.gr(0)[0].shape(2),env.gl(0)[0].shape(2)));
+            DArray<7> tmp7;
+            Contract(1.0,peps(0,0),shape(4),env.gr(0)[0],shape(2),0.0,tmp7);
 
-            }
-            else{
+            DArray<8> tmp8;
+            Contract(1.0,peps(0,0),shape(2,4),tmp7,shape(2,5),0.0,tmp8);
 
-         //update the left renormalized operator:
-         DArray<3> tmp3;
-         Contract(1.0,L,shape(0),env.gr(0)[rc],shape(0),0.0,tmp3);
-
-         L.clear();
-         Contract(1.0,tmp3,shape(0,1),env.gl(0)[rc],shape(0,1),0.0,L);
+            L = tmp8.reshape_clear( shape(tmp8.shape(1),tmp8.shape(4),tmp8.shape(7)) );
 
          }
-         */
+         else{
+
+            //construct left renormalized operators for next site: first construct intermediary
+            DArray<5> tmp5;
+            Contract(1.0,env.gr(0)[rc],shape(0),L,shape(2),0.0,tmp5);
+
+            DArray<6> tmp6;
+            Contract(1.0,peps(rc,0),shape(3,4),tmp5,shape(4,1),0.0,tmp6);
+
+            // construct new unity on the left
+            tmp5.clear();
+            Contract(1.0,peps(rc,0),shape(2,3,4),tmp6,shape(2,5,3),0.0,tmp5);
+
+            L = tmp5.reshape_clear(shape(peps(rc,0).shape(1),peps(rc,0).shape(1),env.gr(0)[rc].shape(3)));
+
+         }
+
       }
       else{//right
 
@@ -123,7 +132,7 @@ namespace contractions {
 
          }
          else{
-            
+
             //construct left renormalized operators for next site: first construct intermediary
             DArray<5> tmp5;
             Contract(1.0,L,shape(0),env.gl(Lx - 2)[rc],shape(0),0.0,tmp5);
