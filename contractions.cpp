@@ -161,7 +161,7 @@ namespace contractions {
          for(int col = Lx - 2;col > 1;--col){
 
             tmp6.clear();
-            Contract(1.0,env.gt(rc)[col],shape(3),RO[col-1],shape(0),0.0,tmp6);
+            Contract(1.0,env.gt(rc)[col],shape(3),RO[col - 1],shape(0),0.0,tmp6);
 
             tmp7.clear();
             Contract(1.0,tmp6,shape(1,3),peps(rc,col),shape(1,4),0.0,tmp7);
@@ -172,7 +172,7 @@ namespace contractions {
             tmp6bis.clear();
             Permute(tmp6,shape(0,2,4,3,5,1),tmp6bis);
 
-            RO[col-2].clear();
+            RO[col - 2].clear();
             Gemm(CblasNoTrans,CblasTrans,1.0,tmp6bis,env.gb(rc - 1)[col],0.0,RO[col - 2]);
 
          }

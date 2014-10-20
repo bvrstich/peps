@@ -86,6 +86,7 @@ namespace propagate {
       //update the bottom row for the new peps
       env.gb(0).fill('b',peps);
 
+
       // ---------------------------------------------------//
       // --- !!! (2) the middle rows (1 -> Ly-2) (2) !!! ---// 
       // ---------------------------------------------------//
@@ -102,14 +103,14 @@ int row = 1;
          //middle pairs of the row:
          //for(int col = 0;col < Lx - 1;++col){
          for(int col = 0;col < 2;++col){
-         
+
             //first construct the reduced tensors of the first pair to propagate
             construct_reduced_tensor('H','L',peps(row,col),QL,a_L);
             construct_reduced_tensor('H','R',peps(row,col+1),QR,a_R);
 
             //calculate the effective environment N_eff
             calc_N_eff('H',row,col,LO,QL,RO[col],QR,N_eff);
-
+/*
             //make environment close to unitary before the update
             canonicalize(full,N_eff,a_L,QL,a_R,QR);
 
@@ -119,7 +120,7 @@ int row = 1;
             //and expand back to the full tensors
             Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,col),shape(i,j,m,k,n));
             Contract(1.0,a_R,shape(i,j,k),QR,shape(k,o,m,n),0.0,peps(row,col+1),shape(i,o,j,m,n));
-
+*/
             //first construct a double layer object for the newly updated bottom 
             contractions::update_L('H',row,col,peps,LO);
 
@@ -1405,10 +1406,10 @@ int row = 1;
             Contract(1.0,env.gt(row)[col],shape(0),LO,shape(0),0.0,tmp6);
 
             DArray<6> tmp6bis;
-            Contract(1.0,tmp6,shape(0,3),QL,shape(0,1),0.0,tmp6bis);
+            Contract(1.0,tmp6,shape(3,0),QL,shape(0,1),0.0,tmp6bis);
 
             tmp6.clear();
-            Contract(1.0,tmp6bis,shape(0,2),QL,shape(0,1),0.0,tmp6);
+            Contract(1.0,tmp6bis,shape(2,0),QL,shape(0,1),0.0,tmp6);
 
             tmp6bis.clear();
             Permute(tmp6,shape(0,3,5,1,2,4),tmp6bis);
@@ -1439,6 +1440,8 @@ int row = 1;
 
             N_eff.clear();
             Contract(1.0,LO_env,shape(i,j,k,l),RO_env,shape(i,m,n,l),0.0,N_eff,shape(j,m,k,n));
+
+            cout << N_eff << endl;
 
          }
 
