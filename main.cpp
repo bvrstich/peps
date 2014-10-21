@@ -47,14 +47,6 @@ int main(int argc,char *argv[]){
 
    cout << peps.energy() << endl;
 
-   peps.grow_bond_dimension(0.01);
-   peps.normalize();
-
-   global::env.calc('A',peps);
-   global::env.test();
-
-   cout << peps.energy() << endl;
-
    return 0;
 
 }

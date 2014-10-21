@@ -80,6 +80,12 @@ class Environment {
       //!Auxiliary dimension, for the contraction
       int D_aux;
 
+      //!flags that tell if previous guess for environment is present
+      bool flag_l;
+      bool flag_r;
+      bool flag_t;
+      bool flag_b;
+
 };
 
 #endif

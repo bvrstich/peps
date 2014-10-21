@@ -32,6 +32,11 @@ Environment::Environment(int D_in,int D_aux_in){
    r.resize(Lx - 1);
    l.resize(Lx - 1);
 
+   flag_b = false;
+   flag_t = false;
+   flag_r = false;
+   flag_l = false;
+
    D = D_in;
    D_aux = D_aux_in;
 
@@ -135,6 +140,8 @@ void Environment::calc(const char option,const PEPS<double> &peps){
       for(int i = 1;i < Ly - 1;++i)
          this->add_layer('b',i,peps,5);
 
+      flag_b = true;
+
    }
 
    if(option == 'T' || option == 'A'){
@@ -143,6 +150,8 @@ void Environment::calc(const char option,const PEPS<double> &peps){
 
       for(int i = Ly - 3;i >= 0;--i)
          this->add_layer('t',i,peps,5);
+
+      flag_t = true;
 
    }
 
@@ -153,6 +162,8 @@ void Environment::calc(const char option,const PEPS<double> &peps){
       for(int i = Lx - 3;i >= 0;--i)
          this->add_layer('r',i,peps,5);
 
+      flag_r = true;
+
    }
 
    if(option == 'L' || option == 'A'){
@@ -161,6 +172,8 @@ void Environment::calc(const char option,const PEPS<double> &peps){
 
       for(int i = 1;i < Lx - 1;++i)
          this->add_layer('l',i,peps,5);
+
+      flag_l = true;
 
    }
 
@@ -354,7 +367,8 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
 
    if(option == 'b'){
 
-      b[rc].fill_Random();
+      if(!flag_b)
+         b[rc].fill_Random();
 
       vector< DArray<4> > R(Lx - 1);
 
@@ -520,7 +534,8 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
    }
    else if(option == 't'){
 
-      t[rc].fill_Random();
+      if(!flag_t)
+         t[rc].fill_Random();
 
       vector< DArray<4> > R(Lx - 1);
 
@@ -686,7 +701,8 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
    }
    else if(option == 'r'){
 
-      r[rc].fill_Random();
+      if(!flag_r)
+         r[rc].fill_Random();
 
       vector< DArray<4> > R(Ly - 1);
 
@@ -852,7 +868,8 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
    }
    else{//left
 
-      l[rc].fill_Random();
+      if(!flag_l)
+         l[rc].fill_Random();
 
       vector< DArray<4> > R(Ly - 1);
 
