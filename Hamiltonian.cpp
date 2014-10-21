@@ -40,7 +40,7 @@ Hamiltonian::~Hamiltonian(){ }
 /**
  * @return the number of terms in the nn-interaction
  */
-const int Hamiltonian::gdelta() const {
+int Hamiltonian::gdelta() const {
 
    return delta;
 

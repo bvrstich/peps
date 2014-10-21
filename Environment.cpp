@@ -274,7 +274,7 @@ MPO<double> &Environment::gb(int row) {
 /**
  * @return the auxiliary bond dimension for the contraction
  **/
-const int Environment::gD_aux() const {
+int Environment::gD_aux() const {
 
    return D_aux;
 
@@ -283,7 +283,7 @@ const int Environment::gD_aux() const {
 /**
  * @return the auxiliary bond dimension for the contraction
  **/
-const int Environment::gD() const {
+int Environment::gD() const {
 
    return D;
 

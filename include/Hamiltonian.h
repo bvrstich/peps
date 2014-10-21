@@ -33,7 +33,7 @@ class Hamiltonian {
 
       void set_heisenberg(bool);
 
-      const int gdelta() const;
+      int gdelta() const;
 
       const DArray<2> &gL(int) const;
 

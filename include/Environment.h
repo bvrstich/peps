@@ -60,8 +60,8 @@ class Environment {
       const vector< MPO<double> > &gt() const;
       const vector< MPO<double> > &gb() const;
 
-      const int gD() const;
-      const int gD_aux() const;
+      int gD() const;
+      int gD_aux() const;
 
       void sD(int);
       void sD_aux(int);
