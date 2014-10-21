@@ -12,7 +12,7 @@ using namespace btas;
 
 namespace propagate {
 
-   void step(bool,PEPS<double> &);
+   void step(bool,PEPS<double> &,int);
 
    void construct_reduced_tensor(char,char,const DArray<5> &,DArray<4> &,DArray<3> &);
 

@@ -40,7 +40,7 @@ class PEPS : public vector< TArray<T,5> > {
 
       void sD(int);
 
-      void grow_bond_dimension(int,double);
+      void grow_bond_dimension(double);
 
       void initialize_jastrow(double);
 

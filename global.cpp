@@ -70,6 +70,18 @@ namespace global{
 
    }
 
+   /**
+    * set the bond dimension
+    * @param D_in input
+    */
+   void sD(int D_in){
+
+      D = D_in;
+
+      env = Environment(D,D_aux);
+
+   }
+
    //!function which generates random complex numbers uniformly on a square of side 2 [(-1,1):(-1,1)]
    template<>
       complex<double> rgen(){ 

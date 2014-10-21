@@ -30,8 +30,8 @@ int main(int argc,char *argv[]){
    int D_aux = atoi(argv[4]);//auxiliary dimension for the contraction
 
    bool update = true;
-
    double tau = 0.001;
+   int n_steps = 10;
 
    //initialize some statics dimensions
    global::init(D,D_aux,d,L,L,tau);
@@ -45,39 +45,15 @@ int main(int argc,char *argv[]){
    global::env.calc('A',peps);
    global::env.test();
 
-   char filename[200];
+   cout << peps.energy() << endl;
 
-   if(update)
-      sprintf(filename,"output/%dx%d/D=%d/full/D_aux=%d.txt",L,L,D,D_aux);
-   else 
-      sprintf(filename,"output/%dx%d/D=%d/simple/D_aux=%d.txt",L,L,D,D_aux);
+   peps.grow_bond_dimension(0.01);
+   peps.normalize();
 
-   ofstream out(filename);
-   out.precision(16);
+   global::env.calc('A',peps);
+   global::env.test();
 
-   for(int i = 0;i < 10000;++i){
-
-      propagate::step(update,peps);
-
-      cout << i << endl;
-
-      if(i % 100 == 0){
-
-         global::env.calc('A',peps);
-         out << i << "\t" << peps.energy() << endl;
-
-         char peps_dir[200];
-
-         if(update)
-            sprintf(peps_dir,"output/%dx%d/D=%d/full/peps",L,L,D);
-         else
-            sprintf(peps_dir,"output/%dx%d/D=%d/simple/peps",L,L,D);
-
-         peps.save(peps_dir);
-
-      }
-
-   }
+   cout << peps.energy() << endl;
 
    return 0;
 

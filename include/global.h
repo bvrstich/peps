@@ -54,6 +54,8 @@ namespace global {
    //!initializer
    void init(int,int,int,int,int,double);
 
+   void sD(int);
+
    template<typename T>
       T rgen();
 

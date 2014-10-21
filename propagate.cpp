@@ -20,8 +20,9 @@ namespace propagate {
     * propagate the peps one imaginary time step
     * @param full if true do full update, if false do simple update...
     * @param peps the PEPS to be propagated
+    * @param n_sweeps the number of sweeps performed for the solution of the linear problem
     */
-   void step(bool full,PEPS<double> &peps){
+   void step(bool full,PEPS<double> &peps,int n_sweeps){
 
       enum {i,j,k,l,m,n,o};
 
@@ -73,7 +74,7 @@ namespace propagate {
          canonicalize(full,N_eff,a_L,QL,a_R,QR);
 
          //now do the update! Apply the gates!
-         update(full,N_eff,a_L,a_R,5);
+         update(full,N_eff,a_L,a_R,n_sweeps);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(0,col),shape(i,j,m,k,n));
@@ -113,7 +114,7 @@ namespace propagate {
             canonicalize(full,N_eff,a_L,QL,a_R,QR);
 
             //now do the update! Apply the gates!
-            update(full,N_eff,a_L,a_R,5);
+            update(full,N_eff,a_L,a_R,n_sweeps);
 
             //and expand back to the full tensors
             Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,col),shape(i,j,m,k,n));
@@ -125,7 +126,7 @@ namespace propagate {
          }
 
          //finally update the 'bottom' environment for the row
-         env.add_layer('b',row,peps,5);
+         env.add_layer('b',row,peps,n_sweeps);
 
       }
 
@@ -149,7 +150,7 @@ namespace propagate {
          canonicalize(full,N_eff,a_L,QL,a_R,QR);
 
          //now do the update! Apply the gates!
-         update(full,N_eff,a_L,a_R,5);
+         update(full,N_eff,a_L,a_R,n_sweeps);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(Ly-1,col),shape(i,j,m,k,n));
@@ -201,7 +202,7 @@ namespace propagate {
          canonicalize(full,N_eff,a_L,QL,a_R,QR);
 
          //now do the update! Apply the gates!
-         update(full,N_eff,a_L,a_R,5);
+         update(full,N_eff,a_L,a_R,n_sweeps);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,Lx-1),shape(j,n,m,i,k));
@@ -236,7 +237,7 @@ namespace propagate {
             canonicalize(full,N_eff,a_L,QL,a_R,QR);
 
             //now do the update! Apply the gates!
-            update(full,N_eff,a_L,a_R,5);
+            update(full,N_eff,a_L,a_R,n_sweeps);
 
             //and expand back to the full tensors
             Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,col),shape(j,n,m,i,k));
@@ -248,7 +249,7 @@ namespace propagate {
          }
 
          //finally update the 'bottom' environment for the row
-         env.add_layer('r',col-1,peps,5);
+         env.add_layer('r',col-1,peps,n_sweeps);
 
       }
 
@@ -272,7 +273,7 @@ namespace propagate {
          canonicalize(full,N_eff,a_L,QL,a_R,QR);
 
          //now do the update! Apply the gates!
-         update(full,N_eff,a_L,a_R,5);
+         update(full,N_eff,a_L,a_R,n_sweeps);
 
          //and expand back to the full tensors
          Contract(1.0,QL,shape(i,j,k,o),a_L,shape(o,m,n),0.0,peps(row,0),shape(j,n,m,i,k));
