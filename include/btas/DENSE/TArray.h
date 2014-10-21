@@ -385,6 +385,13 @@ public:
 
    }
 
+   /// share the memory
+   template<size_t M>
+      void share_mem (TArray<T,M> &x)
+      {
+         this->m_store = x.m_store; // shallow copy
+      }
+
    /// return shared reference reshaped
    /// implaced reshape can be done as
    /// `y.swap(x.reshape(shape(n1,n2,...)));`

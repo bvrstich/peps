@@ -29,24 +29,56 @@ int main(int argc,char *argv[]){
    int D = atoi(argv[3]);//virtual dimension
    int D_aux = atoi(argv[4]);//auxiliary dimension for the contraction
 
+   bool update = true;
+
+   double tau = 0.001;
+
    //initialize some statics dimensions
-   Global::lat.set(L,L,d);
-   Environment::init();
-   Heisenberg::init();
+   global::init(D,D_aux,d,L,L,tau);
 
-   for(int f_i = 7000;f_i < 8000;++f_i){
+   double f = 0.74;
 
-      double f = f_i / 10000.0;
+   PEPS<double> peps;
+   peps.initialize_jastrow(f);
+   peps.normalize();
 
-      PEPS<double> peps;
+   global::env.calc('A',peps);
+   global::env.test();
 
-      peps.set_jastrow(f);
-      peps.normalize(D_aux);
+   char filename[200];
 
-      Environment::calc_env('A',peps,D_aux);
+   if(update)
+      sprintf(filename,"output/%dx%d/D=%d/full/D_aux=%d.txt",L,L,D,D_aux);
+   else 
+      sprintf(filename,"output/%dx%d/D=%d/simple/D_aux=%d.txt",L,L,D,D_aux);
 
-      cout << f << "\t" << Heisenberg::energy(peps)/(double)(L*L) << endl;
+   ofstream out(filename);
+   out.precision(16);
+
+   for(int i = 0;i < 10000;++i){
+
+      propagate::step(update,peps);
+
+      cout << i << endl;
+
+      if(i % 100 == 0){
+
+         global::env.calc('A',peps);
+         out << i << "\t" << peps.energy() << endl;
+
+         char peps_dir[200];
+
+         if(update)
+            sprintf(peps_dir,"output/%dx%d/D=%d/full/peps",L,L,D);
+         else
+            sprintf(peps_dir,"output/%dx%d/D=%d/simple/peps",L,L,D);
+
+         peps.save(peps_dir);
+
+      }
 
    }
+
+   return 0;
 
 }

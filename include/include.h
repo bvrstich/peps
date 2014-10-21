@@ -6,15 +6,18 @@
 #include <btas/DENSE/TArray.h>
 
 #include "Random.h"
-#include "Lattice.h"
-#include "Global.h"
+
+#include "Hamiltonian.h"
+
+#include "global.h"
+
 #include "PEPS.h"
 #include "MPS.h"
 #include "MPO.h"
 
-#include "compress.h"
 #include "Environment.h"
-#include "Heisenberg.h"
 
 #include "Trotter.h"
+
+#include "contractions.h"
 #include "propagate.h"

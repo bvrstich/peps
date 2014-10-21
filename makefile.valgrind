@@ -9,17 +9,16 @@
 # -----------------------------------------------------------------------------
 BINNAME = peps
 CPPSRC	= main.cpp\
+			  Hamiltonian.cpp\
+           global.cpp\
            Random.cpp\
-           Lattice.cpp\
            PEPS.cpp\
            MPS.cpp\
            MPO.cpp\
-           compress.cpp\
-           Global.cpp\
            Environment.cpp\
-           Heisenberg.cpp\
            Trotter.cpp\
            propagate.cpp\
+           contractions.cpp\
            btas_defs.cpp
 
 OBJ	= $(CPPSRC:.cpp=.o)
@@ -37,8 +36,8 @@ INCLUDE = ./include
 #LIBS= -lpthread -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core
 LIBS= -lblas -llapacke
 
-CC	= gcc
-CXX	= g++
+CC	= clang
+CXX	= clang++
 
 # -----------------------------------------------------------------------------
 #   Compiler & Linker flags

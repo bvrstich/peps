@@ -16,7 +16,7 @@ template<typename T>
 class PEPS;
 
 template<typename T>
-class MPS;
+class MPO;
 
 /**
  * @author Brecht Verstichel
@@ -27,29 +27,58 @@ class Environment {
 
    public:
 
-      static void init();
+      Environment();
 
-      static void calc_env(char,const PEPS<double> &,int D_aux);
+      Environment(int,int);
 
-      static void calc_env(char,int,const PEPS<double> &,int D_aux);
+      //copy constructor
+      Environment(const Environment &);
 
-      static void test_env();
+      //destructor
+      virtual ~Environment();
 
-      static void construct_double_layer(char,const DArray<5> &peps,DArray<3> &dls);
+      void calc(const char,const PEPS<double> &);
 
-      static void construct_double_layer(char,const DArray<5> &peps,const DArray<2> &O,DArray<3> &dls);
+      void add_layer(const char,int,const PEPS<double> &,int);
 
-      static void construct_double_layer(char,const DArray<5> &peps,DArray<4> &dlo);
+      void test();
 
-      static void construct_double_layer(char,const DArray<5> &peps,const DArray<2> &O,DArray<4> &dlo);
+      const MPO<double> &gl(int) const;
+      MPO<double> &gl(int);
 
-      //!stores an array environment MPS's for l(eft) , r(ight), t(op) and b(ottom)
-      static vector< MPS<double> > l;
-      static vector< MPS<double> > r;
-      static vector< MPS<double> > t;
-      static vector< MPS<double> > b;
+      const MPO<double> &gr(int) const;
+      MPO<double> &gr(int);
+
+      const MPO<double> &gt(int) const;
+      MPO<double> &gt(int);
+
+      const MPO<double> &gb(int) const;
+      MPO<double> &gb(int);
+
+      const vector< MPO<double> > &gl() const;
+      const vector< MPO<double> > &gr() const;
+      const vector< MPO<double> > &gt() const;
+      const vector< MPO<double> > &gb() const;
+
+      int gD() const;
+      int gD_aux() const;
+
+      void sD(int);
+      void sD_aux(int);
 
    private:
+
+      //!stores an array environment MPO's for l(eft) , r(ight), t(op) and b(ottom)
+      vector< MPO<double> > l;
+      vector< MPO<double> > r;
+      vector< MPO<double> > t;
+      vector< MPO<double> > b;
+
+      //!regular bond dimension of peps
+      int D;
+
+      //!Auxiliary dimension, for the contraction
+      int D_aux;
 
 };
 

@@ -23,18 +23,31 @@ class Trotter {
 
    public:
 
-      static void set(double tau);
+      Trotter();
 
-      //!actual operators: left
-      static DArray<3> LO;
+      Trotter(double tau);
 
-      //!actual operators: right
-      static DArray<3> RO;
+      Trotter(const Trotter &);
 
-      //!timestep
-      static double tau;
+      virtual ~Trotter();
+
+      double gtau() const;
+
+      const DArray<3> &gLO() const;
+
+      const DArray<3> &gRO() const;
 
    private:
+      
+      //!actual operators: left
+      DArray<3> LO;
+
+      //!actual operators: right
+      DArray<3> RO;
+
+      //!timestep
+      double tau;
+
 
 };
 

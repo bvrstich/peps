@@ -5,6 +5,10 @@
 #include <fstream>
 #include <vector>
 
+#include <btas/common/blas_cxx_interface.h>
+#include <btas/common/TVector.h>
+#include <btas/DENSE/TArray.h>
+
 using std::ostream;
 using std::vector;
 
@@ -27,10 +31,7 @@ class MPS : public vector< TArray<T,3> > {
 
       MPS(int L);
 
-      MPS(int L,int D);
-
-      //constructor
-      MPS(char,const PEPS<T> &,const PEPS<T> &);
+      MPS(int,int,int);
 
       //copy constructor
       MPS(const MPS &);
@@ -40,17 +41,13 @@ class MPS : public vector< TArray<T,3> > {
 
       int gD() const;
 
+      int gd_phys() const;
+
       void gemv(char , const MPO<T> &);
 
       void canonicalize(const BTAS_SIDE &,bool);
 
-      void cut_edges();
-
-      void guess(const BTAS_SIDE &,int ,const MPS<T> &mps);
-
       void scal(T );
-
-      void compress(int ,const MPS<T> &mps,int);
 
       T dot(const MPS<T> &bra) const;
 
@@ -60,6 +57,9 @@ class MPS : public vector< TArray<T,3> > {
 
       //!dimension of the bonds
       int D;
+
+      //!physical dimension
+      int d_phys;
 };
 
 /**

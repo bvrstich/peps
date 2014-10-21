@@ -5,6 +5,10 @@
 #include <fstream>
 #include <vector>
 
+#include <btas/common/blas_cxx_interface.h>
+#include <btas/common/TVector.h>
+#include <btas/DENSE/TArray.h>
+
 using std::ostream;
 using std::vector;
 
@@ -23,8 +27,11 @@ class MPO : public vector< TArray<T,4> > {
 
    public:
 
-      //constructor
-      MPO(char,int,const PEPS<T> &,const PEPS<T> &);
+      MPO();
+
+      MPO(int);
+
+      MPO(int,int,int);
 
       //copy constructor
       MPO(const MPO &);
@@ -32,12 +39,27 @@ class MPO : public vector< TArray<T,4> > {
       //destructor
       virtual ~MPO();
 
+      T dot(const MPO<T> &bra) const;
+
+      T expect(const char,int,const PEPS<T> &) const;
+
       int gD() const;
+
+      int gd_phys() const;
+
+      void fill(const char,const PEPS<double> &);
+
+      void fill_Random();
+
+      void scal(T );
 
    private:
 
       //!dimension of the bonds
       int D;
+
+      //!physical dimension
+      int d_phys;
 
 
 };
