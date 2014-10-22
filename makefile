@@ -10,7 +10,7 @@
 BINNAME = peps
 CPPSRC	= main.cpp\
 			  Hamiltonian.cpp\
-           global.cpp\
+			  global.cpp\
            Random.cpp\
            PEPS.cpp\
            MPS.cpp\
@@ -18,7 +18,7 @@ CPPSRC	= main.cpp\
            Environment.cpp\
            Trotter.cpp\
            propagate.cpp\
-           contractions.cpp\
+			  contractions.cpp\
            btas_defs.cpp
 
 OBJ	= $(CPPSRC:.cpp=.o)
@@ -33,17 +33,17 @@ BTASLIB= /home/bright/btas/lib
 
 INCLUDE = ./include
 
-#LIBS= -lpthread -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core
-LIBS= -lblas -llapacke
+LIBS= -lpthread -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core
+#LIBS= -lblas -llapacke
 
-CC	= clang
-CXX	= clang++
+CC	= icc
+CXX	= icpc
 
 # -----------------------------------------------------------------------------
 #   Compiler & Linker flags
 # -----------------------------------------------------------------------------
-CFLAGS	= -I$(INCLUDE) -g -std=c++11 -D_HAS_CBLAS -D_HAS_LAPACKE
-LDFLAGS	= -g
+CFLAGS	= -I$(INCLUDE) -std=c++11 -openmp -DNDEBUG -D_HAS_CBLAS -D_HAS_INTEL_MKL -O3 -ipo
+LDFLAGS	= -openmp -O3 -ipo
 
 # =============================================================================
 #   Targets & Rules
