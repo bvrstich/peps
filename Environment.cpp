@@ -23,8 +23,9 @@ Environment::Environment(){ }
  * constructor with allocation
  * @param D_in bond dimension of peps state
  * @param D_aux_in contraction bond dimension
+ * @param comp_sweeps_in sets the number of sweeps done for MPO compression
  */
-Environment::Environment(int D_in,int D_aux_in){
+Environment::Environment(int D_in,int D_aux_in,int comp_sweeps_in){
 
    t.resize(Ly - 1);
    b.resize(Ly - 1);
@@ -39,6 +40,7 @@ Environment::Environment(int D_in,int D_aux_in){
 
    D = D_in;
    D_aux = D_aux_in;
+   comp_sweeps = comp_sweeps_in;
 
    //allocate the memory
    
@@ -47,12 +49,14 @@ Environment::Environment(int D_in,int D_aux_in){
 
    for(int i = 0;i < Ly - 1;++i){
 
-      if(tmp < D_aux)
+      if(tmp < D_aux){
+
          b[i] = MPO<double>(Lx,D,tmp);
+         tmp *= D*D;
+
+      }
       else
          b[i] = MPO<double>(Lx,D,D_aux);
-
-      tmp *= D*D;
 
    }
    
@@ -61,12 +65,14 @@ Environment::Environment(int D_in,int D_aux_in){
 
    for(int i = Ly - 2;i >= 0;--i){
 
-      if(tmp < D_aux)
+      if(tmp < D_aux){
+
          t[i] = MPO<double>(Lx,D,tmp);
+         tmp *= D*D;
+
+      }
       else
          t[i] = MPO<double>(Lx,D,D_aux);
-
-      tmp *= D*D;
 
    }
 
@@ -75,12 +81,14 @@ Environment::Environment(int D_in,int D_aux_in){
 
    for(int i = 0;i < Lx - 1;++i){
 
-      if(tmp < D_aux)
+      if(tmp < D_aux){
+
          l[i] = MPO<double>(Ly,D,tmp);
+         tmp *= D*D;
+
+      }
       else
          l[i] = MPO<double>(Ly,D,D_aux);
-
-      tmp *= D*D;
 
    }
    
@@ -89,12 +97,14 @@ Environment::Environment(int D_in,int D_aux_in){
 
    for(int i = Lx - 2;i >= 0;--i){
 
-      if(tmp < D_aux)
+      if(tmp < D_aux){
+
          r[i] = MPO<double>(Ly,D,tmp);
+         tmp *= D*D;
+
+      }
       else
          r[i] = MPO<double>(Ly,D,D_aux);
-
-      tmp *= D*D;
 
    }
 
@@ -113,6 +123,8 @@ Environment::Environment(const Environment &env_copy){
 
    D = env_copy.gD();
    D_aux = env_copy.gD_aux();
+
+   comp_sweeps = env_copy.gcomp_sweeps();
 
 }
 
@@ -138,7 +150,7 @@ void Environment::calc(const char option,const PEPS<double> &peps){
       b[0].fill('b',peps);
 
       for(int i = 1;i < Ly - 1;++i)
-         this->add_layer('b',i,peps,5);
+         this->add_layer('b',i,peps);
 
       flag_b = true;
 
@@ -149,7 +161,7 @@ void Environment::calc(const char option,const PEPS<double> &peps){
       t[Ly - 2].fill('t',peps);
 
       for(int i = Ly - 3;i >= 0;--i)
-         this->add_layer('t',i,peps,5);
+         this->add_layer('t',i,peps);
 
       flag_t = true;
 
@@ -160,7 +172,7 @@ void Environment::calc(const char option,const PEPS<double> &peps){
       r[Lx - 2].fill('r',peps);
 
       for(int i = Lx - 3;i >= 0;--i)
-         this->add_layer('r',i,peps,5);
+         this->add_layer('r',i,peps);
 
       flag_r = true;
 
@@ -171,7 +183,7 @@ void Environment::calc(const char option,const PEPS<double> &peps){
       l[0].fill('l',peps);
 
       for(int i = 1;i < Lx - 1;++i)
-         this->add_layer('l',i,peps,5);
+         this->add_layer('l',i,peps);
 
       flag_l = true;
 
@@ -303,6 +315,16 @@ int Environment::gD() const {
 }
 
 /**
+ * @return the number of sweeps performed during compression
+ **/
+int Environment::gcomp_sweeps() const {
+
+   return comp_sweeps;
+
+}
+
+
+/**
  * set a new bond dimension
  */
 void Environment::sD(int D_in) {
@@ -361,9 +383,8 @@ const vector< MPO<double> > &Environment::gr() const {
  * @param option 't'op, 'b'ottom, 'l'eft or 'r'ight environment
  * @param rc row or column index
  * @param peps the input PEPS<double> object 
- * @param n_iter number of iterations of compression sweep
  */
-void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,int n_iter){
+void Environment::add_layer(const char option,int rc,const PEPS<double> &peps){
 
    if(option == 'b'){
 
@@ -399,10 +420,9 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
          Contract(1.0,tmp6,shape(3,5,1),b[rc][i],shape(1,2,3),0.0,R[i - 1]);
 
       }
-
       int iter = 0;
 
-      while(iter < n_iter){
+      while(iter < comp_sweeps){
 
          //now start sweeping to get the compressed boundary MPO
          DArray<6> tmp6;
@@ -569,7 +589,7 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
 
       int iter = 0;
 
-      while(iter < n_iter){
+      while(iter < comp_sweeps){
 
          //now start sweeping to get the compressed boundary MPO
          DArray<6> tmp6;
@@ -736,7 +756,7 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
 
       int iter = 0;
 
-      while(iter < n_iter){
+      while(iter < comp_sweeps){
 
          //now start sweeping to get the compressed boundary MPO
          DArray<6> tmp6;
@@ -903,7 +923,7 @@ void Environment::add_layer(const char option,int rc,const PEPS<double> &peps,in
 
       int iter = 0;
 
-      while(iter < n_iter){
+      while(iter < comp_sweeps){
 
          //now start sweeping to get the compressed boundary MPO
          DArray<6> tmp6;

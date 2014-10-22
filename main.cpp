@@ -27,10 +27,10 @@ int main(int argc,char *argv[]){
    int L = atoi(argv[1]);//dimension of the lattice: LxL
    int d = atoi(argv[2]);//physical dimension
    int D = atoi(argv[3]);//virtual dimension
-   int D_aux = atoi(argv[4]);//auxiliary dimension for the contraction
+   int D_aux = atoi(argv[4]);//virtual dimension
 
    bool update = true;
-   double tau = 0.001;
+   double tau = 0.01;
    int n_steps = 10;
 
    //initialize some statics dimensions
@@ -42,10 +42,93 @@ int main(int argc,char *argv[]){
    peps.initialize_jastrow(f);
    peps.normalize();
 
-   global::env.calc('A',peps);
-   global::env.test();
+   char filename[200];
+   sprintf(filename,"output/%dx%d/D=%d/full/D_aux=%d.txt",L,L,D,D_aux);
 
-   cout << peps.energy() << endl;
+   ofstream out(filename);
+   out.precision(16);
+
+   global::env.calc('A',peps);
+
+   double ener = peps.energy();
+
+   out << 0 << "\t" << ener << endl;
+
+   for(int i = 1;i < 1000;++i){
+
+      propagate::step(true,peps,n_steps);
+
+      if(i % 10 == 0){
+
+         peps.normalize();
+         global::env.calc('A',peps);
+
+         double tmp = peps.energy();
+
+         if(tmp > ener)
+            break;
+         else
+            ener = tmp;
+
+         out << i << "\t" << tmp << endl;
+
+         char dir_name[200];
+         sprintf(dir_name,"output/%dx%d/D=%d/full/D_aux=%d.txt",L,L,D,D_aux);
+
+      }
+
+   }
+
+   tau /= 10.0;
+   global::stau(tau);
+
+   for(int i = 1000;i < 2000;++i){
+
+      propagate::step(true,peps,n_steps);
+
+      if(i % 10 == 0){
+
+         peps.normalize();
+
+         global::env.calc('A',peps);
+
+         double tmp = peps.energy();
+
+         if(tmp > ener)
+            break;
+         else
+            ener = tmp;
+
+         out << i << "\t" << tmp << endl;
+
+      }
+
+   }
+
+   tau /= 10.0;
+   global::stau(tau);
+
+   for(int i = 2000;i < 3000;++i){
+
+      propagate::step(true,peps,n_steps);
+
+      if(i % 10 == 0){
+
+         peps.normalize();
+         global::env.calc('A',peps);
+
+         double tmp = peps.energy();
+
+         if(tmp > ener)
+            break;
+         else
+            ener = tmp;
+
+         out << i << "\t" << peps.energy() << endl;
+
+      }
+
+   }
 
    return 0;
 

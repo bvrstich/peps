@@ -126,7 +126,7 @@ namespace propagate {
          }
 
          //finally update the 'bottom' environment for the row
-         env.add_layer('b',row,peps,n_sweeps);
+         env.add_layer('b',row,peps);
 
       }
 
@@ -249,7 +249,7 @@ namespace propagate {
          }
 
          //finally update the 'bottom' environment for the row
-         env.add_layer('r',col-1,peps,n_sweeps);
+         env.add_layer('r',col-1,peps);
 
       }
 

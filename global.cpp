@@ -23,6 +23,8 @@ namespace global{
 
    int d;
 
+   int comp_sweeps;
+
    Random RN;
 
    DArray<2> I;
@@ -35,7 +37,6 @@ namespace global{
 
    /**
     * @param D_in virtual dimension of the trial
-    * @param D_aux_in auxiliary dimension for peps contraction
     * @param d_in physical dimension
     * @param Lx_in x dimension of the square lattice
     * @param Ly_in y dimension of the square lattice
@@ -65,8 +66,11 @@ namespace global{
       I(0,0) = 1.0;
       I(1,1) = 1.0;
 
+      //set the number of sweeps to 1
+      comp_sweeps = 1;
+
       //initialize/allocate the environment
-      env = Environment(D_in,D_aux_in);
+      env = Environment(D_in,D_aux,comp_sweeps);
 
    }
 
@@ -78,7 +82,17 @@ namespace global{
 
       D = D_in;
 
-      env = Environment(D,D_aux);
+      env = Environment(D,D_aux,comp_sweeps);
+
+   }
+
+   /**
+    * set the timestep to 
+    * @param tau timestep
+    */
+   void stau(double tau){
+
+      trot = Trotter(tau);
 
    }
 

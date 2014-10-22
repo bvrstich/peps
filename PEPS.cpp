@@ -450,24 +450,28 @@ void PEPS<double>::grow_bond_dimension(double noise) {
 
 /**
  * @param peps_i peps to take the overlap with
- * @param D_aux auxiliary dimension of the contraction (determines the accuracy of the contraction)
+ * @param init boolean, if true the top-bottom environment has already been calculated and we just need to do the MPO-MPO contraction
  * @return the inner product of two PEPS <psi1|psi2> 
  */
 template<>
-double PEPS<double>::dot(const PEPS<double> &peps_i) const {
-
-   //construct bottom environment until half
-   env.gb(0).fill('b',peps_i);
+double PEPS<double>::dot(const PEPS<double> &peps_i,bool init) const {
 
    int half = Ly/2;
 
-   for(int i = 1;i <= half;++i)
-      env.add_layer('b',i,peps_i,5);
+   if(!init){
 
-   env.gt(Ly - 2).fill('t',peps_i);
+      //construct bottom environment until half
+      env.gb(0).fill('b',peps_i);
 
-   for(int i = Ly - 3;i >= half;--i)
-      env.add_layer('t',i,peps_i,5);
+      for(int i = 1;i <= half;++i)
+         env.add_layer('b',i,peps_i);
+
+      env.gt(Ly - 2).fill('t',peps_i);
+
+      for(int i = Ly - 3;i >= half;--i)
+         env.add_layer('t',i,peps_i);
+
+   }
 
    return env.gb(half).dot(env.gt(half));
 
@@ -475,12 +479,12 @@ double PEPS<double>::dot(const PEPS<double> &peps_i) const {
 
 /** 
  * normalize the peps approximately, using a contraction with auxiliary dimension
- * @param D_aux the auxiliary dimension
+ * @param init if true the environment has already been initialized and does not need to be calculated
  */
 template<>
-void PEPS<double>::normalize(){
+void PEPS<double>::normalize(bool init){
 
-   double val = sqrt(this->dot(*this));
+   double val = sqrt(this->dot(*this,init));
    val = pow(val,1.0/(double)this->size());
 
    //now initialize with random numbers
