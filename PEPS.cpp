@@ -273,38 +273,205 @@ void PEPS<double>::initialize_jastrow(double f) {
 }
 
 /**
- * increase the bond dimension to D_in
- * @param D_in compressed dimension of the state
+ * increase the bond dimension by one
  * @param noise level of noise added to the initial state
  */
 template<>
-void PEPS<double>::grow_bond_dimension(int D_in,double noise) {
+void PEPS<double>::grow_bond_dimension(double noise) {
 
-   this->D = D_in;
+   D += 1;
+
+   global::sD(D);
+
+   DArray<5> tmp;
+
+   //bottom row, first site
+   tmp.resize(1,D,d,1,D);
+
+   tmp.generate(rgen<double>);
+   Scal(noise,tmp);
+
+   for(int i = 0;i < (*this)[0].shape(0);++i)
+      for(int j = 0;j < (*this)[0].shape(1);++j)
+         for(int k = 0;k < (*this)[0].shape(2);++k)
+            for(int l = 0;l < (*this)[0].shape(3);++l)
+               for(int m = 0;m < (*this)[0].shape(4);++m)
+                  tmp(i,j,k,l,m) += (*this)[0](i,j,k,l,m);
+
+   (*this)[0] = std::move(tmp);
+
+   //bottom row, middle sites
+   for(int col = 1;col < Lx - 1;++col){
+
+      tmp.clear();
+      tmp.resize(D,D,d,1,D);
+
+      tmp.generate(rgen<double>);
+      Scal(noise,tmp);
+
+      for(int i = 0;i < (*this)[col].shape(0);++i)
+         for(int j = 0;j < (*this)[col].shape(1);++j)
+            for(int k = 0;k < (*this)[col].shape(2);++k)
+               for(int l = 0;l < (*this)[col].shape(3);++l)
+                  for(int m = 0;m < (*this)[col].shape(4);++m)
+                     tmp(i,j,k,l,m) += (*this)[col](i,j,k,l,m);
+
+      (*this)[col] = std::move(tmp);
+
+   }
+
+   //bottom row, last site
+   tmp.clear();
+   tmp.resize(D,D,d,1,1);
+
+   tmp.generate(rgen<double>);
+   Scal(noise,tmp);
+
+   for(int i = 0;i < (*this)[Lx-1].shape(0);++i)
+      for(int j = 0;j < (*this)[Lx-1].shape(1);++j)
+         for(int k = 0;k < (*this)[Lx-1].shape(2);++k)
+            for(int l = 0;l < (*this)[Lx-1].shape(3);++l)
+               for(int m = 0;m < (*this)[Lx-1].shape(4);++m)
+                  tmp(i,j,k,l,m) += (*this)[Lx - 1](i,j,k,l,m);
+
+   (*this)[Lx-1] = std::move(tmp);
+
+   //middle sites
+   for(int row = 1;row < Ly - 1;++row){
+
+      //leftmost middle site: col == 0
+      tmp.clear();
+      tmp.resize(1,D,d,D,D);
+
+      tmp.generate(rgen<double>);
+      Scal(noise,tmp);
+
+      for(int i = 0;i < (*this)[row*Lx].shape(0);++i)
+         for(int j = 0;j < (*this)[row*Lx].shape(1);++j)
+            for(int k = 0;k < (*this)[row*Lx].shape(2);++k)
+               for(int l = 0;l < (*this)[row*Lx].shape(3);++l)
+                  for(int m = 0;m < (*this)[row*Lx].shape(4);++m)
+                     tmp(i,j,k,l,m) += (*this)[row*Lx](i,j,k,l,m);
+
+      (*this)[row*Lx] = std::move(tmp);
+
+      //middle sites on row 'row'
+      for(int col = 1;col < Lx - 1;++col){
+
+         tmp.clear();
+         tmp.resize(D,D,d,D,D);
+
+         tmp.generate(rgen<double>);
+         Scal(noise,tmp);
+
+         for(int i = 0;i < (*this)[row*Lx + col].shape(0);++i)
+            for(int j = 0;j < (*this)[row*Lx + col].shape(1);++j)
+               for(int k = 0;k < (*this)[row*Lx + col].shape(2);++k)
+                  for(int l = 0;l < (*this)[row*Lx + col].shape(3);++l)
+                     for(int m = 0;m < (*this)[row*Lx + col].shape(4);++m)
+                        tmp(i,j,k,l,m) += (*this)[row*Lx + col](i,j,k,l,m);
+
+         (*this)[row*Lx + col] = std::move(tmp);
+
+      }
+
+      //rightmost site on row 'row'
+      tmp.clear();
+      tmp.resize(D,D,d,D,1);
+
+      tmp.generate(rgen<double>);
+      Scal(noise,tmp);
+
+      for(int i = 0;i < (*this)[row*Lx + Lx - 1].shape(0);++i)
+         for(int j = 0;j < (*this)[row*Lx + Lx - 1].shape(1);++j)
+            for(int k = 0;k < (*this)[row*Lx + Lx - 1].shape(2);++k)
+               for(int l = 0;l < (*this)[row*Lx + Lx - 1].shape(3);++l)
+                  for(int m = 0;m < (*this)[row*Lx + Lx - 1].shape(4);++m)
+                     tmp(i,j,k,l,m) += (*this)[row*Lx + Lx - 1](i,j,k,l,m);
+
+      (*this)[row*Lx + Lx - 1] = std::move(tmp);
+
+   }
+
+   //top row
+   //leftmost site
+   tmp.clear();
+   tmp.resize(1,1,d,D,D);
+
+   tmp.generate(rgen<double>);
+   Scal(noise,tmp);
+
+   for(int i = 0;i < (*this)[(Ly - 1)*Lx].shape(0);++i)
+      for(int j = 0;j < (*this)[(Ly - 1)*Lx].shape(1);++j)
+         for(int k = 0;k < (*this)[(Ly - 1)*Lx].shape(2);++k)
+            for(int l = 0;l < (*this)[(Ly - 1)*Lx].shape(3);++l)
+               for(int m = 0;m < (*this)[(Ly - 1)*Lx].shape(4);++m)
+                  tmp(i,j,k,l,m) += (*this)[(Ly - 1)*Lx](i,j,k,l,m);
+
+   (*this)[(Ly - 1)*Lx] = std::move(tmp);
+
+   //top row, middle sites
+   for(int col = 1;col < Lx - 1;++col){
+
+      tmp.clear();
+      tmp.resize(D,1,d,D,D);
+
+      tmp.generate(rgen<double>);
+      Scal(noise,tmp);
+
+      for(int i = 0;i < (*this)[(Ly - 1)*Lx + col].shape(0);++i)
+         for(int j = 0;j < (*this)[(Ly - 1)*Lx + col].shape(1);++j)
+            for(int k = 0;k < (*this)[(Ly - 1)*Lx + col].shape(2);++k)
+               for(int l = 0;l < (*this)[(Ly - 1)*Lx + col].shape(3);++l)
+                  for(int m = 0;m < (*this)[(Ly - 1)*Lx + col].shape(4);++m)
+                     tmp(i,j,k,l,m) += (*this)[(Ly - 1)*Lx + col](i,j,k,l,m);
+
+      (*this)[(Ly - 1)*Lx + col] = std::move(tmp);
+
+   }
+
+   //top row rightmost site
+   tmp.clear();
+   tmp.resize(D,1,d,D,1);
+
+   tmp.generate(rgen<double>);
+   Scal(noise,tmp);
+
+   for(int i = 0;i < (*this)[(Ly - 1)*Lx + Lx - 1].shape(0);++i)
+      for(int j = 0;j < (*this)[(Ly - 1)*Lx + Lx - 1].shape(1);++j)
+         for(int k = 0;k < (*this)[(Ly - 1)*Lx + Lx - 1].shape(2);++k)
+            for(int l = 0;l < (*this)[(Ly - 1)*Lx + Lx - 1].shape(3);++l)
+               for(int m = 0;m < (*this)[(Ly - 1)*Lx + Lx - 1].shape(4);++m)
+                  tmp(i,j,k,l,m) += (*this)[(Ly - 1)*Lx + Lx - 1](i,j,k,l,m);
+
+   (*this)[(Ly - 1)*Lx + Lx - 1] = std::move(tmp);
 
 }
 
-
 /**
  * @param peps_i peps to take the overlap with
- * @param D_aux auxiliary dimension of the contraction (determines the accuracy of the contraction)
+ * @param init boolean, if true the top-bottom environment has already been calculated and we just need to do the MPO-MPO contraction
  * @return the inner product of two PEPS <psi1|psi2> 
  */
 template<>
-double PEPS<double>::dot(const PEPS<double> &peps_i) const {
-
-   //construct bottom environment until half
-   env.gb(0).fill('b',peps_i);
+double PEPS<double>::dot(const PEPS<double> &peps_i,bool init) const {
 
    int half = Ly/2;
 
-   for(int i = 1;i <= half;++i)
-      env.add_layer('b',i,peps_i,5);
+   if(!init){
 
-   env.gt(Ly - 2).fill('t',peps_i);
+      //construct bottom environment until half
+      env.gb(0).fill('b',peps_i);
 
-   for(int i = Ly - 3;i >= half;--i)
-      env.add_layer('t',i,peps_i,5);
+      for(int i = 1;i <= half;++i)
+         env.add_layer('b',i,peps_i);
+
+      env.gt(Ly - 2).fill('t',peps_i);
+
+      for(int i = Ly - 3;i >= half;--i)
+         env.add_layer('t',i,peps_i);
+
+   }
 
    return env.gb(half).dot(env.gt(half));
 
@@ -312,12 +479,12 @@ double PEPS<double>::dot(const PEPS<double> &peps_i) const {
 
 /** 
  * normalize the peps approximately, using a contraction with auxiliary dimension
- * @param D_aux the auxiliary dimension
+ * @param init if true the environment has already been initialized and does not need to be calculated
  */
 template<>
-void PEPS<double>::normalize(){
+void PEPS<double>::normalize(bool init){
 
-   double val = sqrt(this->dot(*this));
+   double val = sqrt(this->dot(*this,init));
    val = pow(val,1.0/(double)this->size());
 
    //now initialize with random numbers
@@ -601,7 +768,7 @@ double PEPS<double>::energy(){
 
       // --- now for the middle sites, close down the operators on the left and construct new ones --- 
       for(int col = 1;col < Lx - 1;++col){
-      
+
          //add top and one peps to the right side
          tmp6.clear();
          Contract(1.0,env.gt(row)[col],shape(3),RO[col-1],shape(0),0.0,tmp6);
@@ -822,14 +989,14 @@ double PEPS<double>::energy(){
       blas::gemv(CblasRowMajor,CblasNoTrans, m, n, 1.0, tmp10bis.data(), n, ham.gL(i).data(), 1, 0.0, Li[i].data(), 1);
 
    }
-   
+
    //construct left unit operator
    Lu.resize(shape(tmp10.shape(1),tmp10.shape(2),tmp10.shape(6)));
    blas::gemv(CblasRowMajor,CblasNoTrans, m, n, 1.0, tmp10bis.data(), n, I.data(), 1, 0.0, Lu.data(), 1);
 
    //now for the middle terms
    for(int row = 1;row < Ly - 1;++row){
- 
+
       //first close down the interaction terms from the previous site
 
       //construct the intermediate contraction (paste top right)
@@ -1029,7 +1196,7 @@ double PEPS<double>::energy(){
       }
 
    }
-  
+
    // -- (3) -- || left column = 0: again similar to overlap calculation
 
    //first construct the right renormalized operators
@@ -1115,7 +1282,7 @@ double PEPS<double>::energy(){
    }
 
    //finally close down on last left site
-   
+
    //first construct intermediate
    tmp7.clear();
    Contract(1.0,(*this)(Ly-1,0),shape(4),env.gr(0)[Ly - 1],shape(2),0.0,tmp7);

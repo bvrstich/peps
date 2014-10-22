@@ -42,6 +42,9 @@ namespace global {
    //!hamiltonian object, containing nn-interaction operators and coefficients
    extern Hamiltonian ham;
 
+   //!nr of sweeps for MPO compression
+   extern int comp_sweeps;
+
    //!physical unit matrix
    extern DArray<2> I;
 
@@ -53,6 +56,11 @@ namespace global {
 
    //!initializer
    void init(int,int,int,int,int,double);
+
+   //!set the timestep
+   void stau(double);
+   
+   void sD(int);
 
    template<typename T>
       T rgen();

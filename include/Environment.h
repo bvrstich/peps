@@ -29,7 +29,7 @@ class Environment {
 
       Environment();
 
-      Environment(int,int);
+      Environment(int,int,int);
 
       //copy constructor
       Environment(const Environment &);
@@ -39,7 +39,7 @@ class Environment {
 
       void calc(const char,const PEPS<double> &);
 
-      void add_layer(const char,int,const PEPS<double> &,int);
+      void add_layer(const char,int,const PEPS<double> &);
 
       void test();
 
@@ -63,6 +63,8 @@ class Environment {
       int gD() const;
       int gD_aux() const;
 
+      int gcomp_sweeps() const;
+
       void sD(int);
       void sD_aux(int);
 
@@ -79,6 +81,15 @@ class Environment {
 
       //!Auxiliary dimension, for the contraction
       int D_aux;
+
+      //!flags that tell if previous guess for environment is present
+      bool flag_l;
+      bool flag_r;
+      bool flag_t;
+      bool flag_b;
+
+      //!nr of sweeps in compression
+      int comp_sweeps;
 
 };
 

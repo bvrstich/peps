@@ -40,7 +40,7 @@ class PEPS : public vector< TArray<T,5> > {
 
       void sD(int);
 
-      void grow_bond_dimension(int,double);
+      void grow_bond_dimension(double);
 
       void initialize_jastrow(double);
 
@@ -48,9 +48,9 @@ class PEPS : public vector< TArray<T,5> > {
 
       TArray<T,5> &operator()(int,int);
 
-      T dot(const PEPS &) const;
+      T dot(const PEPS &,bool init = false) const;
 
-      void normalize();
+      void normalize(bool = false);
 
       void scal(T );
 
