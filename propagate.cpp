@@ -1036,13 +1036,13 @@ namespace propagate {
 
       //left
       DArray<4> tmp4;
-      Contract(1.0,a_L,shape(i,j,k),trot.gLO(),shape(n,m,j),0.0,tmp4,shape(i,n,k,m));
+      Contract(1.0,a_L,shape(i,j,k),trot.gLO(),shape(n,m,j),0.0,tmp4,shape(i,n,m,k));
 
       a_L = tmp4.reshape_clear(shape(a_L.shape(0),a_L.shape(1),a_L.shape(2)*trot.gLO().shape(1)));
 
       //right
       tmp4.clear();
-      Contract(1.0,trot.gRO(),shape(i,j,k),a_R,shape(n,k,m),0.0,tmp4,shape(n,j,i,m));
+      Contract(1.0,trot.gRO(),shape(i,j,k),a_R,shape(n,k,m),0.0,tmp4,shape(j,n,i,m));
 
       a_R = tmp4.reshape_clear(shape(a_R.shape(0)*trot.gRO().shape(1),a_R.shape(1),a_R.shape(2)));
 
@@ -1072,8 +1072,6 @@ namespace propagate {
          int iter = 0;
 
          while(iter < n_iter){
-
-            //Left block
 
             //construct right hand side 
             DArray<3> tmp3;
@@ -1422,8 +1420,6 @@ namespace propagate {
 
       DArray<3> tmp3;
       Contract(1.0,tmp4,shape(i,j,k,l),a_L,shape(i,n,j),0.0,tmp3,shape(k,n,l));
-
-      cout << Dot(tmp3,a_L) << endl;
 
    }
 

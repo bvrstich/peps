@@ -49,7 +49,19 @@ int main(int argc,char *argv[]){
    global::env.calc('A',peps);
    global::env.test();
 
-   propagate::step(true,peps,n_steps);
+   for(int i = 0;i < 1000;++i){
+
+      propagate::step(true,peps,n_steps);
+
+      if(i % 10 == 0){
+
+         global::env.calc('A',peps);
+         cout << i << "\t" << peps.energy() << endl;
+
+      }
+
+
+   }
 
    return 0;
 
