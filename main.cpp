@@ -40,10 +40,9 @@ int main(int argc,char *argv[]){
    sprintf(dir_in,"/home/bright/bestanden/results/peps/%dx%d/D=%d/D_aux=%d/peps",L,L,D-1,4*(D-1)*(D-1));
 
    PEPS<double> peps;
-   //peps.load(dir_in);
-   //peps.sD(D);
+   peps.load(dir_in);
+   peps.sD(D);
 
-   peps.initialize_jastrow(0.74);
    peps.grow_bond_dimension(D,0.001);
    peps.normalize();
 
@@ -59,22 +58,46 @@ int main(int argc,char *argv[]){
 
    out << 0 << "\t" << ener << endl;
 
-   int iter = 0;
-
-   for(int i = 1;i < 5000;++i){
+   for(int i = 1;i < 2000;++i){
 
       propagate::step(true,peps,n_steps);
-
-      ++iter;
 
       if(i % 10 == 0){
 
          peps.normalize();
+         cout << endl;
+         cout << i << endl;
+         cout << endl;
          global::env.calc('A',peps);
+         global::env.test();
 
          double tmp = peps.energy();
 
-         out << iter << "\t" << tmp << endl;
+         out << i << "\t" << tmp << endl;
+
+      }
+
+   }
+
+   tau /= 10;
+   global::stau(tau);
+
+   for(int i = 2000;i < 4000;++i){
+
+      propagate::step(true,peps,n_steps);
+
+      if(i % 10 == 0){
+
+         peps.normalize();
+         cout << endl;
+         cout << i << endl;
+         cout << endl;
+         global::env.calc('A',peps);
+         global::env.test();
+
+         double tmp = peps.energy();
+
+         out << i << "\t" << tmp << endl;
 
       }
 
