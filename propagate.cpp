@@ -174,7 +174,7 @@ namespace propagate {
       // ##                                                      ## //
       // ########################################################## //
       // ########################################################## //
-      
+
       // ----------------------------------------//
       // --- !!! (1) the right column (1) !!! ---// 
       // ----------------------------------------//
@@ -1036,13 +1036,13 @@ namespace propagate {
 
       //left
       DArray<4> tmp4;
-      Contract(1.0,a_L,shape(i,j,k),trot.gLO(),shape(n,m,j),0.0,tmp4,shape(i,n,k,m));
+      Contract(1.0,a_L,shape(i,j,k),trot.gLO(),shape(n,m,j),0.0,tmp4,shape(i,n,m,k));
 
       a_L = tmp4.reshape_clear(shape(a_L.shape(0),a_L.shape(1),a_L.shape(2)*trot.gLO().shape(1)));
 
       //right
       tmp4.clear();
-      Contract(1.0,trot.gRO(),shape(i,j,k),a_R,shape(n,k,m),0.0,tmp4,shape(n,j,i,m));
+      Contract(1.0,trot.gRO(),shape(i,j,k),a_R,shape(n,k,m),0.0,tmp4,shape(j,n,i,m));
 
       a_R = tmp4.reshape_clear(shape(a_R.shape(0)*trot.gRO().shape(1),a_R.shape(1),a_R.shape(2)));
 
@@ -1072,8 +1072,6 @@ namespace propagate {
          int iter = 0;
 
          while(iter < n_iter){
-
-            //Left block
 
             //construct right hand side 
             DArray<3> tmp3;
@@ -1404,6 +1402,43 @@ namespace propagate {
          }
 
       }
+
+   }
+
+   /**
+    * check if the effective norm, when contracted with left and right reduced tensors, effectively returns the norm
+    */
+   void check_N_eff(const DArray<4> &N_eff,const DArray<3> &a_L,const DArray<3> &a_R){
+
+      enum {i,j,k,l,m,n,o};
+
+      DArray<5> tmp5;
+      Contract(1.0,N_eff,shape(i,j,k,l),a_R,shape(m,n,j),0.0,tmp5,shape(i,m,k,n,l));
+
+      DArray<4> tmp4;
+      Contract(1.0,tmp5,shape(i,j,k,n,l),a_R,shape(m,n,l),0.0,tmp4,shape(i,j,k,m));
+
+      DArray<3> tmp3;
+      Contract(1.0,tmp4,shape(i,j,k,l),a_L,shape(i,n,j),0.0,tmp3,shape(k,n,l));
+
+   }
+
+   /**
+    * check the value of the cost function for the full update
+    */
+   double cost_function(const DArray<4> &N_eff,const DArray<4> &b,const DArray<3> &a_L,const DArray<3> &a_R){
+
+      DArray<4> tmp4;
+      Contract(1.0,a_L,shape(2),a_R,shape(0),0.0,tmp4);
+
+      double val = -2.0 * Dot(tmp4,b);
+
+      DArray<4> tmp4bis;
+      Contract(1.0,tmp4,shape(1,2),tmp4,shape(1,2),0.0,tmp4bis);
+
+      val += Dot(tmp4bis,N_eff);
+
+      return val;
 
    }
 

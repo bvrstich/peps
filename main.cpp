@@ -36,97 +36,30 @@ int main(int argc,char *argv[]){
    //initialize some statics dimensions
    global::init(D,D_aux,d,L,L,tau);
 
-   double f = 0.74;
+   char dir_in[200];
+   sprintf(dir_in,"/home/bright/bestanden/results/peps/%dx%d/D=%d/D_aux=%d/peps",L,L,D-1,4*(D-1)*(D-1));
 
    PEPS<double> peps;
-   peps.initialize_jastrow(f);
+   peps.load(dir_in);
+   peps.sD(D);
+
+   peps.grow_bond_dimension(D,0.01);
    peps.normalize();
 
-   char filename[200];
-   sprintf(filename,"output/%dx%d/D=%d/full/D_aux=%d.txt",L,L,D,D_aux);
-
-   ofstream out(filename);
-   out.precision(16);
-
    global::env.calc('A',peps);
+   global::env.test();
 
-   double ener = peps.energy();
-
-   out << 0 << "\t" << ener << endl;
-
-   for(int i = 1;i < 1000;++i){
+   for(int i = 0;i < 1000;++i){
 
       propagate::step(true,peps,n_steps);
 
       if(i % 10 == 0){
 
-         peps.normalize();
          global::env.calc('A',peps);
-
-         double tmp = peps.energy();
-
-         if(tmp > ener)
-            break;
-         else
-            ener = tmp;
-
-         out << i << "\t" << tmp << endl;
-
-         char dir_name[200];
-         sprintf(dir_name,"output/%dx%d/D=%d/full/D_aux=%d.txt",L,L,D,D_aux);
+         cout << i << "\t" << peps.energy() << endl;
 
       }
 
-   }
-
-   tau /= 10.0;
-   global::stau(tau);
-
-   for(int i = 1000;i < 2000;++i){
-
-      propagate::step(true,peps,n_steps);
-
-      if(i % 10 == 0){
-
-         peps.normalize();
-
-         global::env.calc('A',peps);
-
-         double tmp = peps.energy();
-
-         if(tmp > ener)
-            break;
-         else
-            ener = tmp;
-
-         out << i << "\t" << tmp << endl;
-
-      }
-
-   }
-
-   tau /= 10.0;
-   global::stau(tau);
-
-   for(int i = 2000;i < 3000;++i){
-
-      propagate::step(true,peps,n_steps);
-
-      if(i % 10 == 0){
-
-         peps.normalize();
-         global::env.calc('A',peps);
-
-         double tmp = peps.energy();
-
-         if(tmp > ener)
-            break;
-         else
-            ener = tmp;
-
-         out << i << "\t" << peps.energy() << endl;
-
-      }
 
    }
 

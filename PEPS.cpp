@@ -274,14 +274,13 @@ void PEPS<double>::initialize_jastrow(double f) {
 
 /**
  * increase the bond dimension by one
+ * @param D_in bond dimension to grow to
  * @param noise level of noise added to the initial state
  */
 template<>
-void PEPS<double>::grow_bond_dimension(double noise) {
+void PEPS<double>::grow_bond_dimension(int D_in,double noise) {
 
-   D += 1;
-
-   global::sD(D);
+   D = D_in;
 
    DArray<5> tmp;
 
