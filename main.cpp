@@ -43,65 +43,13 @@ int main(int argc,char *argv[]){
    peps.load(dir_in);
    peps.sD(D);
 
-   peps.grow_bond_dimension(D,0.001);
+   peps.grow_bond_dimension(D,0.01);
    peps.normalize();
 
-   char filename[200];
-   sprintf(filename,"output/%dx%d/D=%d/D_aux=%d.txt",L,L,D,D_aux);
-
-   ofstream out(filename);
-   out.precision(16);
-
    global::env.calc('A',peps);
+   global::env.test();
 
-   double ener = peps.energy();
-
-   out << 0 << "\t" << ener << endl;
-
-   for(int i = 1;i < 2000;++i){
-
-      propagate::step(true,peps,n_steps);
-
-      if(i % 10 == 0){
-
-         peps.normalize();
-         cout << endl;
-         cout << i << endl;
-         cout << endl;
-         global::env.calc('A',peps);
-         global::env.test();
-
-         double tmp = peps.energy();
-
-         out << i << "\t" << tmp << endl;
-
-      }
-
-   }
-
-   tau /= 10;
-   global::stau(tau);
-
-   for(int i = 2000;i < 4000;++i){
-
-      propagate::step(true,peps,n_steps);
-
-      if(i % 10 == 0){
-
-         peps.normalize();
-         cout << endl;
-         cout << i << endl;
-         cout << endl;
-         global::env.calc('A',peps);
-         global::env.test();
-
-         double tmp = peps.energy();
-
-         out << i << "\t" << tmp << endl;
-
-      }
-
-   }
+   propagate::step(true,peps,n_steps);
 
    return 0;
 

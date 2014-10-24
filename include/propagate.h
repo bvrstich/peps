@@ -28,6 +28,10 @@ namespace propagate {
 
    void update(bool,const DArray<4> &N_eff,DArray<3> &,DArray<3> &,int);
 
+   void check_N_eff(const DArray<4> &N_eff,const DArray<3> &,const DArray<3> &);
+
+   double cost_function(const DArray<4> &N_eff,const DArray<4> &b,const DArray<3> &a_L,const DArray<3> &a_R);
+
 }
 
 #endif
