@@ -279,7 +279,7 @@ void MPO<double>::fill_Random() {
 }
 
 /**
- * scale the MPS with a constant factor
+ * scale the MPO with a constant factor
  * @param alpha scalingfactor
  */
 template<>

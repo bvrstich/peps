@@ -36,32 +36,7 @@ int main(int argc,char *argv[]){
    //initialize some statics dimensions
    global::init(D,D_aux,d,L,L,tau);
 
-   char dir_in[200];
-   sprintf(dir_in,"/home/bright/bestanden/results/peps/%dx%d/D=%d/D_aux=%d/peps",L,L,D-1,4*(D-1)*(D-1));
-
-   PEPS<double> peps;
-   peps.load(dir_in);
-   peps.sD(D);
-
-   peps.grow_bond_dimension(D,0.01);
-   peps.normalize();
-
-   global::env.calc('A',peps);
-   global::env.test();
-
-   for(int i = 0;i < 1000;++i){
-
-      propagate::step(true,peps,n_steps);
-
-      if(i % 10 == 0){
-
-         global::env.calc('A',peps);
-         cout << i << "\t" << peps.energy() << endl;
-
-      }
-
-
-   }
+   PEPS<double> peps(D);
 
    return 0;
 
