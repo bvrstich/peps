@@ -37,6 +37,8 @@ class Trotter {
 
       const DArray<3> &gRO() const;
 
+      const DArray<2> &geB() const;
+
    private:
       
       //!actual operators: left
@@ -44,6 +46,9 @@ class Trotter {
 
       //!actual operators: right
       DArray<3> RO;
+
+      //!local propagator
+      DArray<2> eB;
 
       //!timestep
       double tau;

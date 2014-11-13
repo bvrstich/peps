@@ -12,6 +12,8 @@ using std::ofstream;
 
 #include "include.h"
 
+using namespace global;
+
 
 /**
  *  empty constructor
@@ -23,8 +25,6 @@ Trotter::Trotter() { }
  * @param tau timestep
  */
 Trotter::Trotter(double tau_in) {
-
-   int d = global::d;
 
    this->tau = tau_in;
 
@@ -104,6 +104,29 @@ Trotter::Trotter(double tau_in) {
          }
 
       }
+
+   //magnetic field stuff if necessary
+   if( ham.gis_local() ){
+
+      DArray<2> backup_B = ham.gB();
+      DArray<1> eigB(d);
+
+      lapack::syev(CblasRowMajor, 'V', 'U', d, backup_B.data(), d, eigB.data());
+
+      //now construct exp(- 0.5 * tau * B)
+      eB.resize(d,d);
+
+      for(int i = 0;i < d;++i)
+         for(int j = 0;j < d;++j){
+
+            eB(i,j) = 0.0;
+
+            for(int k = 0;k < d;++k)
+               eB(i,j) += exp( - 0.5 * tau * eigB(k) ) * backup_B(i,k) * backup_B(j,k);
+
+         }
+
+   }
 
 }
 
