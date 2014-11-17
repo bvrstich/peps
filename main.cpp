@@ -36,8 +36,6 @@ int main(int argc,char *argv[]){
    //initialize some statics dimensions
    global::init(D,D_aux,d,L,L,tau);
 
-   PEPS<double> peps(D);
-
    return 0;
 
 }

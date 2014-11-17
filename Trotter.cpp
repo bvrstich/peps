@@ -140,6 +140,8 @@ Trotter::Trotter(const Trotter &trotter_c){
 
    LO = trotter_c.gLO();
    RO = trotter_c.gRO();
+   
+   eB = trotter_c.geB();
 
 }
 
@@ -172,5 +174,14 @@ const DArray<3> &Trotter::gLO() const {
 const DArray<3> &Trotter::gRO() const {
 
    return RO;
+
+}
+
+/**
+ * @return the local term: exp(-0.5 tau * h_L)
+ */
+const DArray<2> &Trotter::geB() const {
+
+   return eB;
 
 }
