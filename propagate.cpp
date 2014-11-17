@@ -87,7 +87,6 @@ namespace propagate {
       //update the bottom row for the new peps
       env.gb(0).fill('b',peps);
 
-
       // ---------------------------------------------------//
       // --- !!! (2) the middle rows (1 -> Ly-2) (2) !!! ---// 
       // ---------------------------------------------------//
