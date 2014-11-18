@@ -214,6 +214,13 @@ namespace contractions {
          DArray<8> tmp8;
          DArray<8> tmp8bis;
 
+         int stop;
+
+         if(ham.gis_local())
+            stop = 0;
+         else
+            stop = 1;
+
          Contract(1.0,env.gl(rc - 1)[Ly - 1],shape(1),peps(Ly-1,rc),shape(0),0.0,tmp7);
 
          Contract(1.0,tmp7,shape(1,4),peps(Ly-1,rc),shape(0,2),0.0,tmp8);
@@ -221,13 +228,13 @@ namespace contractions {
          Contract(1.0,tmp8,shape(4,7),env.gr(rc)[Ly-1],shape(1,2),0.0,tmp8bis);
 
          //move to a DArray<3> object
-         RO[Ly - 3] = tmp8bis.reshape_clear(shape(env.gl(rc - 1)[Ly - 1].shape(0),peps(Ly-1,rc).shape(3),peps(Ly-1,rc).shape(3),env.gr(rc)[Ly - 1].shape(0)));
+         RO[Ly - 2] = tmp8bis.reshape_clear(shape(env.gl(rc - 1)[Ly - 1].shape(0),peps(Ly-1,rc).shape(3),peps(Ly-1,rc).shape(3),env.gr(rc)[Ly - 1].shape(0)));
 
          //now construct the middle operators
-         for(int row = Ly - 2;row > 1;--row){
+         for(int row = Ly - 2;row > stop;--row){
 
             tmp6.clear();
-            Contract(1.0,env.gl(rc - 1)[row],shape(3),RO[row-1],shape(0),0.0,tmp6);
+            Contract(1.0,env.gl(rc - 1)[row],shape(3),RO[row],shape(0),0.0,tmp6);
 
             tmp7.clear();
             Contract(1.0,tmp6,shape(1,3),peps(row,rc),shape(0,1),0.0,tmp7);
@@ -238,8 +245,8 @@ namespace contractions {
             tmp6bis.clear();
             Permute(tmp6,shape(0,2,4,3,5,1),tmp6bis);
 
-            RO[row-2].clear();
-            Gemm(CblasNoTrans,CblasTrans,1.0,tmp6bis,env.gr(rc)[row],0.0,RO[row - 2]);
+            RO[row-1].clear();
+            Gemm(CblasNoTrans,CblasTrans,1.0,tmp6bis,env.gr(rc)[row],0.0,RO[row - 1]);
 
          }
 
