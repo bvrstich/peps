@@ -168,6 +168,13 @@ namespace contractions {
          DArray<8> tmp8;
          DArray<8> tmp8bis;
 
+         int stop;
+
+         if(ham.gis_local())
+            stop = 0;
+         else
+            stop = 1;
+
          //paste top peps 'operators'
          Contract(1.0,env.gt(rc)[Lx - 1],shape(1),peps(rc,Lx-1),shape(1),0.0,tmp7);
 
@@ -176,13 +183,13 @@ namespace contractions {
          Contract(1.0,tmp8,shape(3,6),env.gb(rc-1)[Lx-1],shape(1,2),0.0,tmp8bis);
 
          //move to a DArray<3> object
-         RO[Lx - 3] = tmp8bis.reshape_clear(shape(env.gt(rc)[Lx - 1].shape(0),peps(rc,Lx-1).shape(0),peps(rc,Lx-1).shape(0),env.gb(rc-1)[Lx - 1].shape(0)));
+         RO[Lx - 2] = tmp8bis.reshape_clear(shape(env.gt(rc)[Lx - 1].shape(0),peps(rc,Lx-1).shape(0),peps(rc,Lx-1).shape(0),env.gb(rc-1)[Lx - 1].shape(0)));
 
          //now construct the middle operators
-         for(int col = Lx - 2;col > 1;--col){
+         for(int col = Lx - 2;col > stop;--col){
 
             tmp6.clear();
-            Contract(1.0,env.gt(rc)[col],shape(3),RO[col - 1],shape(0),0.0,tmp6);
+            Contract(1.0,env.gt(rc)[col],shape(3),RO[col],shape(0),0.0,tmp6);
 
             tmp7.clear();
             Contract(1.0,tmp6,shape(1,3),peps(rc,col),shape(1,4),0.0,tmp7);
@@ -193,8 +200,8 @@ namespace contractions {
             tmp6bis.clear();
             Permute(tmp6,shape(0,2,4,3,5,1),tmp6bis);
 
-            RO[col - 2].clear();
-            Gemm(CblasNoTrans,CblasTrans,1.0,tmp6bis,env.gb(rc - 1)[col],0.0,RO[col - 2]);
+            RO[col - 1].clear();
+            Gemm(CblasNoTrans,CblasTrans,1.0,tmp6bis,env.gb(rc - 1)[col],0.0,RO[col - 1]);
 
          }
 
@@ -292,22 +299,29 @@ namespace contractions {
          //tmp comes out index (t,b)
          Contract(1.0,env.gt(Ly-2)[Lx - 1],shape(1,2),env.gb(Ly-2)[Lx - 1],shape(1,2),0.0,tmp4);
 
+         int stop;
+
+         if(ham.gis_local())
+            stop = 0;
+         else
+            stop = 1;
+
          //reshape tmp to a 2-index array
-         R[Lx - 3] = tmp4.reshape_clear(shape(peps(Ly-1,Lx-1).shape(0),peps(Ly-1,Lx-1).shape(0),env.gb(Ly-2)[Lx-1].shape(0)));
+         R[Lx - 2] = tmp4.reshape_clear(shape(peps(Ly-1,Lx-1).shape(0),peps(Ly-1,Lx-1).shape(0),env.gb(Ly-2)[Lx-1].shape(0)));
 
          //now construct the rest
-         for(int col = Lx - 2;col > 1;--col){
+         for(int col = Lx - 2;col > stop;--col){
 
             int m = env.gt(Ly - 2)[col].shape(0) * env.gt(Ly - 2)[col].shape(1) * env.gt(Ly - 2)[col].shape(2);//rows of op(A)
-            int n = R[col - 1].shape(2);//col of op(B)
-            int k = R[col - 1].shape(0) * R[col - 1].shape(1);
+            int n = R[col].shape(2);//col of op(B)
+            int k = R[col].shape(0) * R[col].shape(1);
 
-            tmp5.resize( shape( peps(Ly-1,col).shape(0),peps(Ly-1,col).shape(0),env.gt(Ly-2)[col].shape(1),env.gt(Ly-2)[col].shape(2),R[col - 1].shape(2) ) );
+            tmp5.resize( shape( peps(Ly-1,col).shape(0),peps(Ly-1,col).shape(0),env.gt(Ly-2)[col].shape(1),env.gt(Ly-2)[col].shape(2),R[col].shape(2) ) );
 
-            blas::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,m,n,k,1.0, env.gt(Ly-2)[col].data(),k, R[col - 1].data(), n,0.0,tmp5.data(), n);
+            blas::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,m,n,k,1.0, env.gt(Ly-2)[col].data(),k, R[col].data(), n,0.0,tmp5.data(), n);
 
-            R[col - 2].clear();
-            Contract(1.0,tmp5,shape(2,3,4),env.gb(Ly-2)[col],shape(1,2,3),0.0,R[col - 2]);
+            R[col - 1].clear();
+            Contract(1.0,tmp5,shape(2,3,4),env.gb(Ly-2)[col],shape(1,2,3),0.0,R[col - 1]);
 
          }
 
