@@ -332,28 +332,34 @@ namespace contractions {
          DArray<4> tmp4;
          DArray<5> tmp5;
 
+         int stop;
+
+         if(ham.gis_local())
+            stop = 0;
+         else
+            stop = 1;
+
          //tmp comes out index (l,r)
          Contract(1.0,env.gl(0)[Ly - 1],shape(1,2),env.gr(0)[Ly - 1],shape(1,2),0.0,tmp4);
 
          //reshape tmp to a 2-index array
-         R[Ly - 3] = tmp4.reshape_clear( shape(peps(Ly-1,0).shape(3),peps(Ly-1,0).shape(3),env.gr(0)[Ly-1].shape(0)));
+         R[Ly - 2] = tmp4.reshape_clear( shape(peps(Ly-1,0).shape(3),peps(Ly-1,0).shape(3),env.gr(0)[Ly-1].shape(0)));
 
          //now construct the rest
-         for(int row = Ly - 2;row > 1;--row){
+         for(int row = Ly - 2;row > stop;--row){
 
             int m = env.gl(0)[row].shape(0) * env.gl(0)[row].shape(1) * env.gl(0)[row].shape(2);//rows of op(A)
-            int n = R[row - 1].shape(2);//col of op(B)
-            int k = R[row - 1].shape(0) * R[row - 1].shape(1);
+            int n = R[row].shape(2);//col of op(B)
+            int k = R[row].shape(0) * R[row].shape(1);
 
-            tmp5.resize( shape( peps(row,Lx-1).shape(3),peps(row,Lx-1).shape(3),env.gl(0)[row].shape(1),env.gl(0)[row].shape(2),R[row-1].shape(2) ) );
+            tmp5.resize( shape( peps(row,Lx-1).shape(3),peps(row,Lx-1).shape(3),env.gl(0)[row].shape(1),env.gl(0)[row].shape(2),R[row].shape(2) ) );
 
-            blas::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,m,n,k,1.0, env.gl(0)[row].data(),k, R[row - 1].data(), n,0.0,tmp5.data(), n);
+            blas::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,m,n,k,1.0, env.gl(0)[row].data(),k, R[row].data(), n,0.0,tmp5.data(), n);
 
-            R[row - 2].clear();
-            Contract(1.0,tmp5,shape(2,3,4),env.gr(0)[row],shape(1,2,3),0.0,R[row - 2]);
+            R[row - 1].clear();
+            Contract(1.0,tmp5,shape(2,3,4),env.gr(0)[row],shape(1,2,3),0.0,R[row - 1]);
 
          }
-
 
       }
       else{//right
@@ -362,25 +368,31 @@ namespace contractions {
          DArray<4> tmp4;
          DArray<5> tmp5;
 
+         int stop;
+
+         if(ham.gis_local())
+            stop = 0;
+         else
+            stop = 1;
+
          //tmp comes out index (l,r)
          Contract(1.0,env.gl(Lx - 2)[Ly - 1],shape(1,2),env.gr(Lx - 2)[Ly - 1],shape(1,2),0.0,tmp4);
 
          //reshape tmp to a 2-index array
-         R[Ly - 3] = tmp4.reshape_clear(shape(env.gl(Lx - 2)[Ly - 1].shape(0),peps(Ly-1,Lx-1).shape(3),peps(Ly-1,Lx-1).shape(3)));
+         R[Ly - 2] = tmp4.reshape_clear(shape(env.gl(Lx - 2)[Ly - 1].shape(0),peps(Ly-1,Lx-1).shape(3),peps(Ly-1,Lx-1).shape(3)));
 
          //now construct the rest
-         for(int row = Ly - 2;row > 1;--row){
+         for(int row = Ly - 2;row > stop;--row){
 
             tmp5.clear();
-            Contract(1.0,env.gl(Lx - 2)[row],shape(3),R[row-1],shape(0),0.0,tmp5);
-
-            R[row - 2].resize(env.gl(Lx - 2)[row].shape(0),peps(row,Lx-1).shape(3),peps(row,Lx-1).shape(3));
+            Contract(1.0,env.gl(Lx - 2)[row],shape(3),R[row],shape(0),0.0,tmp5);
 
             int m = tmp5.shape(0);//rows of op(A)
             int n = env.gr(Lx - 2)[row].shape(0);//col of op(B)
             int k = tmp5.shape(1) * tmp5.shape(2) * tmp5.shape(3) * tmp5.shape(4);
 
-            blas::gemm(CblasRowMajor, CblasNoTrans, CblasTrans,m,n,k,1.0, tmp5.data(),k, env.gr(Lx - 2)[row].data(), k,0.0, R[row - 2].data(), n);
+            R[row - 1].resize(env.gl(Lx - 2)[row].shape(0),peps(row,Lx-1).shape(3),peps(row,Lx-1).shape(3));
+            blas::gemm(CblasRowMajor, CblasNoTrans, CblasTrans,m,n,k,1.0, tmp5.data(),k, env.gr(Lx - 2)[row].data(), k,0.0, R[row - 1].data(), n);
 
          }
 
