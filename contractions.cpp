@@ -249,6 +249,13 @@ namespace contractions {
 
       if(option == 'b'){
 
+         int stop;
+
+         if(ham.gis_local())
+            stop = 0;
+         else
+            stop = 1;
+
          //first the rightmost operator
          DArray<4> tmp4;
          DArray<5> tmp5;
@@ -257,21 +264,21 @@ namespace contractions {
          Contract(1.0,env.gt(0)[Lx - 1],shape(1,2),env.gb(0)[Lx - 1],shape(1,2),0.0,tmp4);
 
          //reshape tmp to a 2-index array
-         R[Lx - 3] = tmp4.reshape_clear(shape(env.gt(0)[Lx - 1].shape(0),peps(0,Lx-1).shape(0),peps(0,Lx-1).shape(0)));
+         R[Lx - 2] = tmp4.reshape_clear(shape(env.gt(0)[Lx - 1].shape(0),peps(0,Lx-1).shape(0),peps(0,Lx-1).shape(0)));
 
          //now construct the rest
-         for(int col = Lx - 2;col > 1;--col){
+         for(int col = Lx - 2;col > stop;--col){
 
             tmp5.clear();
-            Contract(1.0,env.gt(0)[col],shape(3),R[col-1],shape(0),0.0,tmp5);
+            Contract(1.0,env.gt(0)[col],shape(3),R[col],shape(0),0.0,tmp5);
 
-            R[col - 2].resize(env.gt(0)[col].shape(0),peps(0,col).shape(0),peps(0,col).shape(0));
+            R[col - 1].resize(env.gt(0)[col].shape(0),peps(0,col).shape(0),peps(0,col).shape(0));
 
             int m = tmp5.shape(0);//rows of op(A)
             int n = env.gb(0)[col].shape(0);//col of op(B)
             int k = tmp5.shape(1) * tmp5.shape(2) * tmp5.shape(3) * tmp5.shape(4);
 
-            blas::gemm(CblasRowMajor, CblasNoTrans, CblasTrans,m,n,k,1.0, tmp5.data(),k, env.gb(0)[col].data(), k,0.0, R[col - 2].data(), n);
+            blas::gemm(CblasRowMajor, CblasNoTrans, CblasTrans,m,n,k,1.0, tmp5.data(),k, env.gb(0)[col].data(), k,0.0, R[col - 1].data(), n);
 
          }
 

@@ -36,6 +36,16 @@ int main(int argc,char *argv[]){
    //initialize some statics dimensions
    global::init(D,D_aux,d,L,L,tau);
 
+   PEPS<double> peps(D);
+   peps.initialize_jastrow(0.74);
+
+   peps.normalize();
+
+   global::env.calc('A',peps);
+   global::env.test();
+
+   cout << peps.energy() << endl;
+
    return 0;
 
 }
