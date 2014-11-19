@@ -246,7 +246,7 @@ void Hamiltonian::set_transverse_field_ising(double B_in) {
    R[0](1,1) = 0.5;
 
    //coefficients:
-   coef[0] = 0.0;//minus sign because of the Marshall sign rule
+   coef[0] = 1.0;//minus sign because of the Marshall sign rule
 
    //local term
    B.resize(global::d,global::d); //Sx

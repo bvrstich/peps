@@ -143,6 +143,142 @@ void PEPS<T>::sD(int D_in) {
 
 /**
  * initialize the peps to the direct sum of two antiferromagnetic D=1 structures
+ * @param option, start with up or down spin
+ * @param noise level of noise to add
+ */
+template<>
+void PEPS<double>::initialize_ising(int option,double noise) {
+
+   D = 2;
+
+   //bottom row, first site
+   (*this)[0].resize(1,D,d,1,D);
+   (*this)[0] = 0.0;
+
+   (*this)[0](0,0,option,0,0) = 1.0;
+
+   //bottom row, middle sites
+   for(int col = 1;col < Lx - 1;++col){
+
+      (*this)[col].resize(D,D,d,1,D);
+      (*this)[col] = 0.0;
+
+      if( (col + option) % 2 == 0)
+         (*this)[col](0,0,0,0,0) = 1.0;
+      else
+         (*this)[col](0,0,1,0,0) = 1.0;
+
+   }
+
+   //bottom row, last site
+   (*this)[Lx-1].resize(D,D,d,1,1);
+   (*this)[Lx-1] = 0.0;
+
+   if( (Lx-1 + option) % 2 == 0)
+      (*this)[col](0,0,0,0,0) = 1.0;
+   else
+      (*this)[col](0,0,1,0,0) = 1.0;
+
+
+   (*this)[Lx-1](0,0,0,0,0) = f;
+   (*this)[Lx-1](1,0,0,0,0) = 1.0;
+
+   (*this)[Lx-1](0,1,1,0,0) = 1.0;
+   (*this)[Lx-1](1,1,1,0,0) = f;
+
+   //middle sites
+   for(int row = 1;row < Ly - 1;++row){
+
+      //leftmost middle site: col == 0
+      (*this)[row*Lx].resize(1,D,d,D,D);
+      (*this)[row*Lx] = 0.0;
+
+      (*this)[row*Lx](0,0,0,0,0) = f;
+      (*this)[row*Lx](0,0,0,1,0) = 1.0;
+      (*this)[row*Lx](0,1,1,0,1) = 1.0;
+      (*this)[row*Lx](0,1,1,1,1) = f;
+
+      //middle sites on row 'row'
+      for(int col = 1;col < Lx - 1;++col){
+
+         (*this)[row*Lx + col].resize(D,D,d,D,D);
+         (*this)[row*Lx + col] = 0.0;
+
+         (*this)[row*Lx + col](0,0,0,0,0) = f*f;
+         (*this)[row*Lx + col](0,0,0,1,0) = f;
+         (*this)[row*Lx + col](1,0,0,0,0) = f;
+         (*this)[row*Lx + col](1,0,0,1,0) = 1.0;
+
+         (*this)[row*Lx + col](0,1,1,0,1) = 1.0;
+         (*this)[row*Lx + col](0,1,1,1,1) = f;
+         (*this)[row*Lx + col](1,1,1,0,1) = f;
+         (*this)[row*Lx + col](1,1,1,1,1) = f*f;
+
+      }
+
+      //rightmost site on row 'row'
+      (*this)[row*Lx + Lx - 1].resize(D,D,d,D,1);
+      (*this)[row*Lx + Lx - 1] = 0.0;
+
+      (*this)[row*Lx + Lx - 1](0,0,0,0,0) = f*f;
+      (*this)[row*Lx + Lx - 1](0,0,0,1,0) = f;
+      (*this)[row*Lx + Lx - 1](1,0,0,0,0) = f;
+      (*this)[row*Lx + Lx - 1](1,0,0,1,0) = 1.0;
+
+      (*this)[row*Lx + Lx - 1](0,1,1,0,0) = 1.0;
+      (*this)[row*Lx + Lx - 1](1,1,1,0,0) = f;
+      (*this)[row*Lx + Lx - 1](0,1,1,1,0) = f;
+      (*this)[row*Lx + Lx - 1](1,1,1,1,0) = f*f;
+
+   }
+
+   //top row
+   //leftmost site
+   (*this)[(Ly - 1)*Lx].resize(1,1,d,D,D);
+   (*this)[(Ly - 1)*Lx] = 0.0;
+
+   (*this)[(Ly - 1)*Lx](0,0,0,0,0) = f;
+   (*this)[(Ly - 1)*Lx](0,0,0,1,0) = 1.0;
+   (*this)[(Ly - 1)*Lx](0,0,1,0,1) = 1.0;
+   (*this)[(Ly - 1)*Lx](0,0,1,1,1) = f;
+
+   //top row, middle sites
+   for(int col = 1;col < Lx - 1;++col){
+
+      (*this)[(Ly - 1)*Lx + col].resize(D,1,d,D,D);
+      (*this)[(Ly - 1)*Lx + col] = 0.0;
+
+      (*this)[(Ly - 1)*Lx + col](0,0,0,0,0) = f*f;
+      (*this)[(Ly - 1)*Lx + col](0,0,0,1,0) = f;
+      (*this)[(Ly - 1)*Lx + col](1,0,0,0,0) = f;
+      (*this)[(Ly - 1)*Lx + col](1,0,0,1,0) = 1.0;
+
+      (*this)[(Ly - 1)*Lx + col](0,0,1,0,1) = 1.0;
+      (*this)[(Ly - 1)*Lx + col](0,0,1,1,1) = f;
+      (*this)[(Ly - 1)*Lx + col](1,0,1,0,1) = f;
+      (*this)[(Ly - 1)*Lx + col](1,0,1,1,1) = f*f;
+
+   }
+
+   //top row rightmost site
+   (*this)[(Ly - 1)*Lx + Lx - 1].resize(D,1,d,D,1);
+   (*this)[(Ly - 1)*Lx + Lx - 1] = 0.0;
+
+   (*this)[(Ly - 1)*Lx + Lx - 1](0,0,0,0,0) = f*f;
+   (*this)[(Ly - 1)*Lx + Lx - 1](0,0,0,1,0) = f;
+   (*this)[(Ly - 1)*Lx + Lx - 1](1,0,0,0,0) = f;
+   (*this)[(Ly - 1)*Lx + Lx - 1](1,0,0,1,0) = 1.0;
+
+   (*this)[(Ly - 1)*Lx + Lx - 1](0,0,1,0,0) = 1.0;
+   (*this)[(Ly - 1)*Lx + Lx - 1](0,0,1,1,0) = f;
+   (*this)[(Ly - 1)*Lx + Lx - 1](1,0,1,0,0) = f;
+   (*this)[(Ly - 1)*Lx + Lx - 1](1,0,1,1,0) = f*f;
+
+}
+
+
+/**
+ * initialize the peps to the direct sum of two antiferromagnetic D=1 structures
  * @param f jastrow factor
  */
 template<>
@@ -951,7 +1087,7 @@ double PEPS<double>::energy(){
       }
 
    }
-   
+
    // -- (3) -- || top row = Ly-1: again similar to overlap calculation
 
    //first construct the right renormalized operators
