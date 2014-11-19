@@ -18,6 +18,8 @@ namespace propagate {
 
    void invert(DArray<2> &);
 
+   void prop_local(PEPS<double> &);
+
    void solve(DArray<4> &N_eff,DArray<3> &b);
 
    void calc_N_eff(char,int,const DArray<3> &,const DArray<4> &,const DArray<3> &, const DArray<4> &,DArray<4> &);

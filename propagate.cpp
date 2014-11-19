@@ -24,6 +24,9 @@ namespace propagate {
     */
    void step(bool full,PEPS<double> &peps,int n_sweeps){
 
+      if(ham.gis_local())
+         prop_local(peps);
+
       enum {i,j,k,l,m,n,o};
 
       // ########################################################### //
@@ -287,6 +290,9 @@ namespace propagate {
 
       //scale the peps
       peps.scal(1.0/sqrt(L(0,0,0)));
+
+      if(ham.gis_local())
+         prop_local(peps);
 
    }
 
@@ -1440,5 +1446,24 @@ namespace propagate {
       return val;
 
    }
+
+   /**
+    * propagate a step with a local action
+    */
+    void prop_local(PEPS<double> &peps){
+
+       DArray<5> peps_eB;
+
+       for(int row = 0;row < Ly;++row)
+          for(int col = 0;col < Lx;++col){
+
+             peps_eB.clear();
+             Contract(1.0,trot.geB(),shape(1),peps(row,col),shape(2),0.0,peps_eB);
+
+             Permute(peps_eB,shape(1,2,0,3,4),peps(row,col));
+
+          }
+
+    }
 
 }
