@@ -620,7 +620,7 @@ double PEPS<double>::energy(){
    //construct the left operator with two open physical bonds
    Contract(1.0,env.gt(0)[0],shape(0,1),(*this)(0,0),shape(0,1),0.0,tmp5);
 
-   Permute(tmp5,shape(1,3,4,2,0),tmp5bis);
+   Permute(tmp5,shape(1,4,3,2,0),tmp5bis);
 
    int M = tmp5.shape(1) * tmp5.shape(4);
    int N = (*this)(0,0).shape(4);
@@ -651,8 +651,10 @@ double PEPS<double>::energy(){
    }
 
    //and finally unity
-   R[0].resize(shape(tmp5.shape(1),tmp5.shape(4),(*this)(0,0).shape(4)));
-   blas::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, M, N, K, 1.0,tmp5bis.data(),K,(*this)(0,0).data(),N,0.0,R[0].data(),N);
+   tmp4.clear();
+   Contract(1.0,tmp5bis,shape(2,3,4),(*this)(0,0),shape(3,2,1),0.0,tmp4);
+
+   R[0] = tmp4.reshape_clear( shape(tmp4.shape(0),tmp4.shape(1),tmp4.shape(3)) );
 
    //now for the middle terms
    for(int col = 1;col < Lx - 1;++col){
@@ -759,7 +761,6 @@ double PEPS<double>::energy(){
       val += blas::dot(tmp6.size(), tmp6.data(), 1, peps_op.data(), 1);
 
    }
-
 
    // -- (2) -- now move from bottom to top calculating everything like an MPO/MPS expectation value
 
@@ -1092,7 +1093,6 @@ double PEPS<double>::energy(){
       val += blas::dot(R[Lx - 2].size(),R[Lx - 2].data(),1,tmp8.data(),1);
 
    }
-
 
    // #################################################################
    // ###   ---- from right left : contract in mps/mpo fashion ---- ### 
@@ -1437,7 +1437,7 @@ double PEPS<double>::energy(){
 
    //construct the left operator with two open physical bonds
    tmp5.clear();
-   Contract(1.0,(*this)(0,0),shape(3,4),env.gr(0)[0],shape(0,1),0.0,tmp5);
+   Contract(1.0,(*this)(0,0),shape(3,4),env.gr(0)[0],shape(0,2),0.0,tmp5);
 
    tmp5bis.clear();
    Permute(tmp5,shape(2,0,3,1,4),tmp5bis);
