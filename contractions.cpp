@@ -158,7 +158,7 @@ namespace contractions {
     * @param peps The PEPS object
     * @param R vector containing the right operators on exit
     */
-   void init_ro(char option,int rc,const PEPS<double> &peps,vector< DArray<4> > &RO){
+   void init_ro(bool is_local,char option,int rc,const PEPS<double> &peps,vector< DArray<4> > &RO){
 
       if(option == 'H'){
 
@@ -170,7 +170,7 @@ namespace contractions {
 
          int stop;
 
-         if(ham.gis_local())
+         if(is_local)
             stop = 0;
          else
             stop = 1;
@@ -216,7 +216,7 @@ namespace contractions {
 
          int stop;
 
-         if(ham.gis_local())
+         if(is_local)
             stop = 0;
          else
             stop = 1;
@@ -259,13 +259,13 @@ namespace contractions {
     * @param option == 'l'eft 'r'ight 'top' or 'b'ottom
     * @param R vector containing the right operators on exit
     */
-   void init_ro(char option,const PEPS<double> &peps,vector< DArray<3> > &R){
+   void init_ro(bool is_local,char option,const PEPS<double> &peps,vector< DArray<3> > &R){
 
       if(option == 'b'){
 
          int stop;
 
-         if(ham.gis_local())
+         if(is_local)
             stop = 0;
          else
             stop = 1;
@@ -308,7 +308,7 @@ namespace contractions {
 
          int stop;
 
-         if(ham.gis_local())
+         if(is_local)
             stop = 0;
          else
             stop = 1;
@@ -341,7 +341,7 @@ namespace contractions {
 
          int stop;
 
-         if(ham.gis_local())
+         if(is_local)
             stop = 0;
          else
             stop = 1;
@@ -377,7 +377,7 @@ namespace contractions {
 
          int stop;
 
-         if(ham.gis_local())
+         if(is_local)
             stop = 0;
          else
             stop = 1;

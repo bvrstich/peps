@@ -13,9 +13,9 @@ using namespace btas;
 //some much repeated contractions are put in separate functions here
 namespace contractions {
 
-   void init_ro(char option,const PEPS<double> &,vector< DArray<3> > &R);
+   void init_ro(bool,char option,const PEPS<double> &,vector< DArray<3> > &R);
 
-   void init_ro(char option,int rc,const PEPS<double> &,vector< DArray<4> > &RO);
+   void init_ro(bool,char option,int rc,const PEPS<double> &,vector< DArray<4> > &RO);
 
    void update_L(char option,int col,const PEPS<double> &,DArray<3> &L);
 

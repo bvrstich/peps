@@ -84,9 +84,15 @@ Trotter::Trotter(double tau_in) {
    //now svd of tmp
    Gesvd('S','S',tmp,eig,U,V);
 
+   int dim = 0;
+
+   for(int i = 0;i < d*d;++i)
+      if( fabs(eig(i)) > 1.0e-15)
+         dim++;
+
    //now put them correctly into left and right operators
-   this->LO.resize(d,d*d,d);
-   this->RO.resize(d,d*d,d);
+   this->LO.resize(d,dim,d);
+   this->RO.resize(d,dim,d);
 
    this->LO = 0.0;
    this->RO = 0.0;
@@ -96,7 +102,7 @@ Trotter::Trotter(double tau_in) {
 
          int i = s*d + s_;
 
-         for(int k = 0;k < d*d;++k){
+         for(int k = 0;k < dim;++k){
 
             this->LO(s,k,s_) = U(i,k) * sqrt( eig(k) );
             this->RO(s,k,s_) = sqrt( eig(k) ) * V(k,i);

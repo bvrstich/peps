@@ -36,15 +36,21 @@ int main(int argc,char *argv[]){
    //initialize some statics dimensions
    global::init(D,D_aux,d,L,L,tau);
 
-   PEPS<double> peps(D);
+   PEPS<double> peps;
+   peps.initialize_jastrow(0.74);
 
-   peps.initialize_ising(0,0.01);
    peps.normalize();
 
-   global::env.calc('A',peps);
-   global::env.test();
+   for(int i = 0;i < 1000;++i){
 
-   cout << peps.energy() << endl;
+      propagate::step(update,peps,10);
+
+      if(i % 10 == 0){
+         global::env.calc('A',peps);
+         cout << i << "\t" << peps.energy() << endl;
+      }
+
+   }
 
    return 0;
 

@@ -724,7 +724,7 @@ double PEPS<double>::energy(){
    //first construct the right renormalized operators
    vector< DArray<3> > R(Lx - 1);
 
-   contractions::init_ro('b',*this,R); 
+   contractions::init_ro(ham.gis_local(),'b',*this,R); 
 
    //left going operators: Li
    std::vector< DArray<3> > Li( delta ); 
@@ -897,7 +897,7 @@ double PEPS<double>::energy(){
    for(int row = 1;row < Ly - 1;++row){
 
       //first create right renormalized operator
-      contractions::init_ro('H',row,*this,RO);
+      contractions::init_ro(ham.gis_local(),'H',row,*this,RO);
 
       // --- now move from left to right to get the expecation value of the interactions ---
 
@@ -1079,7 +1079,7 @@ double PEPS<double>::energy(){
    // -- (3) -- || top row = Ly-1: again similar to overlap calculation
 
    //first construct the right renormalized operators
-   contractions::init_ro('t',*this,R);
+   contractions::init_ro(ham.gis_local(),'t',*this,R);
 
    //construct the left operator with two open physical bonds
    tmp5.clear();
@@ -1227,7 +1227,7 @@ double PEPS<double>::energy(){
    //first construct the right renormalized operators
    R.resize(Ly - 1);
 
-   contractions::init_ro('r',*this,R);
+   contractions::init_ro(ham.gis_local(),'r',*this,R);
 
    tmp5.clear();
    Contract(1.0,env.gl(Lx - 2)[0],shape(0,1),(*this)(0,Lx - 1),shape(3,0),0.0,tmp5);
@@ -1374,7 +1374,7 @@ double PEPS<double>::energy(){
    for(int col = Lx - 2;col > 0;--col){
 
       //first create right renormalized operator
-      contractions::init_ro('V',col,*this,RO);
+      contractions::init_ro(ham.gis_local(),'V',col,*this,RO);
 
       // --- now move from left to right to get the expecation value of the interactions ---
 
@@ -1557,7 +1557,7 @@ double PEPS<double>::energy(){
    // -- (3) -- || left column = 0: again similar to overlap calculation
 
    //first construct the right renormalized operators
-   contractions::init_ro('l',*this,R);
+   contractions::init_ro(ham.gis_local(),'l',*this,R);
 
    //construct the left operator with two open physical bonds
    tmp5.clear();

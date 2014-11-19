@@ -39,7 +39,7 @@ namespace propagate {
       // --------------------------------------//
 
       //containers for the renormalized operators
-      vector< DArray<3> > R(Lx - 2);
+      vector< DArray<3> > R(Lx - 1);
 
       DArray<3> L;
 
@@ -58,7 +58,7 @@ namespace propagate {
       env.gb(0).fill('b',peps);
 
       //initialize the right operators for the bottom row
-      contractions::init_ro('b',peps,R);
+      contractions::init_ro(false,'b',peps,R);
 
       //middle sites of the bottom row:
       for(int col = 0;col < Lx - 1;++col){
@@ -68,7 +68,7 @@ namespace propagate {
          construct_reduced_tensor('H','R',peps(0,col+1),QR,a_R);
 
          //calculate the effective environment N_eff
-         calc_N_eff('b',col,L,QL,R[col],QR,N_eff);
+         calc_N_eff('b',col,L,QL,R[col + 1],QR,N_eff);
 
          //make environment close to unitary before the update
          canonicalize(full,N_eff,a_L,QL,a_R,QR);
@@ -92,13 +92,13 @@ namespace propagate {
       // ---------------------------------------------------//
 
       //renormalized operators for the middle sites
-      vector< DArray<4> > RO(Lx - 2);
+      vector< DArray<4> > RO(Lx - 1);
       DArray<4> LO;
 
       for(int row = 1;row < Ly-1;++row){
 
          //first create right renormalized operator
-         contractions::init_ro('H',row,peps,RO);
+         contractions::init_ro(false,'H',row,peps,RO);
 
          for(int col = 0;col < Lx - 1;++col){
 
@@ -107,7 +107,7 @@ namespace propagate {
             construct_reduced_tensor('H','R',peps(row,col+1),QR,a_R);
 
             //calculate the effective environment N_eff
-            calc_N_eff('H',row,col,LO,QL,RO[col],QR,N_eff);
+            calc_N_eff('H',row,col,LO,QL,RO[col + 1],QR,N_eff);
 
             //make environment close to unitary before the update
             canonicalize(full,N_eff,a_L,QL,a_R,QR);
@@ -134,7 +134,7 @@ namespace propagate {
       // ------------------------------------------//
 
       //make the right operators
-      contractions::init_ro('t',peps,R);
+      contractions::init_ro(false,'t',peps,R);
 
       for(int col = 0;col < Lx - 1;++col){
 
@@ -143,7 +143,7 @@ namespace propagate {
          construct_reduced_tensor('H','R',peps(Ly-1,col + 1),QR,a_R);
 
          //calculate the effective environment N_eff
-         calc_N_eff('t',col,L,QL,R[col],QR,N_eff);
+         calc_N_eff('t',col,L,QL,R[col + 1],QR,N_eff);
 
          //make environment close to unitary before the update
          canonicalize(full,N_eff,a_L,QL,a_R,QR);
@@ -185,7 +185,7 @@ namespace propagate {
       env.gr(Ly-2).fill('r',peps);
 
       //initialize the right operators for the right column
-      contractions::init_ro('r',peps,R);
+      contractions::init_ro(false,'r',peps,R);
 
       //middle sites of the bottom row:
       for(int row = 0;row < Ly - 1;++row){
@@ -195,7 +195,7 @@ namespace propagate {
          construct_reduced_tensor('V','R',peps(row+1,Lx-1),QR,a_R);
 
          //calculate the effective environment N_eff
-         calc_N_eff('r',row,L,QL,R[row],QR,N_eff);
+         calc_N_eff('r',row,L,QL,R[row + 1],QR,N_eff);
 
          //make environment close to unitary before the update
          canonicalize(full,N_eff,a_L,QL,a_R,QR);
@@ -221,7 +221,7 @@ namespace propagate {
       for(int col = Lx - 2;col > 0;--col){
 
          //first create right renormalized operator
-         contractions::init_ro('V',col,peps,RO);
+         contractions::init_ro(false,'V',col,peps,RO);
 
          for(int row = 0;row < Ly - 1;++row){
 
@@ -230,7 +230,7 @@ namespace propagate {
             construct_reduced_tensor('V','R',peps(row+1,col),QR,a_R);
 
             //calculate the effective environment N_eff
-            calc_N_eff('V',row,col,LO,QL,RO[row],QR,N_eff);
+            calc_N_eff('V',row,col,LO,QL,RO[row + 1],QR,N_eff);
 
             //make environment close to unitary before the update
             canonicalize(full,N_eff,a_L,QL,a_R,QR);
@@ -257,7 +257,7 @@ namespace propagate {
       // -----------------------------------------------//
 
       //make the right operators
-      contractions::init_ro('l',peps,R);
+      contractions::init_ro(false,'l',peps,R);
 
       for(int row = 0;row < Ly - 1;++row){
 
@@ -266,7 +266,7 @@ namespace propagate {
          construct_reduced_tensor('V','R',peps(row + 1,0),QR,a_R);
 
          //calculate the effective environment N_eff
-         calc_N_eff('l',row,L,QL,R[row],QR,N_eff);
+         calc_N_eff('l',row,L,QL,R[row + 1],QR,N_eff);
 
          //make environment close to unitary before the update
          canonicalize(full,N_eff,a_L,QL,a_R,QR);
