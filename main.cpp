@@ -38,7 +38,7 @@ int main(int argc,char *argv[]){
 
    PEPS<double> peps(D);
 
-   peps.initialize_jastrow(0.74);
+   peps.initialize_ising(0,0.01);
    peps.normalize();
 
    global::env.calc('A',peps);
