@@ -162,7 +162,6 @@ namespace propagate {
 
       }
 
-
       //get the norm matrix
       contractions::update_L('t',Lx-1,peps,L);
 

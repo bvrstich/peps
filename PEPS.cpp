@@ -760,7 +760,8 @@ double PEPS<double>::energy(){
       Li[0].resize(shape(tmp5.shape(1),tmp5.shape(4),peps_op.shape(4)));
       blas::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, M, N, K, 1.0,tmp5bis.data(),K,peps_op.data(),N,0.0,Li[0].data(),N);
 
-      val += Dot(Li[0],R[0]);
+      cout << "(0,0)\t" << Dot(Li[0],R[0]) << endl;
+      val +=  Dot(Li[0],R[0]);
 
    }
 
@@ -820,6 +821,7 @@ double PEPS<double>::energy(){
 
          //contract with left unit
          val += blas::dot(R[col - 1].size(),R[col - 1].data(),1,tmp5.data(),1);
+         cout <<  "(0," << col << ")\t" << blas::dot(R[col - 1].size(),R[col - 1].data(),1,tmp5.data(),1) << endl;
 
       }
 
@@ -883,6 +885,7 @@ double PEPS<double>::energy(){
       Contract(1.0,(*this)(0,Lx-1),shape(0,1),tmp5,shape(0,2),0.0,tmp6);
 
       val += blas::dot(tmp6.size(), tmp6.data(), 1, peps_op.data(), 1);
+      cout <<  "(0," << Lx-1 << ")\t" << blas::dot(tmp6.size(), tmp6.data(), 1, peps_op.data(), 1) << endl;
 
    }
 
@@ -920,6 +923,7 @@ double PEPS<double>::energy(){
          Contract(1.0,tmp8,shape(3,6),env.gb(row-1)[0],shape(1,2),0.0,tmp8bis);
 
          val += blas::dot(RO[0].size(), RO[0].data(), 1, tmp8bis.data(), 1);
+         cout <<  "(" << row << "," << 0 << ")\t" <<  blas::dot(RO[0].size(), RO[0].data(), 1, tmp8bis.data(), 1) << endl;
 
       }
 
@@ -997,6 +1001,7 @@ double PEPS<double>::energy(){
 
             //expectation value:
             val += Dot(RO[col],RO[col-1]);
+            cout <<  "(" << row << "," << col << ")\t" <<  Dot(RO[col],RO[col-1]) << endl;
 
          }
 
@@ -1072,6 +1077,7 @@ double PEPS<double>::energy(){
 
          val += blas::dot(tmp6.size(), tmp6.data(), 1, env.gb(row-1)[Lx-1].data(), 1);
 
+         cout <<  "(" << row << "," << Lx - 1 << ")\t" <<   blas::dot(tmp6.size(), tmp6.data(), 1, env.gb(row-1)[Lx-1].data(), 1) << endl;
       }
 
    }
@@ -1098,6 +1104,7 @@ double PEPS<double>::energy(){
       Contract(1.0,peps_op,shape(0,2,3),tmp5bis,shape(0,1,2),0.0,tmp4);
 
       val += blas::dot(tmp4.size(), tmp4.data(), 1, R[0].data(), 1);
+      cout <<  "(" << Ly-1 << "," << 0 << ")\t" <<   blas::dot(tmp4.size(), tmp4.data(), 1, R[0].data(), 1) << endl;
 
    }
 
@@ -1156,6 +1163,7 @@ double PEPS<double>::energy(){
 
          //contract with left hamiltonian operator
          val += blas::dot(R[col-1].size(), R[col-1].data(), 1, tmp5.data(), 1);
+         cout <<  "(" << Ly-1 << "," << col << ")\t" <<   blas::dot(R[col-1].size(), R[col-1].data(), 1, tmp5.data(), 1) << endl;
 
       }
 
@@ -1215,6 +1223,7 @@ double PEPS<double>::energy(){
       Contract(1.0,peps_op,shape(0,3),tmp7,shape(2,5),0.0,tmp8);
 
       val += blas::dot(R[Lx - 2].size(),R[Lx - 2].data(),1,tmp8.data(),1);
+      cout << "(" << Ly-1 << "," << Lx-1 << ")\t" <<   blas::dot(R[Lx - 2].size(),R[Lx - 2].data(),1,tmp8.data(),1) << endl;
 
    }
 
@@ -1227,26 +1236,13 @@ double PEPS<double>::energy(){
    //first construct the right renormalized operators
    R.resize(Ly - 1);
 
-   contractions::init_ro(ham.gis_local(),'r',*this,R);
+   contractions::init_ro(false,'r',*this,R);
 
    tmp5.clear();
    Contract(1.0,env.gl(Lx - 2)[0],shape(0,1),(*this)(0,Lx - 1),shape(3,0),0.0,tmp5);
 
    tmp5bis.clear();
    Permute(tmp5,shape(1,2,3,0,4),tmp5bis);
-
-   //add local energy term
-   if(ham.gis_local()){
-
-      peps_op.clear();
-      Contract(1.0,ham.gB(),shape(1),(*this)(0,Lx - 1),shape(2),0.0,peps_op);
-
-      tmp4.clear();
-      Contract(1.0,tmp5bis,shape(2,3,4),peps_op,shape(0,1,4),0.0,tmp4);
-
-      val += blas::dot(tmp4.size(), tmp4.data(), 1, R[0].data(), 1);
-
-   }
 
    //multiply intermediate with Left hamiltonian operators
    for(int i = 0;i < delta;++i){
@@ -1294,20 +1290,6 @@ double PEPS<double>::energy(){
 
       }
 
-      //add local term
-      if(ham.gis_local()){
-
-         peps_op.clear();
-         Contract(1.0,ham.gB(),shape(1),(*this)(row,Lx-1),shape(2),0.0,peps_op);
-
-         tmp5.clear();
-         Contract(1.0,tmp6,shape(3,1,2),peps_op,shape(0,1,2),0.0,tmp5);
-
-         //contract with left S+
-         val += blas::dot(R[row-1].size(),R[row-1].data(),1,tmp5.data(),1);
-
-      }
-
       //construct left renormalized operators for next site: first construct intermediary
       tmp5.clear();
       Contract(1.0,R[row-1],shape(0),env.gl(Lx - 2)[row],shape(0),0.0,tmp5);
@@ -1352,19 +1334,6 @@ double PEPS<double>::energy(){
 
    }
 
-   //local term
-   if(ham.gis_local()){
-
-      peps_op.clear();
-      Contract(1.0,ham.gB(),shape(1),(*this)(Ly-1,Lx-1),shape(2),0.0,peps_op);
-
-      tmp8.clear();
-      Contract(1.0,tmp7,shape(4,1),peps_op,shape(0,1),0.0,tmp8);
-
-      val += blas::dot(R[Lx-2].size(), R[Lx-2].data(), 1, tmp8.data(), 1);
-
-   }
-
    // -- (2) -- now move from right to left calculating everything like an MPO/MPS expectation value
 
    //Right renormalized operators
@@ -1374,7 +1343,7 @@ double PEPS<double>::energy(){
    for(int col = Lx - 2;col > 0;--col){
 
       //first create right renormalized operator
-      contractions::init_ro(ham.gis_local(),'V',col,*this,RO);
+      contractions::init_ro(false,'V',col,*this,RO);
 
       // --- now move from left to right to get the expecation value of the interactions ---
 
@@ -1383,22 +1352,6 @@ double PEPS<double>::energy(){
       //paste left environment on
       tmp7.clear();
       Contract(1.0,env.gl(col - 1)[0],shape(1),(*this)(0,col),shape(0),0.0,tmp7);
-
-      //add local term to energy
-      if(ham.gis_local()){
-
-         peps_op.clear();
-         Contract(1.0,ham.gB(),shape(1),(*this)(0,col),shape(2),0.0,peps_op);
-
-         tmp8.clear();
-         Contract(1.0,tmp7,shape(4,1),peps_op,shape(0,1),0.0,tmp8);
-
-         tmp8bis.clear();
-         Contract(1.0,tmp8,shape(4,7),env.gr(col)[0],shape(1,2),0.0,tmp8bis);
-
-         blas::dot(tmp8bis.size(),tmp8bis.data(),1,RO[0].data(),1);
-
-      }
 
       // add left hamiltonian operators to intermediate
       for(int i = 0;i < delta;++i){
@@ -1451,26 +1404,6 @@ double PEPS<double>::energy(){
 
             //expectation value:
             val += ham.gcoef(i) * Dot(LOi[i],RO[row]);
-
-         }
-
-         //local term
-         if(ham.gis_local()){
-
-            peps_op.clear();
-            Contract(1.0,ham.gB(),shape(1),(*this)(row,col),shape(2),0.0,peps_op);
-
-            tmp6.clear();
-            Contract(1.0,tmp7,shape(4,1,2),peps_op,shape(0,1,2),0.0,tmp6);
-
-            tmp6bis.clear();
-            Permute(tmp6,shape(0,2,4,3,5,1),tmp6bis);
-
-            RO[row].clear();
-            Gemm(CblasNoTrans,CblasTrans,1.0,tmp6bis,env.gr(col)[row],0.0,RO[row]);
-
-            //expectation value:
-            val += Dot(RO[row-1],RO[row]);
 
          }
 
@@ -1531,33 +1464,12 @@ double PEPS<double>::energy(){
 
       }
 
-      if(ham.gis_local()){
-
-         //add right hamiiltonian operator to peps
-         peps_op.clear();
-         Contract(1.0,ham.gB(),shape(1),(*this)(Ly-1,col),shape(2),0.0,peps_op);
-
-         //make intermediary
-         tmp6.clear();
-         Contract(1.0,env.gl(col - 1)[Ly - 1],shape(0),RO[Ly - 2],shape(0),0.0,tmp6);
-
-         tmp7.clear();
-         Contract(1.0,tmp6,shape(0,3),(*this)(Ly - 1,col),shape(0,3),0.0,tmp7);
-
-         //contract with right ham operator
-         tmp6.clear();
-         Contract(1.0,tmp7,shape(0,2,5),peps_op,shape(1,3,0),0.0,tmp6);
-
-         val += blas::dot(tmp6.size(), tmp6.data(), 1, env.gr(col)[Ly-1].data(), 1);
-
-      }
-
    }
 
    // -- (3) -- || left column = 0: again similar to overlap calculation
 
    //first construct the right renormalized operators
-   contractions::init_ro(ham.gis_local(),'l',*this,R);
+   contractions::init_ro(false,'l',*this,R);
 
    //construct the left operator with two open physical bonds
    tmp5.clear();
@@ -1565,19 +1477,6 @@ double PEPS<double>::energy(){
 
    tmp5bis.clear();
    Permute(tmp5,shape(2,0,3,1,4),tmp5bis);
-
-   //local energy contribution
-   if(ham.gis_local()){
-
-      peps_op.clear();
-      Contract(1.0,ham.gB(),shape(1),(*this)(0,0),shape(2),0.0,peps_op);
-
-      tmp4.clear();
-      Contract(1.0,peps_op,shape(0,1,4),tmp5bis,shape(0,1,2),0.0,tmp4);
-
-      val += blas::dot(tmp4.size(), tmp4.data(), 1, R[0].data(), 1);
-
-   }
 
    //contract with left hamiltonian operators to construct left renormalized operators
    for(int i = 0;i < delta;++i){
@@ -1625,20 +1524,6 @@ double PEPS<double>::energy(){
 
       }
 
-      //local energy contribution
-      if(ham.gis_local()){
-
-         peps_op.clear();
-         Contract(1.0,ham.gB(),shape(1),(*this)(row,0),shape(2),0.0,peps_op);
-
-         tmp5.clear();
-         Contract(1.0,peps_op,shape(0,4,2),tmp6,shape(1,4,5),0.0,tmp5);
-
-         //contract with left S+
-         val += blas::dot(R[row-1].size(), R[row-1].data(), 1, tmp5.data(), 1);
-
-      }
-
       //construct left renormalized operators for next site: first construct intermediary
       tmp5.clear();
       Contract(1.0,env.gr(0)[row],shape(0),R[row-1],shape(2),0.0,tmp5);
@@ -1681,18 +1566,6 @@ double PEPS<double>::energy(){
       Contract(1.0,peps_op,shape(0,4),tmp7,shape(2,5),0.0,tmp8);
 
       val += ham.gcoef(i) * blas::dot(Li[i].size(),Li[i].data(),1,tmp8.data(),1);
-
-   }
-
-   if(ham.gis_local()){
-
-      peps_op.clear();
-      Contract(1.0,ham.gB(),shape(1),(*this)(Ly-1,0),shape(2),0.0,peps_op);
-
-      tmp8.clear();
-      Contract(1.0,peps_op,shape(0,4),tmp7,shape(2,5),0.0,tmp8);
-
-      val += blas::dot(R[Ly-2].size(),R[Ly-2].data(),1,tmp8.data(),1);
 
    }
 
