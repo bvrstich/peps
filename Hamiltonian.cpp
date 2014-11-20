@@ -239,14 +239,14 @@ void Hamiltonian::set_transverse_field_ising(double B_in) {
    R[0] = 0.0;
 
    //Sz
-   L[0](0,0) = -0.5;
-   L[0](1,1) = 0.5;
+   L[0](0,0) = -1.0;
+   L[0](1,1) = 1.0;
 
-   R[0](0,0) = -0.5;
-   R[0](1,1) = 0.5;
+   R[0](0,0) = -1.0;
+   R[0](1,1) = 1.0;
 
    //coefficients:
-   coef[0] = 1.0;//minus sign because of the Marshall sign rule
+   coef[0] = -1.0;
 
    //local term
    B.resize(global::d,global::d); //Sx
@@ -254,7 +254,7 @@ void Hamiltonian::set_transverse_field_ising(double B_in) {
    B = 0.0;
 
    //Sx
-   B(0,1) = 0.5 * B_in;
-   B(1,0) = 0.5 * B_in;
+   B(0,1) = B_in;
+   B(1,0) = B_in;
 
 }

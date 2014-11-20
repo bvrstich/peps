@@ -142,8 +142,8 @@ void PEPS<T>::sD(int D_in) {
 }
 
 /**
- * initialize the peps to the direct sum of two antiferromagnetic D=1 structures
- * @param option, start with up or down spin
+ * initialize the peps a completely spin polarized state
+ * @param option up or down spin
  * @param noise level of noise to add
  */
 template<>
@@ -163,10 +163,7 @@ void PEPS<double>::initialize_ising(int option,double noise) {
       (*this)[col].resize(D,D,d,1,D);
       (*this)[col] = 0.0;
 
-      if( (col + option) % 2 == 0)
-         (*this)[col](0,0,0,0,0) = 1.0;
-      else
-         (*this)[col](0,0,1,0,0) = 1.0;
+      (*this)[col](0,0,option,0,0) = 1.0;
 
    }
 
@@ -174,10 +171,7 @@ void PEPS<double>::initialize_ising(int option,double noise) {
    (*this)[Lx-1].resize(D,D,d,1,1);
    (*this)[Lx-1] = 0.0;
 
-   if( (Lx-1 + option) % 2 == 0)
-      (*this)[Lx-1](0,0,0,0,0) = 1.0;
-   else
-      (*this)[Lx-1](0,0,1,0,0) = 1.0;
+   (*this)[Lx-1](0,0,option,0,0) = 1.0;
 
    //middle rows
    for(int row = 1;row < Ly - 1;++row){
@@ -186,10 +180,7 @@ void PEPS<double>::initialize_ising(int option,double noise) {
       (*this)[row*Lx].resize(1,D,d,D,D);
       (*this)[row*Lx] = 0.0;
 
-      if( (row + option) % 2 == 0)
-         (*this)[row*Lx](0,0,0,0,0) = 1.0;
-      else
-         (*this)[row*Lx](0,0,1,0,0) = 1.0;
+      (*this)[row*Lx](0,0,option,0,0) = 1.0;
 
       //middle sites on row 'row'
       for(int col = 1;col < Lx - 1;++col){
@@ -197,10 +188,7 @@ void PEPS<double>::initialize_ising(int option,double noise) {
          (*this)[row*Lx + col].resize(D,D,d,D,D);
          (*this)[row*Lx + col] = 0.0;
 
-         if( (row + col + option) % 2 == 0)
-            (*this)[row*Lx + col](0,0,0,0,0) = 1.0;
-         else
-            (*this)[row*Lx + col](0,0,1,0,0) = 1.0;
+         (*this)[row*Lx + col](0,0,option,0,0) = 1.0;
 
       }
 
@@ -208,10 +196,7 @@ void PEPS<double>::initialize_ising(int option,double noise) {
       (*this)[row*Lx + Lx - 1].resize(D,D,d,D,1);
       (*this)[row*Lx + Lx - 1] = 0.0;
 
-      if( (row + Lx - 1 + option) % 2 == 0)
-         (*this)[row*Lx + Lx - 1](0,0,0,0,0) = 1.0;
-      else
-         (*this)[row*Lx + Lx - 1](0,0,1,0,0) = 1.0;
+      (*this)[row*Lx + Lx - 1](0,0,option,0,0) = 1.0;
 
    }
 
@@ -221,10 +206,7 @@ void PEPS<double>::initialize_ising(int option,double noise) {
    (*this)[(Ly - 1)*Lx].resize(1,1,d,D,D);
    (*this)[(Ly - 1)*Lx] = 0.0;
 
-   if( (Ly - 1 + option) % 2 == 0)
-      (*this)[(Ly - 1)*Lx](0,0,0,0,0) = 1.0;
-   else
-      (*this)[(Ly - 1)*Lx](0,0,1,0,0) = 1.0;
+   (*this)[(Ly - 1)*Lx](0,0,option,0,0) = 1.0;
 
    //top row, middle sites
    for(int col = 1;col < Lx - 1;++col){
@@ -232,10 +214,7 @@ void PEPS<double>::initialize_ising(int option,double noise) {
       (*this)[(Ly - 1)*Lx + col].resize(D,1,d,D,D);
       (*this)[(Ly - 1)*Lx + col] = 0.0;
 
-      if( (Ly - 1 + col + option) % 2 == 0)
-         (*this)[(Ly - 1)*Lx + col](0,0,0,0,0) = 1.0;
-      else
-         (*this)[(Ly - 1)*Lx + col](0,0,1,0,0) = 1.0;
+      (*this)[(Ly - 1)*Lx + col](0,0,option,0,0) = 1.0;
 
    }
 
@@ -243,10 +222,7 @@ void PEPS<double>::initialize_ising(int option,double noise) {
    (*this)[(Ly - 1)*Lx + Lx - 1].resize(D,1,d,D,1);
    (*this)[(Ly - 1)*Lx + Lx - 1] = 0.0;
 
-   if( (Ly - 1 + Lx - 1 + option) % 2 == 0)
-      (*this)[(Ly - 1)*Lx + Lx - 1](0,0,0,0,0) = 1.0;
-   else
-      (*this)[(Ly - 1)*Lx + Lx - 1](0,0,1,0,0) = 1.0;
+   (*this)[(Ly - 1)*Lx + Lx - 1](0,0,option,0,0) = 1.0;
 
    //add some noise
    for(int row = 0;row < Lx;++row)

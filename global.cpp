@@ -54,7 +54,7 @@ namespace global{
       D_aux = D_aux_in;
 
       //set the interaction
-      ham.set_transverse_field_ising(-1.0);
+      ham.set_transverse_field_ising(-2.0);
 
       trot = Trotter(tau);
 

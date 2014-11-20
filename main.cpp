@@ -48,7 +48,7 @@ int main(int argc,char *argv[]){
          peps.normalize();
 
          global::env.calc('A',peps);
-         cout << i << "\t" << peps.energy() << endl;
+         cout << i << "\t" << peps.energy()/(L*L) << endl;
 
       }
 
