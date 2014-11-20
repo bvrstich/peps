@@ -760,7 +760,6 @@ double PEPS<double>::energy(){
       Li[0].resize(shape(tmp5.shape(1),tmp5.shape(4),peps_op.shape(4)));
       blas::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, M, N, K, 1.0,tmp5bis.data(),K,peps_op.data(),N,0.0,Li[0].data(),N);
 
-      cout << "(0,0)\t" << Dot(Li[0],R[0]) << endl;
       val +=  Dot(Li[0],R[0]);
 
    }
@@ -821,7 +820,6 @@ double PEPS<double>::energy(){
 
          //contract with left unit
          val += blas::dot(R[col - 1].size(),R[col - 1].data(),1,tmp5.data(),1);
-         cout <<  "(0," << col << ")\t" << blas::dot(R[col - 1].size(),R[col - 1].data(),1,tmp5.data(),1) << endl;
 
       }
 
@@ -885,7 +883,6 @@ double PEPS<double>::energy(){
       Contract(1.0,(*this)(0,Lx-1),shape(0,1),tmp5,shape(0,2),0.0,tmp6);
 
       val += blas::dot(tmp6.size(), tmp6.data(), 1, peps_op.data(), 1);
-      cout <<  "(0," << Lx-1 << ")\t" << blas::dot(tmp6.size(), tmp6.data(), 1, peps_op.data(), 1) << endl;
 
    }
 
@@ -923,7 +920,6 @@ double PEPS<double>::energy(){
          Contract(1.0,tmp8,shape(3,6),env.gb(row-1)[0],shape(1,2),0.0,tmp8bis);
 
          val += blas::dot(RO[0].size(), RO[0].data(), 1, tmp8bis.data(), 1);
-         cout <<  "(" << row << "," << 0 << ")\t" <<  blas::dot(RO[0].size(), RO[0].data(), 1, tmp8bis.data(), 1) << endl;
 
       }
 
@@ -1001,7 +997,6 @@ double PEPS<double>::energy(){
 
             //expectation value:
             val += Dot(RO[col],RO[col-1]);
-            cout <<  "(" << row << "," << col << ")\t" <<  Dot(RO[col],RO[col-1]) << endl;
 
          }
 
@@ -1077,7 +1072,6 @@ double PEPS<double>::energy(){
 
          val += blas::dot(tmp6.size(), tmp6.data(), 1, env.gb(row-1)[Lx-1].data(), 1);
 
-         cout <<  "(" << row << "," << Lx - 1 << ")\t" <<   blas::dot(tmp6.size(), tmp6.data(), 1, env.gb(row-1)[Lx-1].data(), 1) << endl;
       }
 
    }
@@ -1104,7 +1098,6 @@ double PEPS<double>::energy(){
       Contract(1.0,peps_op,shape(0,2,3),tmp5bis,shape(0,1,2),0.0,tmp4);
 
       val += blas::dot(tmp4.size(), tmp4.data(), 1, R[0].data(), 1);
-      cout <<  "(" << Ly-1 << "," << 0 << ")\t" <<   blas::dot(tmp4.size(), tmp4.data(), 1, R[0].data(), 1) << endl;
 
    }
 
@@ -1163,7 +1156,6 @@ double PEPS<double>::energy(){
 
          //contract with left hamiltonian operator
          val += blas::dot(R[col-1].size(), R[col-1].data(), 1, tmp5.data(), 1);
-         cout <<  "(" << Ly-1 << "," << col << ")\t" <<   blas::dot(R[col-1].size(), R[col-1].data(), 1, tmp5.data(), 1) << endl;
 
       }
 
@@ -1223,7 +1215,6 @@ double PEPS<double>::energy(){
       Contract(1.0,peps_op,shape(0,3),tmp7,shape(2,5),0.0,tmp8);
 
       val += blas::dot(R[Lx - 2].size(),R[Lx - 2].data(),1,tmp8.data(),1);
-      cout << "(" << Ly-1 << "," << Lx-1 << ")\t" <<   blas::dot(R[Lx - 2].size(),R[Lx - 2].data(),1,tmp8.data(),1) << endl;
 
    }
 
