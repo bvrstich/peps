@@ -39,7 +39,7 @@ int main(int argc,char *argv[]){
    global::init(D,D_aux,d,L,L,tau);
 
    PEPS<double> peps;
-   peps.initialize_ising(0,0.001);
+   peps.initialize_ising(D,0,0.001);
 
    for(int i= 0;i < 2000;++i){
 

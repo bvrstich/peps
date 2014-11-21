@@ -143,13 +143,14 @@ void PEPS<T>::sD(int D_in) {
 
 /**
  * initialize the peps a completely spin polarized state
+ * @param D_in input D
  * @param option up or down spin
  * @param noise level of noise to add
  */
 template<>
-void PEPS<double>::initialize_ising(int option,double noise) {
+void PEPS<double>::initialize_ising(int D_in,int option,double noise) {
 
-   D = 2;
+   D = D_in;
 
    //bottom row, first site
    (*this)[0].resize(1,D,d,1,D);
