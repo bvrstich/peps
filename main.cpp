@@ -33,6 +33,8 @@ int main(int argc,char *argv[]){
    double tau = 0.01;
    int n_steps = 10;
 
+   int mult = D_aux / (D*D);
+
    //initialize some statics dimensions
    global::init(D,D_aux,d,L,L,tau);
 
@@ -53,6 +55,104 @@ int main(int argc,char *argv[]){
       }
 
    }
+
+   tau /= 10.0;
+   global::stau(tau);
+
+   for(int i= 2000;i < 10000;++i){
+
+      propagate::step(update,peps,10);
+
+      if(i % 10 == 0){
+
+         peps.normalize();
+
+         global::env.calc('A',peps);
+         cout << i << "\t" << peps.energy()/(L*L) << endl;
+
+      }
+
+   }
+
+   tau /= 10.0;
+   global::stau(tau);
+
+   for(int i= 10000;i < 20000;++i){
+
+      propagate::step(update,peps,10);
+
+      if(i % 10 == 0){
+
+         peps.normalize();
+
+         global::env.calc('A',peps);
+         cout << i << "\t" << peps.energy()/(L*L) << endl;
+
+      }
+
+   }
+
+   //increase D
+   D++;
+   peps.grow_bond_dimension(D,0.001);
+
+   D_aux = mult * D * D;
+
+   tau = 0.01;
+
+   global::init(D,D_aux,d,L,L,tau);
+
+   for(int i= 20000;i < 22000;++i){
+
+      propagate::step(update,peps,10);
+
+      if(i % 10 == 0){
+
+         peps.normalize();
+
+         global::env.calc('A',peps);
+         cout << i << "\t" << peps.energy()/(L*L) << endl;
+
+      }
+
+   }
+
+   tau /= 10.0;
+   global::stau(tau);
+
+   for(int i= 22000;i < 30000;++i){
+
+      propagate::step(update,peps,10);
+
+      if(i % 10 == 0){
+
+         peps.normalize();
+
+         global::env.calc('A',peps);
+         cout << i << "\t" << peps.energy()/(L*L) << endl;
+
+      }
+
+   }
+
+   tau /= 10.0;
+   global::stau(tau);
+
+   for(int i= 30000;i < 40000;++i){
+
+      propagate::step(update,peps,10);
+
+      if(i % 10 == 0){
+
+         peps.normalize();
+
+         global::env.calc('A',peps);
+         cout << i << "\t" << peps.energy()/(L*L) << endl;
+
+      }
+
+   }
+
 
    return 0;
 
