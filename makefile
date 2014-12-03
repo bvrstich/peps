@@ -42,8 +42,8 @@ CXX	= icpc
 # -----------------------------------------------------------------------------
 #   Compiler & Linker flags
 # -----------------------------------------------------------------------------
-CFLAGS	= -I$(INCLUDE) -std=c++11 -DNDEBUG -D_HAS_CBLAS -D_HAS_INTEL_MKL -openmp -O3 -ipo
-LDFLAGS	= -openmp -O3 -ipo
+CFLAGS	= -g -I$(INCLUDE) -g -std=c++11  -D_HAS_CBLAS -D_HAS_INTEL_MKL -openmp -O3 -ipo
+LDFLAGS	= -g -openmp -O3 -ipo
 
 # =============================================================================
 #   Targets & Rules
